@@ -24,8 +24,13 @@ from kaggle_slayer.schemas.actions import (
 )
 from kaggle_slayer.schemas.models import Decision, Experiment, RunState
 from kaggle_slayer.storage.store import write_json
-from kaggle_slayer.tools.data_tools import inspect_dataset
-from kaggle_slayer.tools.runtime_worker import OPERATION_ERRORS, RuntimeOperationError
+from kaggle_slayer.tools.data_tools import DatasetError, inspect_dataset
+from kaggle_slayer.tools.runtime_worker import (
+    IMMUTABLE_DATASET_ERRORS,
+    OPERATION_ERRORS,
+    TRAINING_RESOURCE_ERRORS,
+    RuntimeOperationError,
+)
 from kaggle_slayer.tools.swarm_tools import (
     CAPABILITIES,
     Dispatcher,
@@ -141,7 +146,7 @@ class SwarmRuntime:
                 else ""
             )
             + (
-                " | " + str(RuntimeOperationError(result["error"]))
+                " | " + str(RuntimeOperationError(result["error"], result.get("details")))
                 if result.get("error") in OPERATION_ERRORS
                 else ""
             ),
@@ -1002,6 +1007,12 @@ class SwarmRuntime:
                         self.checkpoint()
                         result = self.dispatcher.execute(action, args)
                         self.complete(ref, result)
+            except DatasetError as exc:
+                diagnostic = RuntimeOperationError(exc.code, getattr(exc, "details", None))
+                self.complete(ref, diagnostic.diagnostic(), "failed")
+                if diagnostic.code in IMMUTABLE_DATASET_ERRORS:
+                    self.state.error = str(diagnostic)
+                    raise StopRun(diagnostic.code) from exc
             except ToolError as exc:
                 self.complete(ref, {"error": str(exc)}, "failed")
                 if str(exc) == "metric_requirement_unresolved":
@@ -1009,11 +1020,7 @@ class SwarmRuntime:
                     raise StopRun(str(exc)) from exc
             except RuntimeOperationError as exc:
                 self.complete(ref, exc.diagnostic(), "failed")
-                if exc.code in {
-                    "metric_requirement_unresolved",
-                    "dataset_row_limit",
-                    "dataset_dense_limit",
-                }:
+                if exc.code in IMMUTABLE_DATASET_ERRORS | {"metric_requirement_unresolved"}:
                     self.state.error = str(exc)
                     raise StopRun(exc.code) from exc
             except CheckpointError:
@@ -1070,6 +1077,11 @@ class SwarmRuntime:
         # A new primary measurement invalidates previous selection/predictions.
         if result.validation_role == "primary":
             self.state.best_id = None
+        diagnostic = (
+            RuntimeOperationError(result.error_code, result.error_details)
+            if result.status != "completed" and result.error_code in TRAINING_RESOURCE_ERRORS
+            else None
+        )
         self.complete(
             ref,
             {
@@ -1094,9 +1106,13 @@ class SwarmRuntime:
                 },
                 "artifact_ref": ref if result.status == "completed" else None,
                 "error": "training_failed" if result.status != "completed" else None,
+                **(diagnostic.diagnostic() if diagnostic else {}),
             },
             "completed" if result.status == "completed" else "failed",
         )
+        if diagnostic and diagnostic.code in IMMUTABLE_DATASET_ERRORS:
+            self.state.error = str(diagnostic)
+            raise StopRun(diagnostic.code)
 
     def recover(self):
         for ref, record in list(self.session.actions.items()):

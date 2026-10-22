@@ -128,6 +128,8 @@ class Experiment(Schema):
     std: float | None = None
     duration: float = 0
     error: str | None = None
+    error_code: str | None = None
+    error_details: dict[str, int] = Field(default_factory=dict)
     checkpoint: str | None = None
     oof_path: str | None = None
     importance_path: str | None = None

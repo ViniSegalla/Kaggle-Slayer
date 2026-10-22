@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from kaggle_slayer.ml.resource_limits import check_pipeline_resources
 from kaggle_slayer.schemas.actions import (
     ConfigureArgs,
     ConfirmationArgs,
@@ -495,6 +496,15 @@ class Dispatcher:
         if session.confirmation_started and candidate.validation_role == "primary":
             raise ToolError("confirmation_is_terminal")
         candidate.lineage = lineage
+        # Reject impossible preprocessing before reserving a worker or charging an experiment.
+        if self.runtime.data is None:
+            if not s.report:
+                raise ToolError("dataset_inspection_required")
+            data = inspect_dataset(Path(s.config.data_dir), s.competition, s.config)
+            if data.report["fingerprints"] != s.report["fingerprints"]:
+                raise ToolError("dataset_fingerprint_changed")
+            self.runtime.data = data
+        check_pipeline_resources(self.runtime.data, s.competition, s.config, candidate.model_dump())
         if candidate.validation_role == "confirmation" and not for_reuse:
             session.confirmation_started = True
         return candidate

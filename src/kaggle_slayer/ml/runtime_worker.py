@@ -74,7 +74,7 @@ def main():
             if request["operation"] == "prepare" and isinstance(exc, ValueError)
             else "bounded_operation_failed"
         )
-        diagnostic = RuntimeOperationError(code)
+        diagnostic = RuntimeOperationError(code, getattr(exc, "details", None))
         # Stack locations are local diagnostics; exception values may contain secrets or rows.
         traceback.print_tb(exc.__traceback__)
         print(str(diagnostic), file=sys.stderr)

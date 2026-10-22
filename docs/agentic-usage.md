@@ -86,12 +86,24 @@ the target. Ambiguous requirements produce a tool error and require a corrected 
 run. User constraints remain immutable across resume, except renewed upload permission.
 The data agent proposes validation before training; inspection splits are provisional.
 Official metric aliases include `Roc Auc Score` / `roc_auc_score` for ROC-AUC.
-An unresolved metric, row-limit violation or encoded-memory guard violation terminates
+An unresolved metric, row-limit violation or source-data memory guard violation terminates
 with a controlled diagnostic and the corrective `--profile`, `--max-rows` or
 `--max-dense-cells` option. These fixed constraints require a new run; the coordinator
 does not spend additional turns retrying the same preparation failure. Other isolated
 operation failures retain controlled categories and stack locations in the local
 operation's `worker.log`; raw exception values are excluded from provider context.
+
+Inspection checks source feature cells so native CatBoost and smaller encoders remain
+available. Before reserving an experiment, the runtime checks each candidate's effective
+preprocessing size: training category counts capped by `max_categories`, numeric missing
+indicators, feature operations and actual Titanic features. CatBoost keeps native columns;
+ensembles check each member's own configuration. Unknown test categories add no columns,
+but the larger of train/test row counts determines the allocation bound. Frequency grouping
+may reduce actual width; the estimate remains conservative across different CV subsets.
+The worker repeats this check for deterministic runs and recovery. A rejected candidate
+consumes no agentic experiment slot, and receives a controlled error with counts and a
+correction action so the agent can choose a smaller pipeline. Measured training attempts
+still consume their normal budget.
 
 The LLM chooses which specialists to call, which permitted pipelines to configure,
 experiment order and parameters, additional trials, ensembles, diagnostics, prediction

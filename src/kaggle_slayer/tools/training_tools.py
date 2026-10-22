@@ -17,6 +17,7 @@ from kaggle_slayer.ml.diagnostics import error_report
 from kaggle_slayer.ml.models import estimator, pipeline
 from kaggle_slayer.ml.objectives import objective_params, training_contract
 from kaggle_slayer.ml.preprocessing import preprocessor
+from kaggle_slayer.ml.resource_limits import check_pipeline_resources
 from kaggle_slayer.orchestration.progress import WorkerEvents, worker_event
 from kaggle_slayer.schemas import Competition, Experiment, RunConfig
 from kaggle_slayer.storage.store import write_json
@@ -115,24 +116,7 @@ def train_candidate(request: dict) -> dict:
     worker_event(output, "inspect")
     data = inspect_dataset(Path(config.data_dir), c, config)
     options = candidate.get("pipeline", {})
-    # Bound width before allocating derived or dense encoded matrices.
-    contracts = (
-        [m.get("pipeline", {}) for m in candidate["params"]["members"]]
-        if candidate["model"] == "ensemble"
-        else [options]
-    )
-    for contract in contracts:
-        extra = len(data.X.select_dtypes(include="number").columns) * sum(
-            op in {"numeric_square", "numeric_signed_log"} for op in contract.get("features", [])
-        ) + int("missing_count" in contract.get("features", []))
-        width = sum(2 if pd.api.types.is_numeric_dtype(data.X[col]) else 64 for col in data.X)
-        if (
-            len(data.X.columns) + extra > config.max_features
-            or (width + 2 * extra + (6 if c.feature_profile == "titanic" else 0))
-            * max(len(data.X), len(data.test_X))
-            > config.max_dense_cells
-        ):
-            raise ValueError("Effective pipeline exceeds feature/dense-cell limits")
+    resource_estimates = check_pipeline_resources(data, c, config, candidate)
     classes = data.report["classes"]
     # Use contiguous integer labels inside every classifier, including XGBoost.
     encoder = LabelEncoder().fit(data.y) if c.task == "classification" else None
@@ -244,6 +228,7 @@ def train_candidate(request: dict) -> dict:
             "dataset_fingerprints": data.report["fingerprints"],
             "validation": {"method": c.validation, "folds": config.folds, "seed": config.seed},
             "effective_params": final_params,
+            "resource_estimates": resource_estimates,
         },
         lineage=candidate.get("lineage"),
         validation_role=candidate.get("validation_role", "primary"),

@@ -18,8 +18,20 @@ OPERATION_ERRORS = {
         "Reduce the dataset or set --max-rows explicitly for a new run.",
     ),
     "dataset_dense_limit": (
-        "Encoded dataset exceeds the configured max_dense_cells memory guard.",
+        "Source dataset exceeds the configured max_dense_cells memory guard.",
         "Reduce data/features or set --max-dense-cells explicitly for a new run.",
+    ),
+    "dataset_feature_limit": (
+        "Dataset exceeds the configured max_features guard.",
+        "Reduce dataset features or increase max_features in the profile for a new run.",
+    ),
+    "pipeline_dense_limit": (
+        "Effective pipeline exceeds the configured max_dense_cells memory guard.",
+        "Reduce derived features, missing indicators or category limits and retry the pipeline.",
+    ),
+    "pipeline_feature_limit": (
+        "Effective pipeline exceeds the configured max_features guard.",
+        "Reduce derived features and retry the pipeline.",
     ),
     "dataset_validation_failed": (
         "Dataset validation failed.",
@@ -35,17 +47,56 @@ OPERATION_ERRORS = {
     ),
 }
 
+IMMUTABLE_DATASET_ERRORS = frozenset(
+    {"dataset_row_limit", "dataset_dense_limit", "dataset_feature_limit"}
+)
+TRAINING_RESOURCE_ERRORS = IMMUTABLE_DATASET_ERRORS | {
+    "pipeline_dense_limit",
+    "pipeline_feature_limit",
+}
+RESOURCE_DETAIL_KEYS = frozenset(
+    {
+        "rows",
+        "train_rows",
+        "test_rows",
+        "encoded_width",
+        "estimated_dense_cells",
+        "max_dense_cells",
+        "feature_count",
+        "max_features",
+        "derived_features",
+    }
+)
+
+
+def resource_details(value):
+    """Only bounded aggregate counts may cross the worker/provider boundary."""
+    if not isinstance(value, dict):
+        return {}
+    return {
+        key: count
+        for key, count in value.items()
+        if key in RESOURCE_DETAIL_KEYS and type(count) is int and 0 <= count <= 2**63 - 1
+    }
+
 
 class RuntimeOperationError(RuntimeError):
     """Only controlled descriptions cross the worker/provider boundary."""
 
-    def __init__(self, code):
+    def __init__(self, code, details=None):
         self.code = code if code in OPERATION_ERRORS else "bounded_operation_failed"
         self.message, self.action = OPERATION_ERRORS[self.code]
-        super().__init__(f"{self.code}: {self.message} {self.action}")
+        self.details = resource_details(details) if self.code in TRAINING_RESOURCE_ERRORS else {}
+        counts = ", ".join(f"{key}={value}" for key, value in self.details.items())
+        super().__init__(
+            f"{self.code}: {self.message} {self.action}" + (f" ({counts})" if counts else "")
+        )
 
     def diagnostic(self):
-        return {"error": self.code, "message": self.message, "action": self.action}
+        result = {"error": self.code, "message": self.message, "action": self.action}
+        if self.details:
+            result["details"] = self.details
+        return result
 
 
 def run_bounded(operation, state, directory, timeout, cancelled=lambda: False):
@@ -91,5 +142,5 @@ def run_bounded(operation, state, directory, timeout, cancelled=lambda: False):
                     process.wait()
     value = json.loads(result.read_text(encoding="utf-8"))
     if value.get("error"):
-        raise RuntimeOperationError(value["error"])
+        raise RuntimeOperationError(value["error"], value.get("details"))
     return value

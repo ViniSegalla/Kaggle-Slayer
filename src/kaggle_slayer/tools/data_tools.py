@@ -10,6 +10,7 @@ import pandas as pd
 import plotly.express as px
 from sklearn.model_selection import GroupKFold, KFold, StratifiedKFold, TimeSeriesSplit
 
+from kaggle_slayer.ml.resource_limits import estimate_input_size
 from kaggle_slayer.schemas import Competition, RunConfig
 from kaggle_slayer.storage.store import write_json
 
@@ -17,8 +18,9 @@ from kaggle_slayer.storage.store import write_json
 class DatasetError(ValueError):
     """Dataset failure with a controlled category for isolated workers."""
 
-    def __init__(self, code, message):
+    def __init__(self, code, message, details=None):
         self.code = code
+        self.details = details or {}
         super().__init__(message)
 
 
@@ -190,21 +192,25 @@ def inspect_dataset(directory: Path, competition: Competition, config: RunConfig
         c.drop_columns + [x for x in (c.target, c.id_column, c.group_column, c.time_column) if x]
     )
     features = [column for column in test if column not in excluded]
-    if not features or len(features) > config.max_features:
+    if not features:
         raise ValueError("Feature count outside configured limits")
+    if len(features) > config.max_features:
+        raise DatasetError(
+            "dataset_feature_limit",
+            "Feature count exceeds max_features.",
+            {"feature_count": len(features), "max_features": config.max_features},
+        )
     X, test_X = train[features].copy(), test[features].copy()
-    estimated_width = sum(
-        2
-        if pd.api.types.is_numeric_dtype(X[column])
-        else min(max(X[column].nunique(), test_X[column].nunique()) + 1, 64)
-        for column in features
-    ) + (6 if c.feature_profile == "titanic" else 0)
-    if estimated_width * max(len(X), len(test_X)) > config.max_dense_cells:
+    # Inspection bounds source data. Each selected pipeline has a model-specific
+    # preprocessing check; native categories and smaller encoders remain available.
+    input_size = estimate_input_size(X, test_X)
+    if input_size["estimated_dense_cells"] > config.max_dense_cells:
         raise DatasetError(
             "dataset_dense_limit",
-            f"Encoded dataset requires an estimated {estimated_width * max(len(X), len(test_X))} "
+            f"Source dataset requires {input_size['estimated_dense_cells']} "
             f"cells, exceeding max_dense_cells={config.max_dense_cells} memory guard; "
             "reduce data/features or set --max-dense-cells explicitly for a new run",
+            input_size | {"max_dense_cells": config.max_dense_cells},
         )
     if c.validation == "time":
         if c.time_column not in train:

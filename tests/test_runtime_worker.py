@@ -1,14 +1,26 @@
 """Dataset failures survive process isolation without exposing exception values."""
 
 import json
+from pathlib import Path
 from unittest.mock import Mock
 
+import pandas as pd
 import pytest
 from test_swarm import setup
 
 from kaggle_slayer.schemas import RunState
 from kaggle_slayer.tools.kaggle_client import KaggleError
 from kaggle_slayer.tools.runtime_worker import RuntimeOperationError, run_bounded
+
+
+def widen_source_data(directory):
+    # Exceed the source-data guard itself, independently of any chosen encoding.
+    for name in ("train.csv", "test.csv"):
+        path = Path(directory) / name
+        frame = pd.read_csv(path)
+        for index in range(20):
+            frame[f"extra_{index}"] = range(len(frame))
+        frame.to_csv(path, index=False)
 
 
 @pytest.mark.parametrize(
@@ -27,6 +39,7 @@ def test_real_prepare_worker_reports_dataset_guard(fixture_data, tmp_path, chang
         config.max_rows = 20
     else:
         config.max_dense_cells = 1000
+        widen_source_data(config.data_dir)
     state = RunState(run_id="guard-test", competition=competition, config=config)
     output = tmp_path / "operation"
     with pytest.raises(RuntimeOperationError) as caught:
@@ -83,6 +96,8 @@ def test_immutable_dataset_guard_stops_before_more_llm_calls(tmp_path, change, c
     if change == "metric":
         state.competition.metric = None
         state.metadata["user_constraints"]["competition"]["metric"] = None
+    else:
+        widen_source_data(state.config.data_dir)
     engine.live.emit = Mock()
     result = engine.execute(state)
     assert result.status == "incomplete"
