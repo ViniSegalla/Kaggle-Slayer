@@ -8,6 +8,12 @@ from examples.fixture import make_fixture
 from kaggle_slayer.schemas import Competition, RunConfig
 
 
+@pytest.fixture(autouse=True)
+def offline_llm_by_default(monkeypatch):
+    # A developer's real .env must never turn offline workflow tests into paid API calls.
+    monkeypatch.setenv("KS_LLM_PROVIDER", "deterministic")
+
+
 @pytest.fixture
 def fixture_data(tmp_path):
     directory = make_fixture(tmp_path / "data", rows=90)

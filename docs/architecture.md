@@ -48,4 +48,6 @@ After public feedback arrives, the Planner consumes the Reviewer's discrepancy r
 
 Secrets are environment values or official Kaggle configuration, never state fields. The LLM receives schema and aggregate quality information, not CSV rows. Schema/column names may still be sensitive; use deterministic/local mode for private datasets. LLM output is Pydantic-validated, model names are allowlisted, and proposals cannot alter metrics, budgets or upload authorization. Kaggle read retries are bounded and do not retry permission/quota failures. Writes are single-attempt. Archive paths and extracted sizes are checked.
 
+LLM failures have typed, controlled diagnostics for HTTP errors, network failures, completion envelopes and advice validation. Diagnostics exclude raw response/request bodies, headers, exception strings and invalid field values. They are saved with the planner's decisions and metadata. An explicit `llm-check` command makes one synthetic planning request; ordinary offline workflow tests never use a developer's real provider configuration. See [troubleshooting](llm-troubleshooting.md).
+
 Run this dashboard as a trusted local application. It can display generated HTML and offer local artifact downloads; it has no authentication layer. Joblib checkpoints are Python objects and must only be loaded from trusted local runs.

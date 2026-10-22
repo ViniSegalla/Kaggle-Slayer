@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import yaml
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from kaggle_slayer.schemas import Competition, RunConfig
@@ -16,6 +17,7 @@ class Settings(BaseSettings):
     llm_api_key: str = ""
     llm_model: str = ""
     llm_timeout: int = 30
+    llm_max_tokens: int = Field(default=700, ge=128, le=8192)
 
 
 def read_yaml(path: Path) -> dict:

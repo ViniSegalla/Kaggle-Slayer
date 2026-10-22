@@ -23,7 +23,8 @@ class CompetitionPlanner(Agent):
         )
 
     def plan(self, state):
-        advice, warning = PlannerLLM().advise(
+        llm = PlannerLLM()
+        advice, warning = llm.advise(
             {
                 "task": state.competition.task,
                 "metric": state.competition.metric,
@@ -36,6 +37,18 @@ class CompetitionPlanner(Agent):
         )
         if warning:
             state.warnings.append(warning)
+        if llm.last_diagnostic is not None:
+            diagnostic = llm.last_diagnostic.model_dump(mode="json")
+            state.metadata["llm_diagnostic"] = diagnostic
+            self.log(
+                state,
+                "llm_planning_failed" if warning else "llm_planning_status",
+                "Record safe API status and remediation without request/response bodies or credentials.",
+                "llm.chat_completions",
+                diagnostic,
+                "schedule_baselines",
+                level="warning" if warning else "info",
+            )
         models = list(dict.fromkeys((advice.priorities if advice else []) + state.config.models))
         models = [model for model in models if model in state.config.models]
         # Always establish a simple linear baseline before complex candidates.

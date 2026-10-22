@@ -6,7 +6,7 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .tmp/
-.test-tmp/
+.test-tmp*/
 .env
 .env.*
 !.env.example

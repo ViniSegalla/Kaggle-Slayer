@@ -46,6 +46,32 @@ def doctor(competition: str = "titanic", require_kaggle: bool = False):
         raise typer.Exit(1)
 
 
+@app.command("llm-check")
+def llm_check():
+    """Test one LLM planning request with synthetic context; may use provider credits."""
+    from kaggle_slayer.llm.provider import PlannerLLM
+
+    llm = PlannerLLM()
+    llm.advise(
+        {
+            "task": "classification",
+            "metric": "accuracy",
+            "quality": {
+                "train_rows": 100,
+                "test_rows": 20,
+                "dtypes": {"feature": "float64"},
+                "missing_fraction": {"feature": 0},
+                "warnings": [],
+            },
+            "allowed_models": ["linear", "random_forest", "lightgbm"],
+        }
+    )
+    diagnostic = llm.last_diagnostic
+    emit(diagnostic.model_dump(mode="json"))
+    if diagnostic.status == "failed":
+        raise typer.Exit(1)
+
+
 @app.command()
 def run(
     competition: Annotated[str, typer.Option(help="Kaggle competition slug")],

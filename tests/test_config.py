@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from kaggle_slayer.config import load_config
+from kaggle_slayer.config import Settings, load_config
 from kaggle_slayer.schemas import Competition, RunConfig
 
 
@@ -57,3 +57,9 @@ def test_run_yaml_and_ensemble_budget(tmp_path):
     assert config.ensemble and config.folds == 3 and config.max_experiments == 7
     with pytest.raises(ValidationError, match="at least four"):
         RunConfig(ensemble=True, max_experiments=3)
+
+
+@pytest.mark.parametrize("value", [0, 127, 8193])
+def test_llm_output_budget_is_bounded(value):
+    with pytest.raises(ValidationError):
+        Settings(_env_file=None, llm_max_tokens=value)

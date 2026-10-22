@@ -86,6 +86,16 @@ KS_LLM_MODEL=your-selected-model-id
 
 Providers: `openrouter`, `groq`, `openai-compatible`, `local`, or `deterministic`. For a local compatible server, use `KS_LLM_PROVIDER=local`, `KS_LLM_BASE_URL=http://localhost:11434/v1` and a model installed on that server. No local model download is automatic. Invalid/unavailable structured responses fall back to deterministic planning with a warning. Only schema/quality summaries are sent, though column names may still be sensitive. Suggestions cannot change metrics, budgets or submission authorization.
 
+To test LLM planning without downloading data or training models:
+
+```bash
+uv run python -m kaggle_slayer llm-check
+```
+
+This sends **one** request with synthetic context using the configured provider/model and the same output budget as real planning. `KS_LLM_MAX_TOKENS` defaults to 700 and accepts 128–8192. For reasoning models that exhaust 700 tokens before producing JSON, a value such as 4096 leaves more room for the answer. This is a per-request output limit, not a monetary budget. The check may consume provider credits or free-tier quota. It never retries, changes models, or contacts Kaggle. A failed check exits with code 1; deterministic mode reports `disabled` and makes no request. The ordinary `doctor` command does not test LLM requests.
+
+Failures now identify configuration problems, HTTP authentication/credit/rate-limit errors, unsupported JSON mode, timeouts, invalid JSON, truncated output or planning-schema mismatches. Safe diagnostics include provider/model, HTTP status, a category and corrective action. Model runs save these under `metadata.llm_diagnostic` and in an agent decision, visible in the dashboard. Credentials, response bodies, headers, exception text and failed model-output values are excluded. See [LLM troubleshooting](docs/llm-troubleshooting.md).
+
 ## Kaggle authentication and rules
 
 Use [Kaggle account settings](https://www.kaggle.com/settings) to configure credentials. Supported official configuration includes `KAGGLE_API_TOKEN`, `KAGGLE_USERNAME` plus `KAGGLE_KEY`, or `~/.kaggle/kaggle.json` (`%USERPROFILE%\.kaggle\kaggle.json` on Windows). `KAGGLE_CONFIG_DIR` can point to a separate credential directory. Never commit credentials.
