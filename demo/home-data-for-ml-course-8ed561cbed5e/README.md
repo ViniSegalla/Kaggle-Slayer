@@ -6,20 +6,20 @@ The [offline report](index.html) contains results and evidence links; [metrics.j
 
 ## Verify and display
 
-After installing dependencies with <code>uv sync --locked --extra dev</code>, run from the repository root:
+After installing dependencies with <code>uv sync --extra dev</code>, run from the repository root:
 
 ~~~bash
-uv run --locked python demo/home-data-for-ml-course-8ed561cbed5e/audit.py verify
+uv run python demo/home-data-for-ml-course-8ed561cbed5e/audit.py verify
 ~~~
 
 Start each viewer in a separate terminal:
 
 ~~~bash
-uv run --locked python demo/home-data-for-ml-course-8ed561cbed5e/audit.py serve --port 8766
+uv run python demo/home-data-for-ml-course-8ed561cbed5e/audit.py serve --port 8766
 ~~~
 
 ~~~bash
-uv run --locked python demo/home-data-for-ml-course-8ed561cbed5e/audit.py dashboard --port 8502
+uv run python demo/home-data-for-ml-course-8ed561cbed5e/audit.py dashboard --port 8502
 ~~~
 
 Open [the report](http://localhost:8766) or [the one-run dashboard](http://localhost:8502). These commands inspect saved evidence without training, LLM requests or another upload. The derived SQLite index is rebuilt from the original state and decisions, with paths rebased for the current checkout.
@@ -59,7 +59,7 @@ The completed run was moved from <code>artifacts/runs/</code> into this permanen
 The 70 shareable original files are verified by default. The 7 per-row label outputs (OOF arrays and the original target chart) stay local and Git-ignored. Verify those too when available:
 
 ~~~bash
-uv run --locked python demo/home-data-for-ml-course-8ed561cbed5e/audit.py verify --full
+uv run python demo/home-data-for-ml-course-8ed561cbed5e/audit.py verify --full
 ~~~
 
 Raw input CSVs and credentials are excluded. Original snapshots retain historical paths; only the disposable dashboard database rebases them. The report, checkpoints, receipts, configuration, fingerprints and environment snapshot are available for audit from a checkout. Hash verification and display do not contact Kaggle or the LLM provider.

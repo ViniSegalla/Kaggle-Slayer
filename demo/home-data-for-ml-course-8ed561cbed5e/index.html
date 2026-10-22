@@ -141,9 +141,9 @@
   <section aria-labelledby="verify-title">
     <h2 id="verify-title">Inspect from a fresh checkout</h2>
     <p class="muted">After installing the repository’s locked dependencies, run from its root. Start the report and dashboard in separate terminals:</p>
-    <pre><code>uv run --locked python demo/home-data-for-ml-course-8ed561cbed5e/audit.py verify
-uv run --locked python demo/home-data-for-ml-course-8ed561cbed5e/audit.py serve --port 8766
-uv run --locked python demo/home-data-for-ml-course-8ed561cbed5e/audit.py dashboard --port 8502</code></pre>
+    <pre><code>uv run python demo/home-data-for-ml-course-8ed561cbed5e/audit.py verify
+uv run python demo/home-data-for-ml-course-8ed561cbed5e/audit.py serve --port 8766
+uv run python demo/home-data-for-ml-course-8ed561cbed5e/audit.py dashboard --port 8502</code></pre>
     <p class="footnote">The static report is served at <a href="http://localhost:8766">localhost:8766</a>; the derived dashboard runs at <a href="http://localhost:8502">localhost:8502</a>. The dashboard recreates an ignored database and rebases displayed paths while preserving the original snapshots.</p>
   </section>
 

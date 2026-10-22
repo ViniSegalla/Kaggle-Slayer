@@ -13,8 +13,8 @@ The [Home Data personal-best audit package](demo/home-data-for-ml-course-8ed561c
 After installing dependencies below, verify the evidence and display this run without retraining, LLM requests or another upload:
 
 ```bash
-uv run --locked python demo/home-data-for-ml-course-8ed561cbed5e/audit.py verify
-uv run --locked python demo/home-data-for-ml-course-8ed561cbed5e/audit.py dashboard --port 8502
+uv run python demo/home-data-for-ml-course-8ed561cbed5e/audit.py verify
+uv run python demo/home-data-for-ml-course-8ed561cbed5e/audit.py dashboard --port 8502
 ```
 
 Open [the recorded-run dashboard](http://localhost:8502), or read the [offline audit report](demo/home-data-for-ml-course-8ed561cbed5e/index.html). The one-run dashboard rebuilds its local SQLite index from the archived evidence and selects this run automatically. Original run files have SHA-256 checksums and remain unchanged. All six model experiments completed. The saved account standing is **304 / 3,876 teams (top 7.84%)**, scoped to `current_account_best`; account rank and this submission's public score remain separate records.
@@ -23,9 +23,9 @@ Open [the recorded-run dashboard](http://localhost:8502), or read the [offline a
 
 ```bash
 # Configure the existing KS_LLM_PROVIDER, KS_LLM_MODEL and KS_LLM_API_KEY first.
-uv run --locked python -m kaggle_slayer run --competition titanic
+uv run kaggle-slayer run --competition titanic
 # Offline demonstration: fake LLM responses, real model training and validated predictions.
-uv run --locked python -m examples.scripted_swarm --output artifacts/swarm-example
+uv run python -m examples.scripted_swarm --output artifacts/swarm-example
 ```
 
 The coordinator delegates to data/validation, pipeline/modeling, evaluation, and submission specialists as needed. Agents select supported preprocessing, feature operations, model parameters, trials, ensembles and stopping through validated action/tool contracts. Independent LLM tasks and experiments can run concurrently; a single scheduler reserves resources and commits evidence. Provider failures checkpoint an explicit incomplete outcome.
@@ -89,15 +89,15 @@ Install [uv](https://docs.astral.sh/uv/getting-started/installation/), open this
 ```bash
 uv python install 3.11
 uv python pin 3.11
-uv sync --locked --extra dev
-uv run --locked python -m kaggle_slayer doctor
+uv sync --extra dev
+uv run kaggle-slayer doctor
 ```
 
-CatBoost and XGBoost are included in the standard installation; no boosting extra is needed. Run `uv sync --locked --extra dev` after updating an existing checkout. The old `boosting` extra is retained as an empty compatibility alias.
+CatBoost and XGBoost are included in the standard installation; no boosting extra is needed. Run `uv sync --extra dev` after updating an existing checkout. The old `boosting` extra is retained as an empty compatibility alias.
 
 Copy `.env.example` to `.env` using your editor. The template selects OpenRouter. Replace the model and API-key placeholders with your own configuration before starting a live agentic run. Existing working `.env` files can be kept as they are.
 
-Secrets, datasets, virtual environments and generated runs are ignored by Git. `uv.lock` records core and development dependencies. Use `uv run --locked` to preserve that dependency resolution. See [reproducibility](docs/reproducibility.md) for restricted Windows environments and lockfile policy.
+Secrets, datasets, virtual environments and generated runs are ignored by Git. `uv.lock` records core and development dependencies. `uv run` synchronizes the environment and may update the lockfile if project metadata has changed. See [reproducibility](docs/reproducibility.md) for restricted Windows environments and lockfile policy.
 
 ## Live execution logging
 
@@ -126,36 +126,28 @@ Use [Kaggle account settings](https://www.kaggle.com/settings) to configure cred
 Open the competition website and manually accept its rules if required. Some competitions restrict eligibility or require notebook execution; this runner does not bypass those restrictions. The server enforces account quotas. KaggleSlayer permits at most one attempted upload per run and never retries an uncertain upload.
 
 ```bash
-uv run --locked python -m kaggle_slayer doctor --competition titanic --require-kaggle
+uv run kaggle-slayer doctor --competition titanic --require-kaggle
 ```
 
 The authenticated check must succeed before an official run can download data. Local CSV execution remains available with `--data-dir`.
 
 ## Run a competition
 
+Replace `competition-name` with the competition slug from its Kaggle URL.
+
 ```bash
-# Agentic default: configure the LLM first; agents choose work within the budget.
-uv run --locked python -m kaggle_slayer run --competition titanic
+# Train and validate without submitting.
+uv run kaggle-slayer run --competition competition-name --no-submit
 
-# Explicitly authorize one upload after training and validation.
-uv run --locked python -m kaggle_slayer run --competition titanic --submit
-
-# Explicit row-limit override for a supported tabular competition.
-uv run --locked python -m kaggle_slayer run --competition playground-series-s6e10 --max-rows 4000000 --no-submit
-
-# Use official files already downloaded locally.
-uv run --locked python -m kaggle_slayer run --competition titanic --data-dir data/titanic --no-submit
-
-# Switch task and metric using the included profile.
-uv run --locked python -m kaggle_slayer run --competition house-prices-advanced-regression-techniques --no-submit
-
+# Train, validate, and submit to Kaggle.
+uv run kaggle-slayer run --competition competition-name --submit
 ```
 
 `--max-dense-cells` overrides the default 40-million encoded-cell memory guard. This estimates preprocessing size rather than enforcing an OS memory limit. Dataset row, memory and unresolved-metric failures stop agentic runs with a specific error and corrective option, instead of spending more LLM requests on unchanged constraints. Set a new limit or profile when starting a new run; saved constraints remain immutable.
 
 Source-data size is checked during inspection; candidate-specific encoding, missing indicators and derived features are checked before reserving an experiment and again in the worker. CatBoost uses native feature counts, while ensembles check each member's preprocessing. A candidate rejected before training does not consume an agentic experiment slot and returns the reason and size counts for correction.
 
-Use `uv run --locked python -m kaggle_slayer run --help` for flags. `--profile path.yaml` supplies competition schema/metric overrides; `--config path.yaml` supplies run budgets and model choices. CLI values take precedence. `--max-rows` overrides the default one-million-row CSV limit; file-size and memory limits still apply.
+Use `--help` to see all run flags. `--profile path.yaml` supplies competition schema/metric overrides; `--config path.yaml` supplies run budgets and model choices. CLI values take precedence. `--max-rows` overrides the default one-million-row CSV limit; file-size and memory limits still apply.
 
 | Setting | Agentic default |
 |---|---|
@@ -199,11 +191,11 @@ The runner infers a single train-only target and template identifier when unambi
 Replace `RUN_ID` with the ID from an actual run:
 
 ```bash
-uv run --locked python -m kaggle_slayer runs
-uv run --locked python -m kaggle_slayer inspect RUN_ID
-uv run --locked python -m kaggle_slayer resume RUN_ID
-uv run --locked python -m kaggle_slayer submit RUN_ID
-uv run --locked python -m kaggle_slayer refresh RUN_ID
+uv run kaggle-slayer runs
+uv run kaggle-slayer inspect RUN_ID
+uv run kaggle-slayer resume RUN_ID
+uv run kaggle-slayer submit RUN_ID
+uv run kaggle-slayer refresh RUN_ID
 ```
 
 `submit RUN_ID` explicitly authorizes one upload of a completed run's validated CSV. It verifies file integrity and refuses fixture/public-demo data or a second attempt. Resume verifies dataset fingerprints and reuses completed experiments; submission permission must be supplied again with `resume --submit`. A completed resume is a no-op; use `submit` to upload a completed no-submit run. `refresh` only reads feedback.
@@ -211,7 +203,7 @@ uv run --locked python -m kaggle_slayer refresh RUN_ID
 ## Dashboard
 
 ```bash
-uv run --locked streamlit run dashboard/app.py
+uv run streamlit run dashboard/app.py
 ```
 
 Open [localhost:8501](http://localhost:8501). Overview, Agent Activity, Experiments, Competition Performance and Artifacts read the actual SQLite store. Select a run, inspect decisions, compare models, view EDA and download predictions. Enable automatic refresh during training. `KS_ARTIFACT_ROOT` or the sidebar selects another artifact directory. This is a trusted local console, without hosted authentication.
@@ -221,8 +213,8 @@ Open [localhost:8501](http://localhost:8501). Overview, Agent Activity, Experime
 For offline integration checks, scripted agent responses exercise real model training and prediction validation without provider credentials:
 
 ```bash
-uv run --locked python -m examples.scripted_swarm --output artifacts/swarm-example
-uv run --locked python -m examples.scripted_swarm --task regression --output artifacts/swarm-regression
+uv run python -m examples.scripted_swarm --output artifacts/swarm-example
+uv run python -m examples.scripted_swarm --task regression --output artifacts/swarm-regression
 ```
 
 These examples use synthetic data and fake LLM responses. See [offline baselines and development workflows](docs/offline-baselines.md) for additional test scenarios.
@@ -238,9 +230,9 @@ The saved account standing is **304 / 3,876 teams (top 7.84%)**, scoped to `curr
 ## Tests and code quality
 
 ```bash
-uv run --locked pytest
-uv run --locked ruff check src tests dashboard scripts examples
-uv run --locked ruff format --check src tests dashboard scripts examples
+uv run pytest
+uv run ruff check src tests dashboard scripts examples
+uv run ruff format --check src tests dashboard scripts examples
 ```
 
 Tests cover configuration, state/recovery, fold-fit transforms, split integrity, metrics/direction, submission formats, mocked Kaggle operations, upload safety, provider fallback, all default model families and Streamlit rendering. Default tests never need live Kaggle credentials. CatBoost and XGBoost training tests are required and do not skip. [Test evidence](evidence/README.md) reports historical results; supplied GitHub Actions have not been executed remotely in this build.
@@ -260,7 +252,7 @@ The README, source/configuration, technical documentation, demonstration command
 ```bash
 uv add pandas
 uv add --optional dev pytest
-uv sync --locked --extra dev
+uv sync --extra dev
 uv lock --upgrade
 ```
 

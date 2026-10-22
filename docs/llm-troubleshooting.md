@@ -1,6 +1,6 @@
 # LLM diagnostics and OpenRouter troubleshooting
 
-Run `uv run python -m kaggle_slayer llm-check` before a full competition run. This explicitly makes one chat-completion request with synthetic schema/quality information, the configured model, network timeout and output-token budget. `KS_LLM_MAX_TOKENS` defaults to 700 and is validated between 128 and 32768. The check never trains, submits to Kaggle, changes model/provider, or retries. It may consume credits/free-tier quota. Deterministic mode does not call a provider.
+Configure `KS_LLM_PROVIDER`, `KS_LLM_MODEL` and the endpoint's credentials in `.env`, then run `uv run kaggle-slayer llm-check` before a full competition run. This explicitly makes one chat-completion request with synthetic schema/quality information, the configured model, network timeout and output-token budget. `KS_LLM_MAX_TOKENS` has a code default of 700; `.env.example` sets 32768, the maximum allowed value. Choose an allowance supported by your endpoint. The check never trains, submits to Kaggle, changes model/provider, or retries. It may consume credits/free-tier quota. The `deterministic` provider makes no request; deterministic execution mode can still request optional legacy advice when a live provider is configured.
 
 Success reports `status=success`, `code=ok`, `request_attempts=1` and HTTP status 200. Failure reports `status=failed`, exits nonzero, and includes a controlled explanation/action. A deterministic-mode run retains its fixed policy when initial advice fails; agentic mode checkpoints an incomplete outcome. The diagnostic is persisted in `metadata.llm_diagnostic`, SQLite/JSONL agent activity and the state snapshot; the existing warning also becomes specific.
 
@@ -95,7 +95,8 @@ Earlier runs that only stored the generic warning cannot reveal the original HTT
 Offline tests use HTTPX mock transports, synthetic contexts and fake keys. The test suite forces deterministic planning by default so a developer's real `.env` cannot turn workflow tests into paid API calls. Live provider checks are manual and explicit.
 # Agentic sessions
 
-Use `--execution-mode agentic` or `configs/agentic.yaml` to enable the action loop.
+The CLI selects `configs/agentic.yaml` and the action loop when `--config` is omitted.
+With a custom config, set `execution_mode: agentic` or pass `--execution-mode agentic`.
 The existing `llm-check` probes the legacy advice protocol; it is an endpoint diagnostic,
 not a full swarm integration test. In agentic mode, inspect `swarm.usage`, `swarm.actions`
 and `swarm.termination_reason`. Provider failure ends with an incomplete checkpoint;

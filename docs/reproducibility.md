@@ -5,15 +5,15 @@ Install uv using the [official installation instructions](https://docs.astral.sh
 ```bash
 uv python install
 uv python pin 3.11
-uv sync --locked --extra dev
-uv run --locked pytest
-uv run --locked python -m examples.scripted_swarm --output artifacts/swarm-example
-uv run --locked python -m examples.scripted_swarm --task regression --output artifacts/swarm-regression
+uv sync --extra dev
+uv run pytest
+uv run python -m examples.scripted_swarm --output artifacts/swarm-example
+uv run python -m examples.scripted_swarm --task regression --output artifacts/swarm-regression
 ```
 
 These integration examples use scripted agent responses and real training, without provider credentials or network requests. For deterministic baselines and the legacy development scripts, see [offline baselines](offline-baselines.md); those workflows require an explicit provider override when `.env` is configured for live agentic execution.
 
-`uv sync --locked` verifies that the lock agrees with project metadata and installs that resolution. `--frozen` skips the consistency check. This repository uses `--locked` in CI to enforce consistency. `uv run` also synchronizes the environment; add `--locked` for repeatable execution.
+`uv sync` installs dependencies using `uv.lock` and may update the lockfile if project metadata has changed. `uv run` also synchronizes the environment. Review and commit intentional lockfile changes. CI uses the same plain `uv sync` and `uv run` commands as the local workflow.
 
 Maintain dependencies with `uv add pandas`, `uv add --optional dev pytest`, and `uv lock --upgrade`. The project uses the `dev` optional extra consistently rather than mixing development groups and extras. Commit changes to both project metadata and the lockfile. XGBoost and CatBoost are core dependencies, included in ordinary syncs and CI. The empty `boosting` extra preserves compatibility with older setup commands.
 
@@ -27,8 +27,8 @@ $env:UV_PYTHON_INSTALL_DIR = Join-Path $PWD '.uv-python'
 $env:TEMP = Join-Path $PWD '.tmp'
 $env:TMP = $env:TEMP
 New-Item -ItemType Directory -Force -Path $env:TEMP | Out-Null
-uv sync --locked --extra dev
-uv run --locked pytest --basetemp=.test-tmp
+uv sync --extra dev
+uv run pytest --basetemp=.test-tmp
 ```
 
 These paths are ignored by Git and Ruff. Source checks explicitly target `src tests dashboard scripts examples` so dependency runtimes are never linted or formatted.

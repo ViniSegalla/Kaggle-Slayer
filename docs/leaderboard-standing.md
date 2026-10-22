@@ -18,7 +18,7 @@ Failure to retrieve standing does not discard successfully retrieved scores.
 Update an existing submitted run, without uploading again:
 
 ```powershell
-uv run python -m kaggle_slayer refresh YOUR_RUN_ID
+uv run kaggle-slayer refresh YOUR_RUN_ID
 uv run streamlit run dashboard/app.py
 ```
 

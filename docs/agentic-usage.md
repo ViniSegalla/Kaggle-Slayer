@@ -6,14 +6,20 @@ is supplied. Library defaults and old saved runs retain deterministic compatibil
 `agentic` requires valid LLM actions throughout the run; it checkpoints an
 incomplete outcome on provider failure. It never runs the legacy search as a fallback.
 
+From the repository root, copy `.env.example` to `.env` and set `KS_LLM_PROVIDER`,
+`KS_LLM_MODEL` and `KS_LLM_API_KEY` for your endpoint. A local compatible server also
+needs `KS_LLM_BASE_URL` and an installed model; follow its authentication requirements.
+Official downloads require Kaggle credentials and accepted competition rules. For local
+CSV input, provide existing files in `--data-dir`; this does not disable LLM requests.
+
 ```bash
-uv sync --locked --extra dev
-# Configure KS_LLM_PROVIDER / KS_LLM_MODEL / KS_LLM_API_KEY in .env first.
-uv run python -m kaggle_slayer run --competition titanic --data-dir data/titanic
-# Or select the mode explicitly.
-uv run python -m kaggle_slayer run --competition titanic --execution-mode agentic --no-submit
-uv run python -m kaggle_slayer inspect RUN_ID
-uv run python -m kaggle_slayer resume RUN_ID
+uv sync --extra dev
+# Configure .env and Kaggle credentials first; replace competition-name with its slug.
+uv run kaggle-slayer run --competition competition-name --no-submit
+# A custom config must declare agentic mode or use the explicit override.
+uv run kaggle-slayer run --competition competition-name --config configs/agentic.yaml --execution-mode agentic --no-submit
+uv run kaggle-slayer inspect RUN_ID
+uv run kaggle-slayer resume RUN_ID
 ```
 
 All roles use the configured endpoint/model. `KS_LLM_NATIVE_TOOLS=true` selects native

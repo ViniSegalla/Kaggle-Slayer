@@ -6,7 +6,7 @@ The provider and execution mode are independent. Set both explicitly for offline
 
 ```powershell
 $env:KS_LLM_PROVIDER = 'deterministic'
-uv run --locked python -m kaggle_slayer run --competition titanic --data-dir data/titanic --execution-mode deterministic --no-submit
+uv run kaggle-slayer run --competition titanic --data-dir data/titanic --execution-mode deterministic --no-submit
 ```
 
 Start a fresh shell afterward to return to the provider configured in `.env`, or remove the shell override. Changing the provider alone does not change execution mode. The library settings retain a deterministic default for compatibility; the `.env.example` template selects OpenRouter for the normal agentic setup.
@@ -17,7 +17,7 @@ Start a fresh shell afterward to return to the provider configured in `.env`, or
 
 ```bash
 # With KS_LLM_PROVIDER=deterministic in .env and existing local CSVs:
-uv run --locked python -m kaggle_slayer run --competition titanic --data-dir data/titanic --execution-mode deterministic --no-submit
+uv run kaggle-slayer run --competition titanic --data-dir data/titanic --execution-mode deterministic --no-submit
 ```
 
 To configure an endpoint in `.env`:
@@ -35,7 +35,7 @@ The versioned [initial planner prompt](../src/kaggle_slayer/llm/prompts.py) belo
 To test one provider request using the legacy planning schema, without downloading data or training models:
 
 ```bash
-uv run --locked python -m kaggle_slayer llm-check
+uv run kaggle-slayer llm-check
 ```
 
 This sends **one** request with synthetic context using the configured provider/model and output budget. It checks provider connectivity and legacy advice parsing; it does not demonstrate the full agentic action protocol or workflow. `KS_LLM_MAX_TOKENS` accepts 128–32768: the code default is 700, while the supplied `.env.example` overrides it to 32768. Choose a value supported by your endpoint and within the run's aggregate budget. This is a per-request output limit, not a monetary budget. The check may consume provider credits or free-tier quota. It never retries, changes models, or contacts Kaggle. A failed check exits with code 1; a deterministic provider reports `disabled` and makes no request. The ordinary `doctor` command does not test LLM requests.
@@ -67,22 +67,23 @@ With official Home Data CSVs already downloaded and competition rules accepted, 
 
 ```powershell
 $env:KS_LLM_PROVIDER = 'deterministic'
-uv run --locked python -m kaggle_slayer run --competition home-data-for-ml-course --data-dir data/home-data-for-ml-course --execution-mode deterministic --no-submit
+uv run kaggle-slayer run --competition home-data-for-ml-course --data-dir data/home-data-for-ml-course --execution-mode deterministic --no-submit
 ```
 
 The bundled profile supplies the target and MAE metric. New results and model checkpoints remain under the ignored local artifact directory.
 
 ## Development datasets and demonstrations
 
-These scripts select deterministic execution directly. Keep `KS_LLM_PROVIDER=deterministic` in `.env` to disable their optional legacy LLM advice request; a configured remote provider can otherwise make a request even in deterministic execution.
+These scripts select deterministic execution directly. Set the provider override in the current PowerShell session to disable their optional legacy LLM advice request; a configured remote provider can otherwise make a request even in deterministic execution.
 
-```bash
-# Offline synthetic examples with KS_LLM_PROVIDER=deterministic.
-uv run --locked python scripts/demo.py
-uv run --locked python scripts/demo.py --task regression
+```powershell
+$env:KS_LLM_PROVIDER = 'deterministic'
+# Offline synthetic examples.
+uv run python scripts/demo.py
+uv run python scripts/demo.py --task regression
 
 # Real public observations; public internet, no Kaggle credentials.
-uv run --locked python scripts/public_titanic_demo.py
+uv run python scripts/public_titanic_demo.py
 ```
 
 The public demo downloads from the [seaborn example data repository](https://github.com/mwaskom/seaborn-data), creates a local stratified 80/20 holdout and evaluates it once after selection. It records the downloaded source hash but currently uses a mutable `master` URL rather than a pinned revision or expected hash. Future downloads may therefore differ from the historical evidence. **This is not an official Kaggle download, test set, submission or leaderboard result.** Demo data is marked in `provenance.json` and prohibited from upload.
