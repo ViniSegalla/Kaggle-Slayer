@@ -49,7 +49,8 @@ def test_specialist_schema_repair_reaches_real_training(tmp_path):
         "data-inspect_dataset" in provider.repairs[0]["evidence"]
         or provider.repairs[0]["observations"]
     )
-    assert result.swarm["invalid_actions"] == 1
+    assert result.swarm["invalid_actions"] == 0
+    assert result.swarm["schema_repairs"] == 1
     assert not result.swarm["tasks"]["data"]["repair_pending"]
 
 

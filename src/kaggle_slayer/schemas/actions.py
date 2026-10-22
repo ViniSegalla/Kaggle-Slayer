@@ -117,6 +117,7 @@ class Task(Schema):
     repair_pending: bool = False
     repair_attempts: int = 0
     repair_issues: list[str] = Field(default_factory=list)
+    action_aliases: dict[str, str] = Field(default_factory=dict)
 
 
 class ActionRecord(Schema):
@@ -139,6 +140,8 @@ class SwarmState(Schema):
     tokens: int = 0
     turns: int = 0
     invalid_actions: int = 0
+    schema_repairs: int = 0
+    counter_version: int = 1
     experiment_attempts: int = 0
     tuning_attempts: int = 0
     signatures: dict[str, int] = Field(default_factory=dict)

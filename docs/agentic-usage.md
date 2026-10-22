@@ -26,11 +26,22 @@ Failed requests consume reservations. There are no transport retries.
 Malformed JSON or action-schema failures get at most two correction turns in the same
 task. Safe allowlisted field paths/error types and the expected envelope are supplied
 to that agent; rejected responses execute no actions. Repair turns consume the normal
-request/token/turn/time and invalid-action limits, and pending repairs survive resume.
+request/token/turn/time limits and are counted separately as `schema_repairs`;
+permission/tool-contract violations consume `invalid_actions`. A valid response resets
+the task's consecutive repair allowance. Pending repairs survive resume.
 Exhaustion reports `llm_schema_repair_exhausted`. Provider errors stop without transport
 retries and use specific reasons such as `llm_rate_limit` or `llm_invalid_request`.
 CLI results include the safe `llm_diagnostic` (including field errors when available).
 An incomplete run exits with code 2 without printing a misleading `Error: 2` message.
+
+Action IDs are stable within each task. The runtime assigns a persisted opaque alias
+when independent agents choose the same ID, and rewrites local dependencies, evidence
+and typed artifact references consistently. Agents receive `action_aliases` and their
+`owned_actions` on subsequent turns. An ID reused with changed arguments or a changed
+delegation goal requires a corrected response with a fresh ID; it never replaces the
+old work. Updated summaries alone deduplicate. Existing checkpoint action/artifact IDs
+are preserved. Older checkpoints reclassify recorded schema failures out of their
+invalid-action counter once, without increasing any configured resource limit.
 
 Competition profiles provide metric, target/schema overrides, prediction format and
 structural validation columns. A metric is required from configuration or official

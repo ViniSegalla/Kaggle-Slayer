@@ -105,6 +105,8 @@ def console():
                         "requests_used": swarm.get("requests"),
                         "tokens_charged": swarm.get("tokens"),
                         "turns_used": swarm.get("turns"),
+                        "schema_repairs": swarm.get("schema_repairs", 0),
+                        "invalid_actions": swarm.get("invalid_actions", 0),
                         "experiments_reserved": swarm.get("experiment_attempts"),
                         "limits": {
                             k: state["config"].get(k)

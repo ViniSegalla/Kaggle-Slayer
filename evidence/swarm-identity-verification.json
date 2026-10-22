@@ -1,0 +1,27 @@
+{
+  "tests": 190,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "seconds": 282.39,
+  "lint": "passed",
+  "format": "passed",
+  "live_provider_calls": false,
+  "kaggle_calls": false,
+  "command": "uv run --locked pytest -q --timeout=300 --junitxml=artifacts/swarm-identities-full-tests.xml",
+  "coverage": [
+    "task-local IDs with real classification/regression training and validated predictions",
+    "batch dependency and artifact reference aliasing",
+    "same-ID changed contracts require bounded repair without partial acceptance",
+    "separate schema repair and invalid-action counters",
+    "one-time recorded-error reclassification on resume",
+    "existing leakage, resource, provenance, authorization and ambiguous-upload coverage"
+  ],
+  "checkpoint_check": {
+    "run_id": "titanic-d8b1a2f629e2",
+    "read_only": true,
+    "old_invalid_actions": 4,
+    "invalid_actions_after_compatibility": 2,
+    "schema_repairs": 2
+  }
+}

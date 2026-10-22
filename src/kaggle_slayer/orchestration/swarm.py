@@ -55,6 +55,19 @@ class SwarmRuntime:
         self.provider = provider or ActionLLM()
         self.settings = getattr(self.provider, "settings", Settings())
         self.session = SwarmState.model_validate(state.swarm)
+        if self.session.counter_version == 1:
+            # Old checkpoints charged formatting failures to the invalid-action cap.
+            # Reclassify only recorded failures; retain permissions/contract violations.
+            formats = max(
+                sum(o.get("code") == "response_repair_required" for o in self.session.observations),
+                sum(
+                    u.get("code") in {"schema_mismatch", "invalid_advice_json"}
+                    for u in self.session.usage
+                ),
+            )
+            self.session.schema_repairs += formats
+            self.session.invalid_actions = max(0, self.session.invalid_actions - formats)
+            self.session.counter_version = 2
         self.dispatcher = Dispatcher(self)
         self.directory = self.store.run_dir(state.run_id)
         self.data = None
@@ -174,6 +187,18 @@ class SwarmRuntime:
             "session_id": session.session_id,
             "task_id": task.id,
             "role": task.role,
+            "action_aliases": task.action_aliases,
+            "owned_actions": [
+                {
+                    "id": ref,
+                    "kind": record.action.kind,
+                    "status": record.status,
+                    "tool": getattr(record.action, "tool", None),
+                    "task": getattr(record.action, "task", None),
+                }
+                for ref, record in session.actions.items()
+                if record.task_id == task.id
+            ][-32:],
             "response_repair": {
                 "attempt": task.repair_attempts,
                 "issues": task.repair_issues,
@@ -410,8 +435,15 @@ class SwarmRuntime:
         except ValueError:
             self.request_repair(task, ["response: invalid_json"])
             return
+        try:
+            actions = self.scope_actions(task, response.actions)
+        except ToolError:
+            self.request_repair(
+                task, ["actions.action_id: reused_with_different_contract; use a fresh local ID"]
+            )
+            return
         task.repair_pending, task.repair_attempts, task.repair_issues = False, 0, []
-        for action in response.actions:
+        for action in actions:
             try:
                 self.accept(task, action)
             except ToolError as exc:
@@ -424,7 +456,7 @@ class SwarmRuntime:
         task.repair_pending = True
         task.repair_attempts += 1
         task.repair_issues = issues[:6]
-        self.session.invalid_actions += 1
+        self.session.schema_repairs += 1
         self.observe(
             task.id,
             "response_repair_required",
@@ -446,8 +478,54 @@ class SwarmRuntime:
         self.checkpoint()
         if task.repair_attempts > 2:
             raise StopRun("llm_schema_repair_exhausted")
-        if self.session.invalid_actions >= self.state.config.max_invalid_actions:
-            raise StopRun("invalid_action_limit")
+
+    @staticmethod
+    def action_contract(action):
+        # Wording/context updates do not make an already accepted operation new work.
+        return action.model_dump(exclude={"summary", "evidence"})
+
+    def scope_actions(self, task, actions):
+        aliases = task.action_aliases.copy()
+        if len({a.action_id for a in actions}) != len(actions):
+            raise ToolError("duplicate_batch_id")
+        for action in actions:
+            local = action.action_id
+            if local in aliases:
+                continue
+            existing = self.session.actions.get(local)
+            if (existing and existing.task_id != task.id) or (
+                local in self.session.tasks and not existing
+            ):
+                aliases[local] = "a-" + digest({"task": task.id, "id": local})[:32]
+            else:
+                aliases[local] = local
+        scoped = []
+        for action in actions:
+            value = action.model_dump()
+            value["action_id"] = aliases[action.action_id]
+            for field in ("depends_on", "evidence"):
+                value[field] = [aliases.get(ref, ref) for ref in value[field]]
+            if action.kind == "tool":
+                arguments = value["arguments"].copy()
+                for key in ("pipeline_ref", "parent_ref"):
+                    if key in arguments and isinstance(arguments[key], str):
+                        arguments[key] = aliases.get(arguments[key], arguments[key])
+                if isinstance(arguments.get("members"), list):
+                    arguments["members"] = [
+                        aliases.get(ref, ref) if isinstance(ref, str) else ref
+                        for ref in arguments["members"]
+                    ]
+                value["arguments"] = arguments
+            normalized = type(action).model_validate(value)
+            old = self.session.actions.get(normalized.action_id)
+            if old and (
+                old.task_id != task.id
+                or self.action_contract(old.action) != self.action_contract(normalized)
+            ):
+                raise ToolError("action_id_collision")
+            scoped.append(normalized)
+        task.action_aliases = aliases
+        return scoped
 
     def invalid(self, task, code, action_id=None):
         self.session.invalid_actions += 1
@@ -466,7 +544,9 @@ class SwarmRuntime:
         session = self.session
         old = session.actions.get(action.action_id)
         if old:
-            if old.task_id == task.id and old.action == action:
+            if old.task_id == task.id and self.action_contract(old.action) == self.action_contract(
+                action
+            ):
                 self.observe(task.id, "deduplicated", action_id=action.action_id, result=old.result)
                 signature = "duplicate-" + action.action_id
                 session.signatures[signature] = session.signatures.get(signature, 0) + 1
@@ -912,6 +992,8 @@ class SwarmRuntime:
                     "tokens_charged": self.session.tokens,
                     "experiment_attempts": self.session.experiment_attempts,
                     "turns": self.session.turns,
+                    "schema_repairs": self.session.schema_repairs,
+                    "invalid_actions": self.session.invalid_actions,
                     "elapsed_seconds": s.elapsed_seconds,
                 },
                 "provider_usage": self.session.usage,
@@ -927,6 +1009,7 @@ class SwarmRuntime:
 def new_session(run_id):
     return SwarmState(
         session_id=run_id,
+        counter_version=2,
         tasks={
             "coordinator": Task(
                 id="coordinator",
