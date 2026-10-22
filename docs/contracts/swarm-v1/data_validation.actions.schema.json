@@ -1,0 +1,224 @@
+{
+  "$defs": {
+    "FinishAction": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "finish",
+          "title": "Kind",
+          "type": "string"
+        },
+        "action_id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Action Id",
+          "type": "string"
+        },
+        "recipient": {
+          "const": "runtime",
+          "default": "runtime",
+          "title": "Recipient",
+          "type": "string"
+        },
+        "depends_on": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Depends On",
+          "type": "array"
+        },
+        "evidence": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "summary": {
+          "maxLength": 400,
+          "title": "Summary",
+          "type": "string"
+        },
+        "outcome": {
+          "default": "complete",
+          "enum": [
+            "complete",
+            "incomplete"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "action_id",
+        "summary"
+      ],
+      "title": "FinishAction",
+      "type": "object"
+    },
+    "ToolAction": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "tool",
+          "title": "Kind",
+          "type": "string"
+        },
+        "action_id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Action Id",
+          "type": "string"
+        },
+        "recipient": {
+          "const": "runtime",
+          "default": "runtime",
+          "title": "Recipient",
+          "type": "string"
+        },
+        "tool": {
+          "maxLength": 64,
+          "title": "Tool",
+          "type": "string",
+          "enum": [
+            "inspect_dataset",
+            "configure_validation"
+          ]
+        },
+        "arguments": {
+          "additionalProperties": true,
+          "title": "Arguments",
+          "type": "object"
+        },
+        "depends_on": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Depends On",
+          "type": "array"
+        },
+        "evidence": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "summary": {
+          "maxLength": 400,
+          "title": "Summary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "action_id",
+        "tool",
+        "summary"
+      ],
+      "title": "ToolAction",
+      "type": "object"
+    },
+    "WaitAction": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "wait",
+          "title": "Kind",
+          "type": "string"
+        },
+        "action_id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Action Id",
+          "type": "string"
+        },
+        "recipient": {
+          "const": "runtime",
+          "default": "runtime",
+          "title": "Recipient",
+          "type": "string"
+        },
+        "depends_on": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "type": "string"
+          },
+          "maxItems": 16,
+          "minItems": 1,
+          "title": "Depends On",
+          "type": "array"
+        },
+        "evidence": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "summary": {
+          "maxLength": 400,
+          "title": "Summary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "action_id",
+        "depends_on",
+        "summary"
+      ],
+      "title": "WaitAction",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "const": "swarm-v1",
+      "title": "Version",
+      "type": "string"
+    },
+    "actions": {
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "finish": "#/$defs/FinishAction",
+            "tool": "#/$defs/ToolAction",
+            "wait": "#/$defs/WaitAction"
+          },
+          "propertyName": "kind"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/ToolAction"
+          },
+          {
+            "$ref": "#/$defs/WaitAction"
+          },
+          {
+            "$ref": "#/$defs/FinishAction"
+          }
+        ]
+      },
+      "maxItems": 8,
+      "minItems": 1,
+      "title": "Actions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "version",
+    "actions"
+  ],
+  "title": "AgentResponse",
+  "type": "object"
+}

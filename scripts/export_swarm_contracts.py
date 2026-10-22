@@ -3,7 +3,7 @@
 import argparse
 from pathlib import Path
 
-from kaggle_slayer.agents.swarm import ROLE_PROMPTS, role_prompt
+from kaggle_slayer.agents.swarm import ROLE_PROMPTS, role_prompt, role_response_schema
 from kaggle_slayer.schemas.actions import VERSION, AgentResponse
 from kaggle_slayer.storage.store import write_json
 from kaggle_slayer.tools.swarm_tools import BOUNDS, CAPABILITIES
@@ -31,6 +31,7 @@ def main():
         },
     )
     for role in ROLE_PROMPTS:
+        write_json(args.output / f"{role}.actions.schema.json", role_response_schema(role))
         (args.output / f"{role}.txt").write_text(role_prompt(role), encoding="utf-8")
 
 

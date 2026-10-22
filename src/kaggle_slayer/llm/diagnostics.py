@@ -88,6 +88,14 @@ def action_validation_issues(error: ValidationError) -> list[str]:
                 parts.append("field")
         code = issue["type"] if re.fullmatch(r"[a-z_]+", issue["type"]) else "invalid"
         issues.append(f"{'.'.join(parts) or 'response'}: {code}")
+        if code in {"union_tag_invalid", "union_tag_not_found"}:
+            issues[-1] += (
+                "; every action requires kind with exactly one of: tool, delegate, wait, finish. "
+                "To invoke a capability, use kind=tool, recipient=runtime and put its listed "
+                "name in tool, with typed arguments. To report completion, use kind=finish, "
+                "recipient=runtime, summary=<brief evidence-backed report>, "
+                "outcome=complete or incomplete. Tool/report names are not kind values"
+            )
         if code == "literal_error" and parts[-2:] == ["delegate", "recipient"]:
             issues[-1] += (
                 "; delegate recipients are agent roles: data_validation, pipeline_modeling, "

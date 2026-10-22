@@ -1,0 +1,55 @@
+{
+  "tests": 248,
+  "failures": 0,
+  "errors": 0,
+  "seconds": 349.349,
+  "lint": "passed",
+  "format": "passed",
+  "live_provider_calls_during_verification": false,
+  "kaggle_calls_during_verification": false,
+  "junit": "artifacts/swarm-submission-protocol-verified-tests.xml",
+  "coverage": [
+    "safe actionable unknown/missing action-kind diagnostics",
+    "per-role kinds, tool enums and delegate recipients in JSON/native schemas",
+    "submission validation and report-kind repair through real classification/regression workers",
+    "unknown submit kind rejected even when upload is authorized",
+    "resume after exhausted submission repair without retraining",
+    "existing metric/leakage/provenance/ambiguous-upload protections"
+  ],
+  "offline_runs": [
+    {
+      "run_id": "agentic-fixture-fe5a4fedde82",
+      "task": "classification",
+      "status": "completed",
+      "schema_repairs": 2,
+      "experiments": [
+        {
+          "id": "model-run_experiment",
+          "model": "linear",
+          "score": 0.7333333333333334,
+          "lineage": "b728e67f3cae7d364227"
+        }
+      ],
+      "predictions_validated": true,
+      "submission_sha256": "94262798146c27e030996c4227a1c77488e7a8249a2863a9b1727a09b7fb3a0e",
+      "uploads": 0
+    },
+    {
+      "run_id": "agentic-fixture-720853db7104",
+      "task": "regression",
+      "status": "completed",
+      "schema_repairs": 2,
+      "experiments": [
+        {
+          "id": "model-run_experiment",
+          "model": "linear",
+          "score": 17565.177366389526,
+          "lineage": "ce5cd170117454b12387"
+        }
+      ],
+      "predictions_validated": true,
+      "submission_sha256": "40c9e53a14ff966101dec9e7258e6ac6bba9d059c32e6b342de4369aed5d6f7e",
+      "uploads": 0
+    }
+  ]
+}

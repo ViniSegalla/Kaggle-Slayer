@@ -2,12 +2,15 @@
 
 from kaggle_slayer.schemas.actions import VERSION, AgentResponse
 
-COMMON = """You participate in a bounded tabular ML team. Return ONLY the supplied
-AgentResponse JSON schema, version swarm-v1. Never provide private chain-of-thought.
+COMMON = """You participate in a bounded tabular ML team. Return ONLY one JSON object
+matching the supplied AgentResponse schema, version swarm-v1; never return the schema
+itself. Never provide private chain-of-thought.
 The top-level object must contain version and actions. Example of a valid incomplete finish:
 {"version":"swarm-v1","actions":[{"kind":"finish","action_id":"stop_example",
 "recipient":"runtime","summary":"Required evidence is unavailable.","outcome":"incomplete"}]}.
 For tools use recipient runtime; for delegation use a specialist role. Use summary, not rationale.
+kind is always one of tool, delegate, wait, finish. A capability name belongs in tool,
+never in kind. Report completed work using kind=finish; there is no report/submit action.
 Tool invocation is kind=tool, never kind=delegate. Delegate recipients are
 agent roles, never runtime or tool names. data_validation and submission cannot delegate.
 If response_repair is supplied, regenerate the envelope using its safe field errors and schema.
@@ -75,6 +78,24 @@ def role_prompt(role):
         example = """Invoke inspection directly like this:
 {"version":"swarm-v1","actions":[{"kind":"tool","action_id":"inspect_example",
 "recipient":"runtime","tool":"inspect_dataset","arguments":{},"summary":"Inspect aggregates."}]}"""
+    elif role == "pipeline_modeling":
+        example = """A pipeline tool request uses kind=tool:
+{"version":"swarm-v1","actions":[{"kind":"tool","action_id":"configure_example",
+"recipient":"runtime","tool":"configure_pipeline","arguments":{"model":"linear"},"summary":"Configure a pipeline."}]}"""
+    elif role == "evaluation":
+        example = """Request measured evaluation using kind=tool:
+{"version":"swarm-v1","actions":[{"kind":"tool","action_id":"evaluate_example",
+"recipient":"runtime","tool":"evaluate","arguments":{},"summary":"Evaluate measured candidates."}]}"""
+    elif role == "submission":
+        example = """If progress has no prediction receipt, request kind=tool with
+tool=generate_predictions and arguments={}. Once generated predictions exist, validate:
+{"version":"swarm-v1","actions":[{"kind":"tool","action_id":"validate_example",
+"recipient":"runtime","tool":"validate_predictions","arguments":{},"summary":"Validate serialized predictions."}]}.
+After a successful validation observation, report with this separate response:
+{"version":"swarm-v1","actions":[{"kind":"finish","action_id":"results_done",
+"recipient":"runtime","summary":"Predictions validated; see recorded tool evidence."}]}.
+Never use validate_predictions, generate_predictions, report or submit as kind values.
+No upload tool is available; upload authority belongs to trusted runtime policy."""
     delegation = (
         "Delegation recipients allowed for your role: data_validation, pipeline_modeling, evaluation, submission."
         if role == "coordinator"
@@ -87,3 +108,42 @@ def role_prompt(role):
 
 def protocol_schema():
     return AgentResponse.model_json_schema()
+
+
+def role_response_schema(role):
+    """Publish only actions/recipients/tools permitted for this role.
+
+    This guides endpoints; owner-side validation remains the execution authority.
+    """
+    from kaggle_slayer.tools.swarm_tools import CAPABILITIES
+
+    if role not in ROLE_PROMPTS:
+        raise ValueError("unknown_agent_role")
+    schema = protocol_schema()
+    kinds = {"wait", "finish"}
+    tools = [name for name, cap in CAPABILITIES.items() if role in cap.roles]
+    recipients = (
+        ["data_validation", "pipeline_modeling", "evaluation", "submission"]
+        if role == "coordinator"
+        else ["data_validation", "evaluation"]
+        if role in {"pipeline_modeling", "evaluation"}
+        else []
+    )
+    if tools:
+        kinds.add("tool")
+        schema["$defs"]["ToolAction"]["properties"]["tool"]["enum"] = tools
+    else:
+        del schema["$defs"]["ToolAction"]
+    if recipients:
+        kinds.add("delegate")
+        schema["$defs"]["DelegateAction"]["properties"]["recipient"]["enum"] = recipients
+    else:
+        del schema["$defs"]["DelegateAction"]
+    items = schema["properties"]["actions"]["items"]
+    mapping = items["discriminator"]["mapping"]
+    items["discriminator"]["mapping"] = {
+        kind: ref for kind, ref in mapping.items() if kind in kinds
+    }
+    allowed = set(items["discriminator"]["mapping"].values())
+    items["oneOf"] = [item for item in items["oneOf"] if item["$ref"] in allowed]
+    return schema

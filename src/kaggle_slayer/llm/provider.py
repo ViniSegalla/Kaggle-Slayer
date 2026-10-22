@@ -34,7 +34,17 @@ class PlannerLLM:
     def advise(self, context: dict) -> tuple[Advice | None, str | None]:
         return self._structured(context, INITIAL_PLANNING_PROMPT, Advice)
 
-    def _structured(self, context, prompt, schema, *, timeout=None, max_tokens=None, native=False):
+    def _structured(
+        self,
+        context,
+        prompt,
+        schema,
+        *,
+        timeout=None,
+        max_tokens=None,
+        native=False,
+        wire_schema=None,
+    ):
         settings = self.settings
         max_tokens = max_tokens or settings.llm_max_tokens
         started = time.monotonic()
@@ -121,7 +131,7 @@ class PlannerLLM:
                             "function": {
                                 "name": "agent_response",
                                 "description": "Return typed actions",
-                                "parameters": schema.model_json_schema(),
+                                "parameters": wire_schema or schema.model_json_schema(),
                             },
                         }
                     ],
@@ -347,15 +357,17 @@ class ActionLLM:
                     process.communicate()
 
     def decide(self, role, context, *, timeout, max_tokens):
-        from kaggle_slayer.agents.swarm import role_prompt
+        from kaggle_slayer.agents.swarm import role_prompt, role_response_schema
         from kaggle_slayer.schemas.actions import AgentResponse
 
         # Per-call adapter: diagnostics cannot race between specialist requests.
         adapter = PlannerLLM(self.settings)
+        wire_schema = role_response_schema(role)
         response, _ = adapter._structured(
-            context,
+            {**context, "response_schema": wire_schema},
             role_prompt(role),
             AgentResponse,
+            wire_schema=wire_schema,
             timeout=timeout,
             max_tokens=max_tokens,
             native=self.settings.llm_native_tools,

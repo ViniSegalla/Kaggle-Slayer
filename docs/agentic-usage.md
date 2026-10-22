@@ -44,6 +44,16 @@ Prompts use role-specific examples: the coordinator delegates inspection to
 the requesting role's permitted tool names and correction guidance without expanding
 its authority. Invalid delegate recipients receive a concrete tool/delegation contract
 explanation; no invalid request is automatically translated into an executable action.
+Native function parameters and JSON-mode contexts carry a role-specific response schema:
+only permitted action kinds, delegate recipients and tool names are advertised. Runtime
+validation still enforces permissions independently of provider schema support.
+Every operation uses `kind: tool` and a separate `tool` name; a specialist reports with
+`kind: finish`. Unknown/missing kinds receive explicit discriminator repair guidance.
+The submission role has concrete generation, validation and finish examples and no
+upload action. See its [scoped schema](contracts/swarm-v1/submission.actions.schema.json).
+The [submission protocol verification](../evidence/swarm-submission-protocol-verification.json)
+records offline repairs through real classification/regression training, serialized
+validation, and resume without retraining. No live provider or Kaggle calls are implied.
 
 Action IDs are stable within each task. The runtime assigns a persisted opaque alias
 when independent agents choose the same ID, and rewrites local dependencies, evidence

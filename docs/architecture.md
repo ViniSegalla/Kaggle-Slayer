@@ -10,6 +10,12 @@ delegation, tool, dependency-wait and finish messages. `tools/swarm_tools.py` bi
 arguments, per-role permissions, bounds and opaque references to reusable numerical tools.
 The provider-neutral `ActionProvider` interface supports compatible JSON envelopes and
 native function calling through the existing configured endpoint/model.
+Each role receives a narrowed schema of permitted action kinds, recipients and tool
+names in both native parameters and JSON context. The full v1 protocol remains the
+persisted action format; trusted runtime permission checks remain authoritative.
+Unknown discriminator values are rejected with safe concrete repair instructions,
+never coerced into operations. Prediction generation, serialized validation and a
+specialist finish are distinct actions; only terminal runtime policy can upload.
 
 The coordinator chooses tasks and dependencies, sees observations after each round, and
 can revisit specialists. Ready specialist calls run concurrently with immutable scoped

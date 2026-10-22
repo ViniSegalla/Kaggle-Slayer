@@ -231,6 +231,8 @@ class SwarmRuntime:
         }
 
     def context(self, task):
+        from kaggle_slayer.agents.swarm import role_response_schema
+
         s, session = self.state, self.session
         # Only locally constructed aggregates/opaque IDs cross the provider boundary.
         observations = (
@@ -250,7 +252,7 @@ class SwarmRuntime:
         }
         return {
             "protocol": VERSION,
-            "response_schema": AgentResponse.model_json_schema(),
+            "response_schema": role_response_schema(task.role),
             "session_id": session.session_id,
             "task_id": task.id,
             "role": task.role,
