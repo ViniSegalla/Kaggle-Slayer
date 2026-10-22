@@ -1,0 +1,3 @@
+Installed 73 packages in 2.17s
+Installed wheel profile discovery: passed (Titanic + House Prices outside repository)
+Installed wheel Kaggle SDK response adapter: passed (mocked; no network)

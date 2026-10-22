@@ -1,0 +1,80 @@
+[
+  {
+    "competition": "fixture-classification",
+    "run_id": "fixture-classification-7a67a716e480",
+    "provenance": "synthetic_fixture",
+    "best_id": "tune-0",
+    "score": 0.7833333333333333,
+    "metric": "accuracy",
+    "public_score": null,
+    "submission_status": "not_submitted",
+    "submission_reference": null,
+    "experiments": 5,
+    "successful_experiments": 5
+  },
+  {
+    "competition": "fixture-regression",
+    "run_id": "fixture-regression-af6047fe1d22",
+    "provenance": "synthetic_fixture",
+    "best_id": "baseline-linear",
+    "score": 0.149609264214721,
+    "metric": "rmsle",
+    "public_score": null,
+    "submission_status": "not_submitted",
+    "submission_reference": null,
+    "experiments": 5,
+    "successful_experiments": 5
+  },
+  {
+    "competition": "public-titanic-demo",
+    "run_id": "public-titanic-demo-624571a6b056",
+    "provenance": "public_dataset_demo",
+    "best_id": "baseline-lightgbm",
+    "score": 0.8230473751600513,
+    "metric": "accuracy",
+    "public_score": null,
+    "submission_status": "not_submitted",
+    "submission_reference": null,
+    "experiments": 5,
+    "successful_experiments": 5
+  },
+  {
+    "competition": "fixture-classification-ensemble",
+    "run_id": "fixture-classification-ensemble-75c3b1443646",
+    "provenance": "synthetic_fixture",
+    "best_id": "tune-0",
+    "score": 0.7833333333333333,
+    "metric": "accuracy",
+    "public_score": null,
+    "submission_status": "not_submitted",
+    "submission_reference": null,
+    "experiments": 5,
+    "successful_experiments": 5
+  },
+  {
+    "competition": "house-prices-advanced-regression-techniques",
+    "run_id": "house-prices-advanced-regression-techniques-da4cc92ba57f",
+    "provenance": "official_kaggle_api",
+    "best_id": "tune-1",
+    "score": 0.13105466915109792,
+    "metric": "log_rmse",
+    "public_score": null,
+    "submission_status": "not_submitted",
+    "submission_reference": null,
+    "experiments": 5,
+    "successful_experiments": 5
+  },
+  {
+    "competition": "titanic",
+    "run_id": "titanic-441c742e80e5",
+    "provenance": "official_kaggle_api",
+    "best_id": "baseline-lightgbm",
+    "score": 0.8406000878789779,
+    "metric": "accuracy",
+    "public_score": 0.75358,
+    "submission_status": "COMPLETE",
+    "submission_reference": 57504220,
+    "experiments": 5,
+    "successful_experiments": 5
+  }
+]

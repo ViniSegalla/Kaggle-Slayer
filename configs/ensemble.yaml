@@ -1,0 +1,4 @@
+# Keep the total budget fixed: three baselines, one Optuna trial, one ensemble.
+ensemble: true
+max_experiments: 5
+optuna_trials: 1

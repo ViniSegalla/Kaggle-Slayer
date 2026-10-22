@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "kaggle-slayer"
+version = "0.1.0"
+description = "Autonomous, observable multi-agent tabular competition team"
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+license = "MIT"
+dependencies = [
+  "pandas>=2.2,<3", "numpy>=1.26,<3", "scikit-learn>=1.6,<1.8",
+  "pydantic>=2.10,<3", "pydantic-settings>=2.7,<3", "pyyaml>=6,<7",
+  "kaggle>=1.7,<2", "optuna>=4.2,<5", "joblib>=1.4,<2",
+  "lightgbm>=4.5,<5", "plotly>=6,<7", "streamlit>=1.45,<2",
+  "httpx>=0.28,<1", "typer>=0.15,<1", "python-dotenv>=1,<2",
+  "threadpoolctl>=3.5,<4"
+]
+
+[project.optional-dependencies]
+boosting = ["xgboost>=3,<4", "catboost>=1.2.8,<2"]
+dev = ["pytest>=8.3,<10", "pytest-timeout>=2.3,<3", "ruff>=0.11,<1"]
+
+[project.scripts]
+kaggle-slayer = "kaggle_slayer.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/kaggle_slayer"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"configs" = "kaggle_slayer/resources/configs"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+timeout = 120
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [".uv-cache", ".uv-python", ".venv", "artifacts", "data"]
+
+[tool.ruff.lint.per-file-ignores]
+"scripts/*.py" = ["E402"]
+"tests/conftest.py" = ["E402"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]

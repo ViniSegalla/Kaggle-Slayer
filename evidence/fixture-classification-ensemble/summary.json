@@ -1,0 +1,179 @@
+{
+  "run_id": "fixture-classification-ensemble-75c3b1443646",
+  "competition": "fixture-classification-ensemble",
+  "data_source": "local_user_supplied",
+  "provenance": {
+    "kind": "synthetic_fixture",
+    "seed": 42,
+    "description": "Generated data, not downloaded Kaggle data; no leaderboard claims"
+  },
+  "best_id": "tune-0",
+  "feedback": {
+    "best_id": "tune-0",
+    "local_score": 0.7833333333333333,
+    "metric": "accuracy",
+    "train_validation_gap": 0.006249999999999978,
+    "rejected_for_final": [
+      "baseline-linear",
+      "baseline-lightgbm"
+    ],
+    "recommendation": "Tune regularization and model complexity using the same fixed folds; keep the baseline for comparison.",
+    "warnings": [],
+    "leaderboard": {
+      "status": "not_submitted",
+      "public_score": null,
+      "rank": null,
+      "top_20_percent": null
+    }
+  },
+  "submission_path": "<workspace>\\artifacts\\runs\\fixture-classification-ensemble-75c3b1443646\\submissions\\submission.csv",
+  "warnings": [
+    "Large train/CV gap; favor regularization or revise validation"
+  ],
+  "experiments": [
+    {
+      "id": "baseline-linear",
+      "model": "linear",
+      "params": {},
+      "status": "completed",
+      "score": 0.7541666666666668,
+      "train_score": 0.8020833333333334,
+      "fold_scores": [
+        0.7625,
+        0.7,
+        0.8
+      ],
+      "std": 0.04124789556921531,
+      "duration": 0.11000000000058208,
+      "error": null,
+      "checkpoint": "<workspace>\\artifacts\\runs\\fixture-classification-ensemble-75c3b1443646\\experiments\\baseline-linear\\model.joblib",
+      "oof_path": "<workspace>\\artifacts\\runs\\fixture-classification-ensemble-75c3b1443646\\experiments\\baseline-linear\\oof.npz",
+      "importance_path": "<workspace>\\artifacts\\runs\\fixture-classification-ensemble-75c3b1443646\\experiments\\baseline-linear\\feature_importance.csv",
+      "effective_params": {}
+    },
+    {
+      "id": "baseline-random_forest",
+      "model": "random_forest",
+      "params": {},
+      "status": "completed",
+      "score": 0.7708333333333334,
+      "train_score": 0.9249999999999999,
+      "fold_scores": [
+        0.7375,
+        0.7625,
+        0.8125
+      ],
+      "std": 0.03118047822311617,
+      "duration": 0.48400000000401633,
+      "error": null,
+      "checkpoint": "<workspace>\\artifacts\\runs\\fixture-classification-ensemble-75c3b1443646\\experiments\\baseline-random_forest\\model.joblib",
+      "oof_path": "<workspace>\\artifacts\\runs\\fixture-classification-ensemble-75c3b1443646\\experiments\\baseline-random_forest\\oof.npz",
+      "importance_path": "<workspace>\\artifacts\\runs\\fixture-classification-ensemble-75c3b1443646\\experiments\\baseline-random_forest\\feature_importance.csv",
+      "effective_params": {}
+    },
+    {
+      "id": "baseline-lightgbm",
+      "model": "lightgbm",
+      "params": {},
+      "status": "completed",
+      "score": 0.7208333333333333,
+      "train_score": 0.7729166666666667,
+      "fold_scores": [
+        0.7625,
+        0.7125,
+        0.6875
+      ],
+      "std": 0.03118047822311616,
+      "duration": 0.18699999999807915,
+      "error": null,
+      "checkpoint": "<workspace>\\artifacts\\runs\\fixture-classification-ensemble-75c3b1443646\\experiments\\baseline-lightgbm\\model.joblib",
+      "oof_path": "<workspace>\\artifacts\\runs\\fixture-classification-ensemble-75c3b1443646\\experiments\\baseline-lightgbm\\oof.npz",
+      "importance_path": "<workspace>\\artifacts\\runs\\fixture-classification-ensemble-75c3b1443646\\experiments\\baseline-lightgbm\\feature_importance.csv",
+      "effective_params": {
+        "n_estimators": 30
+      }
+    },
+    {
+      "id": "tune-0",
+      "model": "random_forest",
+      "params": {
+        "n_estimators": 140,
+        "min_samples_leaf": 8,
+        "max_depth": 14,
+        "max_features": 0.7993292420985183
+      },
+      "status": "completed",
+      "score": 0.7833333333333333,
+      "train_score": 0.7895833333333333,
+      "fold_scores": [
+        0.7625,
+        0.775,
+        0.8125
+      ],
+      "std": 0.021245914639969946,
+      "duration": 0.5149999999994179,
+      "error": null,
+      "checkpoint": "<workspace>\\artifacts\\runs\\fixture-classification-ensemble-75c3b1443646\\experiments\\tune-0\\model.joblib",
+      "oof_path": "<workspace>\\artifacts\\runs\\fixture-classification-ensemble-75c3b1443646\\experiments\\tune-0\\oof.npz",
+      "importance_path": "<workspace>\\artifacts\\runs\\fixture-classification-ensemble-75c3b1443646\\experiments\\tune-0\\feature_importance.csv",
+      "effective_params": {
+        "n_estimators": 140,
+        "min_samples_leaf": 8,
+        "max_depth": 14,
+        "max_features": 0.7993292420985183
+      }
+    },
+    {
+      "id": "ensemble-soft",
+      "model": "ensemble",
+      "params": {
+        "members": [
+          {
+            "model": "random_forest",
+            "params": {
+              "n_estimators": 140,
+              "min_samples_leaf": 8,
+              "max_depth": 14,
+              "max_features": 0.7993292420985183
+            }
+          },
+          {
+            "model": "linear",
+            "params": {}
+          }
+        ]
+      },
+      "status": "completed",
+      "score": 0.7666666666666666,
+      "train_score": 0.8125,
+      "fold_scores": [
+        0.75,
+        0.75,
+        0.8
+      ],
+      "std": 0.023570226039551605,
+      "duration": 0.5319999999992433,
+      "error": null,
+      "checkpoint": "<workspace>\\artifacts\\runs\\fixture-classification-ensemble-75c3b1443646\\experiments\\ensemble-soft\\model.joblib",
+      "oof_path": "<workspace>\\artifacts\\runs\\fixture-classification-ensemble-75c3b1443646\\experiments\\ensemble-soft\\oof.npz",
+      "importance_path": null,
+      "effective_params": {
+        "members": [
+          {
+            "model": "random_forest",
+            "params": {
+              "n_estimators": 140,
+              "min_samples_leaf": 8,
+              "max_depth": 14,
+              "max_features": 0.7993292420985183
+            }
+          },
+          {
+            "model": "linear",
+            "params": {}
+          }
+        ]
+      }
+    }
+  ]
+}

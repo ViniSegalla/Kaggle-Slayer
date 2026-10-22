@@ -1,0 +1,124 @@
+{
+  "best_id": "baseline-linear",
+  "local_score": 0.149609264214721,
+  "metric": "rmsle",
+  "train_validation_gap": 0.00530990247674773,
+  "rejected_for_final": [
+    "baseline-lightgbm",
+    "tune-1"
+  ],
+  "recommendation": "Tune regularization and model complexity using the same fixed folds; keep the baseline for comparison.",
+  "warnings": [],
+  "ranking": [
+    {
+      "id": "baseline-linear",
+      "model": "linear",
+      "params": {},
+      "status": "completed",
+      "score": 0.149609264214721,
+      "train_score": 0.14429936173797328,
+      "fold_scores": [
+        0.12638237520601142,
+        0.15726692340143555,
+        0.1651784940367161
+      ],
+      "std": 0.016738469010962834,
+      "duration": 0.0930000000007567,
+      "error": null,
+      "checkpoint": "<workspace>\\artifacts\\runs\\fixture-regression-af6047fe1d22\\experiments\\baseline-linear\\model.joblib",
+      "oof_path": "<workspace>\\artifacts\\runs\\fixture-regression-af6047fe1d22\\experiments\\baseline-linear\\oof.npz",
+      "importance_path": "<workspace>\\artifacts\\runs\\fixture-regression-af6047fe1d22\\experiments\\baseline-linear\\feature_importance.csv",
+      "effective_params": {}
+    },
+    {
+      "id": "tune-0",
+      "model": "linear",
+      "params": {
+        "alpha": 0.31489116479568624
+      },
+      "status": "completed",
+      "score": 0.14964981300211663,
+      "train_score": 0.14427194621813633,
+      "fold_scores": [
+        0.1263459155542933,
+        0.15714575717034618,
+        0.16545776628171036
+      ],
+      "std": 0.016824111686522005,
+      "duration": 0.0940000000045984,
+      "error": null,
+      "checkpoint": "<workspace>\\artifacts\\runs\\fixture-regression-af6047fe1d22\\experiments\\tune-0\\model.joblib",
+      "oof_path": "<workspace>\\artifacts\\runs\\fixture-regression-af6047fe1d22\\experiments\\tune-0\\oof.npz",
+      "importance_path": "<workspace>\\artifacts\\runs\\fixture-regression-af6047fe1d22\\experiments\\tune-0\\feature_importance.csv",
+      "effective_params": {
+        "alpha": 0.31489116479568624
+      }
+    },
+    {
+      "id": "baseline-random_forest",
+      "model": "random_forest",
+      "params": {},
+      "status": "completed",
+      "score": 0.1655831050785681,
+      "train_score": 0.08979432421554938,
+      "fold_scores": [
+        0.1316719259640015,
+        0.1811448294000323,
+        0.1839325598716705
+      ],
+      "std": 0.02400581751716013,
+      "duration": 0.4219999999986612,
+      "error": null,
+      "checkpoint": "<workspace>\\artifacts\\runs\\fixture-regression-af6047fe1d22\\experiments\\baseline-random_forest\\model.joblib",
+      "oof_path": "<workspace>\\artifacts\\runs\\fixture-regression-af6047fe1d22\\experiments\\baseline-random_forest\\oof.npz",
+      "importance_path": "<workspace>\\artifacts\\runs\\fixture-regression-af6047fe1d22\\experiments\\baseline-random_forest\\feature_importance.csv",
+      "effective_params": {}
+    },
+    {
+      "id": "baseline-lightgbm",
+      "model": "lightgbm",
+      "params": {},
+      "status": "completed",
+      "score": 0.167221761964676,
+      "train_score": 0.12661249553086998,
+      "fold_scores": [
+        0.13621215842668596,
+        0.18085936321665114,
+        0.184593764250691
+      ],
+      "std": 0.021980037480378325,
+      "duration": 0.17199999999866122,
+      "error": null,
+      "checkpoint": "<workspace>\\artifacts\\runs\\fixture-regression-af6047fe1d22\\experiments\\baseline-lightgbm\\model.joblib",
+      "oof_path": "<workspace>\\artifacts\\runs\\fixture-regression-af6047fe1d22\\experiments\\baseline-lightgbm\\oof.npz",
+      "importance_path": "<workspace>\\artifacts\\runs\\fixture-regression-af6047fe1d22\\experiments\\baseline-lightgbm\\feature_importance.csv",
+      "effective_params": {
+        "n_estimators": 129
+      }
+    },
+    {
+      "id": "tune-1",
+      "model": "linear",
+      "params": {
+        "alpha": 63.512210106407046
+      },
+      "status": "completed",
+      "score": 0.19835292802972737,
+      "train_score": 0.1964230757684379,
+      "fold_scores": [
+        0.17648702762160542,
+        0.2182814710764574,
+        0.2002902853911193
+      ],
+      "std": 0.01711741590864909,
+      "duration": 0.10900000000401633,
+      "error": null,
+      "checkpoint": "<workspace>\\artifacts\\runs\\fixture-regression-af6047fe1d22\\experiments\\tune-1\\model.joblib",
+      "oof_path": "<workspace>\\artifacts\\runs\\fixture-regression-af6047fe1d22\\experiments\\tune-1\\oof.npz",
+      "importance_path": "<workspace>\\artifacts\\runs\\fixture-regression-af6047fe1d22\\experiments\\tune-1\\feature_importance.csv",
+      "effective_params": {
+        "alpha": 63.512210106407046
+      }
+    }
+  ]
+}

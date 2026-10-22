@@ -1,0 +1,27 @@
+{
+  "status": "proposed_only",
+  "evidence": {
+    "status": "COMPLETE",
+    "public_score": 0.75358,
+    "rank": null,
+    "top_20_percent": null,
+    "recommendation": "Keep local CV as the selection criterion; inspect distribution shift before any new run.",
+    "validation_minus_public": 0.08702008787897786,
+    "unexpected_degradation": true
+  },
+  "priorities": [
+    "Keep fixed local validation as the selection criterion; never optimize on repeated public submissions",
+    "Audit train/test distribution shift and compare a fresh, stricter validation strategy before changing model complexity",
+    "Compare group CV by Ticket with the current stratified CV; related passengers may make random folds optimistic",
+    "Inspect 127 duplicate feature rows and their validation group assignments",
+    "Test stronger regularization in the leading model only after the validation audit"
+  ],
+  "suggested_competition_overrides": {
+    "validation": "group",
+    "group_column": "Ticket"
+  },
+  "experiment_budget_remaining": 0,
+  "submission_budget_remaining": 0,
+  "execute_automatically": false,
+  "reason": "This run's experiment/submission limits are retained; diagnostics are for a separately budgeted run"
+}

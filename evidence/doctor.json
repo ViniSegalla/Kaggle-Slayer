@@ -1,0 +1,72 @@
+{
+  "kaggle_credentials_present": true,
+  "llm_provider": "deterministic",
+  "dependencies": {
+    "pandas": "2.3.3",
+    "scikit-learn": "1.7.2",
+    "lightgbm": "4.7.0",
+    "kaggle": "1.8.4",
+    "optuna": "4.9.0",
+    "streamlit": "1.66.1"
+  },
+  "competition_metadata": {
+    "id": 3136,
+    "ref": "https://www.kaggle.com/competitions/titanic",
+    "title": "Titanic - Machine Learning from Disaster",
+    "url": "https://www.kaggle.com/competitions/titanic",
+    "description": "Start here! Predict survival on the Titanic and get familiar with ML basics",
+    "organizationName": "Kaggle",
+    "category": "Getting Started",
+    "reward": "Knowledge",
+    "tags": [
+      {
+        "ref": "beginner",
+        "name": "beginner",
+        "description": "New to data science? Explore tips, tricks, and beginner friendly work from other Kagglers.",
+        "fullPath": "audience > beginner",
+        "competitionCount": 15136,
+        "datasetCount": 12051,
+        "scriptCount": 46407,
+        "totalCount": 73594
+      },
+      {
+        "ref": "tabular",
+        "name": "tabular",
+        "description": "",
+        "fullPath": "data type > tabular",
+        "competitionCount": 15964,
+        "datasetCount": 19496,
+        "scriptCount": 8408,
+        "totalCount": 43868
+      },
+      {
+        "ref": "binary classification",
+        "name": "binary classification",
+        "description": "",
+        "fullPath": "task > binary-classification",
+        "competitionCount": 11870,
+        "datasetCount": 2210,
+        "scriptCount": 8461,
+        "totalCount": 22541
+      },
+      {
+        "ref": "categorizationaccuracy",
+        "name": "categorizationaccuracy",
+        "description": "Percentage of correctly categorized items",
+        "fullPath": ""
+      }
+    ],
+    "deadline": "2030-01-01T00:00:00.000Z",
+    "teamCount": 11471,
+    "userHasEntered": true,
+    "userRank": 7035,
+    "mergerDeadline": "2030-01-01T00:00:00.000Z",
+    "enabledDate": "2012-09-28T21:13:33.550Z",
+    "maxDailySubmissions": 10,
+    "maxTeamSize": 10,
+    "evaluationMetric": "Categorization Accuracy",
+    "hostName": "Kaggle",
+    "dateCreated": "2012-09-14T16:40:22.604Z"
+  },
+  "kaggle_status": "authenticated_read_succeeded"
+}

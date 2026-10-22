@@ -1,0 +1,52 @@
+[titanic-441c742e80e5] submitting
+[titanic-441c742e80e5] reviewing
+[titanic-441c742e80e5] finished
+{
+  "run_id": "titanic-441c742e80e5",
+  "submissions": [
+    {
+      "status": "COMPLETE",
+      "message": "KaggleSlayer run titanic-441c742e80e5",
+      "timestamp": "2026-10-22T01:17:20.580841+00:00",
+      "public_score": 0.75358,
+      "reference": 57504220,
+      "response": {
+        "message": "Successfully submitted to Titanic - Machine Learning from Disaster",
+        "ref": 57504220
+      },
+      "feedback": {
+        "ref": 57504220,
+        "totalBytes": 3258,
+        "date": "2026-10-22T01:17:21.683Z",
+        "description": "KaggleSlayer run titanic-441c742e80e5",
+        "fileName": "submission.csv",
+        "publicScore": "0.75358",
+        "status": "COMPLETE",
+        "submittedBy": "vinisegalla",
+        "submittedByRef": "vinisegalla",
+        "teamName": "ViniSegalla",
+        "url": "/submissions/57504220/57504220.raw"
+      }
+    }
+  ],
+  "feedback": {
+    "best_id": "baseline-lightgbm",
+    "local_score": 0.8406000878789779,
+    "metric": "accuracy",
+    "train_validation_gap": 0.039032182792500425,
+    "rejected_for_final": [
+      "baseline-linear"
+    ],
+    "recommendation": "Tune regularization and model complexity using the same fixed folds; keep the baseline for comparison.",
+    "warnings": [],
+    "leaderboard": {
+      "status": "COMPLETE",
+      "public_score": 0.75358,
+      "rank": null,
+      "top_20_percent": null,
+      "recommendation": "Keep local CV as the selection criterion; inspect distribution shift before any new run.",
+      "validation_minus_public": 0.08702008787897786,
+      "unexpected_degradation": true
+    }
+  }
+}

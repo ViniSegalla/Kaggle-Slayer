@@ -1,0 +1,36 @@
+Run ID: titanic-441c742e80e5
+[titanic-441c742e80e5] data_prepared
+[titanic-441c742e80e5] planned
+[titanic-441c742e80e5] training
+[titanic-441c742e80e5] evaluating
+[titanic-441c742e80e5] planned
+[titanic-441c742e80e5] training
+[titanic-441c742e80e5] evaluating
+[titanic-441c742e80e5] submission_ready
+[titanic-441c742e80e5] finished
+{
+  "run_id": "titanic-441c742e80e5",
+  "status": "completed",
+  "best_model": "baseline-lightgbm",
+  "feedback": {
+    "best_id": "baseline-lightgbm",
+    "local_score": 0.8406000878789779,
+    "metric": "accuracy",
+    "train_validation_gap": 0.039032182792500425,
+    "rejected_for_final": [
+      "baseline-linear"
+    ],
+    "recommendation": "Tune regularization and model complexity using the same fixed folds; keep the baseline for comparison.",
+    "warnings": [],
+    "leaderboard": {
+      "status": "not_submitted",
+      "public_score": null,
+      "rank": null,
+      "top_20_percent": null
+    }
+  },
+  "submission": "C:\\Users\\Vinicius\\Downloads\\Kaggle\\artifacts\\runs\\titanic-441c742e80e5\\submissions\\submission.csv",
+  "warnings": [
+    "127 duplicate feature rows; consider grouped validation"
+  ]
+}

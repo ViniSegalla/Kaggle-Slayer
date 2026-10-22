@@ -1,0 +1,7 @@
+# uv sync --locked --extra dev --extra boosting
+# uv run python -m kaggle_slayer run --competition titanic --config configs/boosting.yaml --no-submit
+models: [linear, random_forest, lightgbm, xgboost, catboost]
+max_experiments: 8
+max_iterations: 2
+optuna_trials: 2
+max_seconds: 1800

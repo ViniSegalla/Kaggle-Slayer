@@ -1,0 +1,81 @@
+{
+  "train_rows": 712,
+  "test_rows": 179,
+  "features": [
+    "Pclass",
+    "Sex",
+    "Age",
+    "SibSp",
+    "Parch",
+    "Fare",
+    "Embarked"
+  ],
+  "numeric_features": [
+    "Pclass",
+    "Age",
+    "SibSp",
+    "Parch",
+    "Fare"
+  ],
+  "categorical_features": [
+    "Sex",
+    "Embarked"
+  ],
+  "missing_fraction": {
+    "Pclass": 0.0,
+    "Sex": 0.0,
+    "Age": 0.19241573033707865,
+    "SibSp": 0.0,
+    "Parch": 0.0,
+    "Fare": 0.0,
+    "Embarked": 0.0028089887640449437
+  },
+  "dtypes": {
+    "Pclass": "int64",
+    "Sex": "object",
+    "Age": "float64",
+    "SibSp": "int64",
+    "Parch": "int64",
+    "Fare": "float64",
+    "Embarked": "object"
+  },
+  "target_distribution": {
+    "0": 439,
+    "1": 273
+  },
+  "warnings": [
+    "84 duplicate feature rows; consider grouped validation"
+  ],
+  "duplicate_rows": 84,
+  "fingerprints": {
+    "train.csv": "a4de6e6c8f1db341a73ccd0389a2f1d5b22167ac04babe6e7b05903c171cc625",
+    "test.csv": "cf04fc9741b75169e703aae49221bfc24993322e6deb2d0c7b30318bc9993b52",
+    "sample_submission.csv": "6dce542a4d92563e89f2a1beb648ab9a7bb010de88b2f13e95058adca664be53"
+  },
+  "classes": [
+    0,
+    1
+  ],
+  "fold_sizes": [
+    {
+      "train": 569,
+      "validation": 143
+    },
+    {
+      "train": 569,
+      "validation": 143
+    },
+    {
+      "train": 570,
+      "validation": 142
+    },
+    {
+      "train": 570,
+      "validation": 142
+    },
+    {
+      "train": 570,
+      "validation": 142
+    }
+  ]
+}

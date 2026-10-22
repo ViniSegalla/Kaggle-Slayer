@@ -1,0 +1,11 @@
+[fixture-classification-ensemble-75c3b1443646] data_prepared
+[fixture-classification-ensemble-75c3b1443646] planned
+[fixture-classification-ensemble-75c3b1443646] training
+[fixture-classification-ensemble-75c3b1443646] evaluating
+[fixture-classification-ensemble-75c3b1443646] planned
+[fixture-classification-ensemble-75c3b1443646] training
+[fixture-classification-ensemble-75c3b1443646] evaluating
+[fixture-classification-ensemble-75c3b1443646] evaluating
+[fixture-classification-ensemble-75c3b1443646] submission_ready
+[fixture-classification-ensemble-75c3b1443646] finished
+Completed fixture-classification-ensemble-75c3b1443646; {'best_id': 'tune-0', 'local_score': 0.7833333333333333, 'metric': 'accuracy', 'train_validation_gap': 0.006249999999999978, 'rejected_for_final': ['baseline-linear', 'baseline-lightgbm'], 'recommendation': 'Tune regularization and model complexity using the same fixed folds; keep the baseline for comparison.', 'warnings': [], 'leaderboard': {'status': 'not_submitted', 'public_score': None, 'rank': None, 'top_20_percent': None}}; submission=C:\Users\Vinicius\Downloads\Kaggle\artifacts\runs\fixture-classification-ensemble-75c3b1443646\submissions\submission.csv

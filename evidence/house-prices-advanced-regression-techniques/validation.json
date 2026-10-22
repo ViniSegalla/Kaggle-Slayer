@@ -1,0 +1,9 @@
+{
+  "valid": true,
+  "rows": 1459,
+  "columns": [
+    "Id",
+    "SalePrice"
+  ],
+  "identifier_alignment": "verified"
+}

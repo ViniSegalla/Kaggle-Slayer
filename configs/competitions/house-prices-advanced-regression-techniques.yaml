@@ -1,0 +1,10 @@
+competition: house-prices-advanced-regression-techniques
+target: SalePrice
+id_column: Id
+task: regression
+metric: log_rmse
+prediction_kind: value
+target_transform: log1p
+train_file: train.csv
+test_file: test.csv
+sample_file: sample_submission.csv

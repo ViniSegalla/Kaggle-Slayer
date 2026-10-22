@@ -1,0 +1,11 @@
+competition: titanic
+target: Survived
+id_column: PassengerId
+task: classification
+metric: accuracy
+prediction_kind: label
+train_file: train.csv
+test_file: test.csv
+sample_file: gender_submission.csv
+feature_profile: titanic
+drop_columns: [Cabin, Ticket, Name]

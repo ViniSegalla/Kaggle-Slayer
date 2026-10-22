@@ -1,0 +1,9 @@
+{
+  "valid": true,
+  "rows": 80,
+  "columns": [
+    "PassengerId",
+    "Survived"
+  ],
+  "identifier_alignment": "verified"
+}

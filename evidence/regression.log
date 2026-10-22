@@ -1,0 +1,10 @@
+[fixture-regression-af6047fe1d22] data_prepared
+[fixture-regression-af6047fe1d22] planned
+[fixture-regression-af6047fe1d22] training
+[fixture-regression-af6047fe1d22] evaluating
+[fixture-regression-af6047fe1d22] planned
+[fixture-regression-af6047fe1d22] training
+[fixture-regression-af6047fe1d22] evaluating
+[fixture-regression-af6047fe1d22] submission_ready
+[fixture-regression-af6047fe1d22] finished
+Completed fixture-regression-af6047fe1d22; {'best_id': 'baseline-linear', 'local_score': 0.149609264214721, 'metric': 'rmsle', 'train_validation_gap': 0.00530990247674773, 'rejected_for_final': ['baseline-lightgbm', 'tune-1'], 'recommendation': 'Tune regularization and model complexity using the same fixed folds; keep the baseline for comparison.', 'warnings': [], 'leaderboard': {'status': 'not_submitted', 'public_score': None, 'rank': None, 'top_20_percent': None}}; submission=C:\Users\Vinicius\Downloads\Kaggle\artifacts\runs\fixture-regression-af6047fe1d22\submissions\submission.csv

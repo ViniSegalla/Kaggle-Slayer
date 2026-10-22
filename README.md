@@ -1,0 +1,214 @@
+# ⚡ KaggleSlayer
+
+### Autonomous Multi-Agent ML Competition Team
+
+KaggleSlayer turns tabular competition CSVs into measured experiments, trained checkpoints and a validated submission file. Five specialized agents collaborate through typed state, use cross-validation to guide improvements, and record decisions in SQLite and JSONL. A Streamlit console exposes the actual activity and results.
+
+The goal is competitive performance with minimal competition-specific code. **Top 20% is an aspiration, never a promised result.** The default mode runs without an LLM subscription. Optional LLM planning uses an OpenAI-compatible endpoint and cannot execute code or authorize uploads.
+
+## Features
+
+- Official Kaggle metadata, authenticated downloads, explicitly authorized single-attempt uploads and submission feedback.
+- Binary/multiclass tabular classification and single-target regression, with YAML overrides for ambiguous requirements.
+- Linear baseline, Random Forest and LightGBM; histogram gradient boosting, XGBoost and CatBoost are also implemented.
+- Fold-fit preprocessing, stratified/K-fold/group/time validation, inner-fold early stopping and bounded Optuna optimization.
+- Optional CV-tested voting/averaging of the strongest two distinct model families, inside the same experiment budget.
+- Metric-direction handling, overfitting warnings, OOF evidence, model checkpoints, feature importance and strict submission checks.
+- Durable decisions, configuration/environment snapshots, data fingerprints, worker timeouts and interrupted-run recovery.
+- Dashboard with history, agent/tool timeline, experiment comparisons, actual feedback and artifact downloads.
+- Offline tests, synthetic demos, a real public Titanic holdout demo, Docker and uv-based CI.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    Input[Competition + YAML] --> Planner
+    Planner --> Data[Data Engineer]
+    Data --> Queue[Planner: experiment queue]
+    Queue --> Modeler
+    Modeler --> Evaluator
+    Evaluator -->|feedback + budget| Queue
+    Evaluator --> Prediction[Best checkpoint + validated CSV]
+    Prediction --> Consent{Explicit submission authorization}
+    Consent -->|yes| Kaggle[Official Kaggle API]
+    Consent -->|no| Reviewer[Leaderboard Reviewer]
+    Kaggle --> Reviewer
+    Reviewer --> Summary[Summary + next-run recommendation]
+    Data -.-> Store[(SQLite / JSONL / artifacts)]
+    Modeler -.-> Store
+    Evaluator -.-> Store
+    Reviewer -.-> Store
+    Store --> Dashboard[Streamlit console]
+```
+
+| Agent | Specialization |
+|---|---|
+| Competition Planner | Schedules baselines, consumes evaluator feedback and asks Optuna for improvements. Optional LLM advice prioritizes approved families. |
+| Data Engineer | Downloads/reads CSVs, resolves schema, audits quality/leakage, creates EDA and fixed splits. |
+| Modeling Agent | Fits isolated experiments and persists measured metrics, OOF predictions and full-data checkpoints. |
+| Evaluation Agent | Ranks eligible models, rejects weaker candidates, checks overfitting and validates output. |
+| Leaderboard Reviewer | Reads run-specific feedback and compares public/local scores. Missing rank and percentile remain unknown. |
+
+The deterministic team uses distinct tools and policies rather than five copies of a prompt. The state machine is deliberately lightweight; LangGraph is not required. See [architecture](docs/architecture.md), [agent contracts](docs/agents.md) and [technical decisions](docs/decisions.md).
+
+## Stack and installation
+
+Python 3.11+, Pydantic, pandas/NumPy, scikit-learn, LightGBM, Optuna, joblib, the official Kaggle API, httpx, SQLite, Streamlit and Plotly. XGBoost/CatBoost are an optional extra. **uv manages Python, environments, dependencies and execution throughout.**
+
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/), open this directory and run:
+
+```bash
+uv python install 3.11
+uv python pin 3.11
+uv sync --locked --extra dev
+uv run python -m kaggle_slayer doctor
+```
+
+For every supported model family:
+
+```bash
+uv sync --locked --extra dev --extra boosting
+```
+
+Copy `.env.example` to `.env` using your editor. Secrets, datasets, virtual environments and generated runs are ignored by Git. `uv.lock` records core, development and optional dependencies. See [reproducibility](docs/reproducibility.md) for restricted Windows environments and lockfile policy.
+
+## Free mode and optional LLM planning
+
+`KS_LLM_PROVIDER=deterministic` is the default and needs no key or network for local CSV workflows. Every agent still performs specialized work, including feedback-driven tuning.
+
+To configure an endpoint in `.env`:
+
+```dotenv
+KS_LLM_PROVIDER=openrouter
+KS_LLM_API_KEY=your-own-key
+KS_LLM_MODEL=your-selected-model-id
+```
+
+Providers: `openrouter`, `groq`, `openai-compatible`, `local`, or `deterministic`. For a local compatible server, use `KS_LLM_PROVIDER=local`, `KS_LLM_BASE_URL=http://localhost:11434/v1` and a model installed on that server. No local model download is automatic. Invalid/unavailable structured responses fall back to deterministic planning with a warning. Only schema/quality summaries are sent, though column names may still be sensitive. Suggestions cannot change metrics, budgets or submission authorization.
+
+## Kaggle authentication and rules
+
+Use [Kaggle account settings](https://www.kaggle.com/settings) to configure credentials. Supported official configuration includes `KAGGLE_API_TOKEN`, `KAGGLE_USERNAME` plus `KAGGLE_KEY`, or `~/.kaggle/kaggle.json` (`%USERPROFILE%\.kaggle\kaggle.json` on Windows). `KAGGLE_CONFIG_DIR` can point to a separate credential directory. Never commit credentials.
+
+Open the competition website and manually accept its rules if required. Some competitions restrict eligibility or require notebook execution; this runner does not bypass those restrictions. The server enforces account quotas. KaggleSlayer permits at most one attempted upload per run and never retries an uncertain upload.
+
+```bash
+uv run python -m kaggle_slayer doctor --competition titanic --require-kaggle
+```
+
+The authenticated check must succeed before an official run can download data. Local CSV execution remains available with `--data-dir`.
+
+## Run a competition
+
+```bash
+# Three baseline families, two tuning trials, validated CSV; no upload.
+uv run python -m kaggle_slayer run --competition titanic --max-experiments 5 --no-submit
+
+# Explicitly authorize one upload after training and validation.
+uv run python -m kaggle_slayer run --competition titanic --max-experiments 5 --submit
+
+# Use official files already downloaded locally.
+uv run python -m kaggle_slayer run --competition titanic --data-dir data/titanic --no-submit
+
+# Switch task and metric using the included profile.
+uv run python -m kaggle_slayer run --competition house-prices-advanced-regression-techniques --no-submit
+
+# Optional extended roster and budgets; requires the boosting extra.
+uv run python -m kaggle_slayer run --competition titanic --config configs/boosting.yaml --no-submit
+
+# Reserve one experiment for a measured voting/averaging ensemble.
+uv run python -m kaggle_slayer run --competition titanic --config configs/ensemble.yaml --no-submit
+```
+
+Use `uv run python -m kaggle_slayer run --help` for flags. `--profile path.yaml` supplies competition schema/metric overrides; `--config path.yaml` supplies run budgets and model choices. CLI values take precedence. Defaults: five folds, five experiments, two tuning trials, two CPU threads, a 30-minute scheduling budget and five-minute experiment timeout. Failed attempts consume budget. At least four experiments are needed to optimize after three baselines.
+
+Another competition can use a profile such as:
+
+```yaml
+competition: my-competition
+target: outcome
+id_column: record_id
+task: classification
+metric: roc_auc
+prediction_kind: probability
+train_file: train.csv
+test_file: test.csv
+sample_file: sample_submission.csv
+validation: stratified
+```
+
+The runner infers a single train-only target and template identifier when unambiguous. Task inference uses type/cardinality; explicitly override integer-valued regression. Metrics require a known profile, recognized API metadata or YAML. Unresolved relationships/formats produce errors. See [experiment details](docs/experiments.md) for metrics, positive-class conventions and validation choices.
+
+## Inspect, resume and submit a saved result
+
+Replace `RUN_ID` with the ID from an actual run:
+
+```bash
+uv run python -m kaggle_slayer runs
+uv run python -m kaggle_slayer inspect RUN_ID
+uv run python -m kaggle_slayer resume RUN_ID
+uv run python -m kaggle_slayer submit RUN_ID
+uv run python -m kaggle_slayer refresh RUN_ID
+```
+
+`submit RUN_ID` explicitly authorizes one upload of a completed run's validated CSV. It verifies file integrity and refuses fixture/public-demo data or a second attempt. Resume verifies dataset fingerprints and reuses completed experiments; submission permission must be supplied again with `resume --submit`. A completed resume is a no-op; use `submit` to upload a completed no-submit run. `refresh` only reads feedback.
+
+## Dashboard
+
+```bash
+uv run streamlit run dashboard/app.py
+```
+
+Open [localhost:8501](http://localhost:8501). Overview, Agent Activity, Experiments, Competition Performance and Artifacts read the actual SQLite store. Select a run, inspect decisions, compare models, view EDA and download predictions. Enable automatic refresh during training. `KS_ARTIFACT_ROOT` or the sidebar selects another artifact directory. This is a trusted local console, without hosted authentication.
+
+## Demonstrations and measured results
+
+```bash
+# Fully offline, explicitly synthetic examples.
+uv run python scripts/demo.py
+uv run python scripts/demo.py --task regression
+
+# Real public observations; public internet, no Kaggle credentials.
+uv run python scripts/public_titanic_demo.py
+```
+
+The public demo downloads from the [seaborn example data repository](https://github.com/mwaskom/seaborn-data), creates a local stratified 80/20 holdout and evaluates it once after selection. It records the source hash. **This is not an official Kaggle download, test set, submission or leaderboard result.** Demo data is marked in `provenance.json` and prohibited from upload.
+
+The real public Titanic run measured **0.82305 five-fold CV accuracy and 0.78212 untouched local holdout accuracy**, with 712 training and 179 holdout rows. The difference is reported honestly; holdout labels were never fed back into planning. Synthetic classification measured 0.78333 CV accuracy, and synthetic regression measured 0.14961 RMSLE. See the [actual execution evidence](evidence/README.md) for per-experiment results, logs and provenance. None of these numbers establishes a competition rank.
+
+**The official Titanic workflow completed through authenticated download, five measured experiments and a real successful submission.** LightGBM achieved **0.84060 five-fold CV accuracy** on 891 training rows. Its 418-row CSV was uploaded once as submission **57504220**, and Kaggle returned **0.75358 public accuracy** with status **COMPLETE**. The reviewer flagged the 0.08702 validation/public discrepancy and the planner proposed a stricter validation audit. The top-20% target has not been established; no rank is inferred from existing account-rank metadata.
+
+**House Prices also completed against the official API without source changes:** 1,460 training rows, 1,459 validated test predictions and five experiments. A tuned LightGBM model measured **0.13105 natural-log RMSE**. Its overfitting warning is preserved. House Prices was not submitted. See [actual execution evidence](evidence/README.md) for measured results and limitations.
+
+## Tests and code quality
+
+```bash
+uv run pytest
+uv run ruff check src tests dashboard scripts examples
+uv run ruff format --check src tests dashboard scripts examples
+```
+
+Tests cover configuration, state/recovery, fold-fit transforms, split integrity, metrics/direction, submission formats, mocked Kaggle operations, upload safety, provider fallback, installed model families and Streamlit rendering. Default tests never need live Kaggle credentials. Optional XGBoost/CatBoost cases skip when the boosting extra is absent. [Test evidence](evidence/README.md) reports the actual result; supplied GitHub Actions have not been executed remotely in this build.
+
+## Artifacts and example output
+
+Each run writes `artifacts/runs/<run-id>/`: state, decisions, summary, evaluation, comparison/EDA HTML, split indices, checkpoints, OOF arrays, importance CSVs and `submissions/submission.csv`. `artifacts/metadata.sqlite` serves the dashboard and history. Every decision includes agent, timestamp, context, action, rationale, tool/result, artifacts and next action. Snapshots include seeds, package versions and dataset hashes.
+
+A local run prints its actual ID, phases, selected checkpoint, measured metric, CSV path and `leaderboard.status=not_submitted`. Curated [example submissions and logs](evidence/) are exported from executed demos. Large/private data and model binaries stay outside version control.
+
+## Development and Docker
+
+```bash
+uv add pandas
+uv add --optional dev pytest
+uv sync --locked --extra dev
+uv lock --upgrade
+```
+
+The Dockerfile uses uv and the OpenMP runtime needed by LightGBM. Build with `docker build -t kaggle-slayer .` and run with `docker run --rm -p 8501:8501 -v ./artifacts:/app/artifacts kaggle-slayer`. Mount credentials separately for authorized competition runs. Docker execution has not been verified in this environment.
+
+## Limitations and next steps
+
+Scope is CPU-based, in-memory tabular CSV classification/regression with one target. Image/NLP models, arbitrary joins, multi-output problems, notebook-only submissions, distributed training and automatic rule acceptance are unsupported. Dense encoding limits may restrict large data. Leakage warnings do not prove absence of subtle leakage; grouped/time validation remains a competition-specific choice. Repeated CV selection can overfit validation. LLM endpoints and authenticated Kaggle operations require configuration. Performance and leaderboard percentile are never guaranteed.
+
+Future improvements: optimized ensemble weights, richer profile discovery, native categorical pipelines, stronger shift/leakage diagnostics, exact sampler-RNG replay and hosted dashboard authentication. Continue with the [demo walkthrough](docs/demo.md), [experiment protocol](docs/experiments.md) and [reproducibility guide](docs/reproducibility.md).
