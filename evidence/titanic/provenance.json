@@ -1,4 +1,0 @@
-{
-  "kind": "official_kaggle_api",
-  "description": "Authenticated competition download; dataset rows and submission predictions excluded from curated evidence"
-}

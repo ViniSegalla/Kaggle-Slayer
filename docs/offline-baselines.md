@@ -61,16 +61,16 @@ In deterministic mode, the planner explores leading families before concentratin
 
 The deterministic team uses a Competition Planner, Data Engineer, Modeler, Evaluator and Leaderboard Reviewer with distinct tools and policies. Its reviewer can write `next_run_plan.json` after public feedback or refresh; the current agentic loop does not reconvene after upload.
 
-## Cached-data benchmark
+## Cached-data baseline
 
-An executed cached-data Home Data benchmark improved local MAE from **16,334.15 to 15,539.69** on identical primary folds and data fingerprints. The selected ensemble also beat the single-model finalist on a second split seed. It was **not submitted**, and the train/CV gap remains flagged. See [measured evidence and reproduction](../evidence/search-improvements.md); local gains do not guarantee public-score gains.
-
-To reproduce that deterministic benchmark with cached official data, select both settings explicitly. The older command in the evidence document predates the CLI's agentic default:
+With official Home Data CSVs already downloaded and competition rules accepted, run an offline baseline with both provider and execution mode set explicitly:
 
 ```powershell
 $env:KS_LLM_PROVIDER = 'deterministic'
 uv run --locked python -m kaggle_slayer run --competition home-data-for-ml-course --data-dir data/home-data-for-ml-course --execution-mode deterministic --no-submit
 ```
+
+The bundled profile supplies the target and MAE metric. New results and model checkpoints remain under the ignored local artifact directory.
 
 ## Development datasets and demonstrations
 
@@ -86,7 +86,5 @@ uv run --locked python scripts/public_titanic_demo.py
 ```
 
 The public demo downloads from the [seaborn example data repository](https://github.com/mwaskom/seaborn-data), creates a local stratified 80/20 holdout and evaluates it once after selection. It records the downloaded source hash but currently uses a mutable `master` URL rather than a pinned revision or expected hash. Future downloads may therefore differ from the historical evidence. **This is not an official Kaggle download, test set, submission or leaderboard result.** Demo data is marked in `provenance.json` and prohibited from upload.
-
-The real public Titanic run measured **0.82305 five-fold CV accuracy and 0.78212 untouched local holdout accuracy**, with 712 training and 179 holdout rows. The difference is reported honestly; holdout labels were never fed back into planning. Synthetic classification measured 0.78333 CV accuracy, and synthetic regression measured 0.14961 RMSLE. See the [actual execution evidence](../evidence/README.md) for per-experiment results, logs and provenance. None of these numbers establishes a competition rank.
 
 These synthetic/public-data demonstrations are development evidence. The primary submission demonstration is the [recorded Home Data agentic run](../demo/home-data-for-ml-course-8ed561cbed5e/README.md).

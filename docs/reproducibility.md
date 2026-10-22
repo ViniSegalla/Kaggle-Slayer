@@ -33,4 +33,4 @@ uv run --locked pytest --basetemp=.test-tmp
 
 These paths are ignored by Git and Ruff. Source checks explicitly target `src tests dashboard scripts examples` so dependency runtimes are never linted or formatted.
 
-`artifacts/` and `data/` are private local outputs. Curated `evidence/` contains only generated synthetic examples, reports and test results. No Kaggle data, credentials or large checkpoints should be committed.
+`artifacts/` and `data/` are private local outputs. The `evidence/` index links to the best-run audit package and historical engineering-verification reports. The selected `demo/` package includes its trained checkpoints through a scoped Git exception; raw competition inputs, credentials and per-row training labels remain excluded.
