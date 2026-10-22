@@ -2,7 +2,7 @@
 
 Run **home-data-for-ml-course-8ed561cbed5e** is the featured audit demo, recorded on October 22, 2026. The user reported a new personal best; the saved Kaggle response records **public MAE 14,252.33305**, submission **57535510**, status **COMPLETE**.
 
-The [offline report](index.html) contains results and evidence links; [metrics.json](metrics.json) provides exact values. The [previous demo](../home-data-for-ml-course-2655b38be9fe/README.md) is preserved separately.
+The [offline report](index.html) contains results and evidence links; [metrics.json](metrics.json) provides exact values.
 
 ## Verify and display
 
@@ -33,7 +33,6 @@ Open [the report](http://localhost:8766) or [the one-run dashboard](http://local
 | Local CV MAE | **15,257.82778**, fold SD **1,719.32771** |
 | Kaggle public MAE | **14,252.33305** |
 | Submission | **57535510**, COMPLETE, October 22, 2026 at 15:59 São Paulo time |
-| Improvement vs prior featured demo | **588.50276 lower MAE (3.97%)** |
 | Dataset | 1,460 train / 1,459 test rows, 79 input features |
 | Experiments | Six completed; no training timeouts |
 | Provider | OpenRouter / <code>anthropic/claude-sonnet-5.5</code> |

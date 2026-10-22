@@ -8,7 +8,7 @@ Executed on **October 21, 2026 (America/Sao_Paulo)** using Python 3.11.15 and th
 - Six upstream LightGBM deprecation warnings concern `eval_set`; they did not fail training or tests. The locked supported dependency version accepts this API.
 - Ruff checks and formatting passed for source, tests, dashboard, scripts and examples.
 - Built wheel and isolated installation smoke test passed for Titanic and House Prices profile discovery outside the repository: [actual log](wheel-smoke.log).
-- Live Streamlit UI was inspected in the browser. Actual screenshots appear below. Docker and remote GitHub Actions execution were not tested here.
+- Live Streamlit UI was inspected in the browser. Actual screenshots appear below. Remote GitHub Actions execution was not tested here.
 
 ## Official Titanic: complete workflow and actual upload
 

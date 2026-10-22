@@ -168,13 +168,6 @@
     }
   ],
   "personal_best": {
-    "reported_by_user": true,
-    "previous_featured_run": "home-data-for-ml-course-2655b38be9fe",
-    "previous_featured_public_mae": 14840.83581,
-    "mae_reduction_vs_previous_demo": 588.5027600000012,
-    "percent_reduction_vs_previous_demo": 3.9654286829550283,
-    "previous_recorded_best_run": "home-data-for-ml-course-ed7b068bb2b0",
-    "previous_recorded_best_public_mae": 14672.93702,
-    "best_among_prior_recorded_scores": true
+    "reported_by_user": true
   }
 }

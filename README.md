@@ -4,11 +4,11 @@
 
 KaggleSlayer turns tabular competition CSVs into measured experiments, trained checkpoints and a validated submission file. Five specialized agents collaborate through typed state, use cross-validation to guide improvements, and record decisions in SQLite and JSONL. A Streamlit console exposes the actual activity and results.
 
-The goal is competitive performance with minimal competition-specific code. **Top 20% is an aspiration, never a promised result.** The CLI defaults to the agentic configuration, using an LLM coordinator and specialist sessions to choose executable actions, observe measured results, and revise the pipeline. Configure the LLM provider/model/key before running. Offline deterministic operation remains available with `--execution-mode deterministic`. Upload permission belongs to trusted runtime policy.
+The goal is competitive performance with minimal competition-specific code. **Top 20% is an aspiration, never a promised result.** The CLI defaults to the agentic configuration, using an LLM coordinator and specialist sessions to choose executable actions, observe measured results, and revise the pipeline. Configure the LLM provider/model/key before running. Upload permission belongs to trusted runtime policy.
 
 ## Recorded competition demo
 
-The [Home Data personal-best audit package](demo/home-data-for-ml-course-8ed561cbed5e/README.md) preserves completed live agentic run **`8ed561cbed5e`** in a permanent `demo/` directory, with its original logs, trained checkpoints, experiment results, validated predictions and Kaggle receipts. Its LightGBM + CatBoost ensemble measured **15,257.82778 CV MAE** and **14,252.33305 Kaggle public MAE**, submission **57535510**, status **COMPLETE**. This new personal best lowers public MAE by **3.97%** relative to the previous featured demo (**14,840.83581**). The [previous audit package](demo/home-data-for-ml-course-2655b38be9fe/README.md) remains available unchanged.
+The [Home Data personal-best audit package](demo/home-data-for-ml-course-8ed561cbed5e/README.md) preserves completed live agentic run **`8ed561cbed5e`** in a permanent `demo/` directory, with its original logs, trained checkpoints, experiment results, validated predictions and Kaggle receipts. Its LightGBM + CatBoost ensemble measured **15,257.82778 CV MAE** and **14,252.33305 Kaggle public MAE**, submission **57535510**, status **COMPLETE**.
 
 After installing dependencies below, verify the evidence and display this run without retraining, LLM requests or another upload:
 
@@ -28,21 +28,21 @@ uv run --locked python -m kaggle_slayer run --competition titanic
 uv run --locked python -m examples.scripted_swarm --output artifacts/swarm-example
 ```
 
-The coordinator delegates to data/validation, pipeline/modeling, evaluation, and submission specialists as needed. Agents select supported preprocessing, feature operations, model parameters, trials, ensembles and stopping through validated action/tool contracts. Independent LLM tasks and experiments can run concurrently; a single scheduler reserves resources and commits evidence. Provider failures checkpoint an explicit incomplete outcome. Old runs retain deterministic execution.
+The coordinator delegates to data/validation, pipeline/modeling, evaluation, and submission specialists as needed. Agents select supported preprocessing, feature operations, model parameters, trials, ensembles and stopping through validated action/tool contracts. Independent LLM tasks and experiments can run concurrently; a single scheduler reserves resources and commits evidence. Provider failures checkpoint an explicit incomplete outcome.
 
-See [agentic usage and recovery](docs/agentic-usage.md), [versioned schemas/prompts](docs/contracts/swarm-v1), and [offline execution evidence](evidence/swarm-offline.md). The deterministic workflow below remains available as a separate mode; its optional initial model-ordering advice is a legacy feature.
+See [agentic usage and recovery](docs/agentic-usage.md), [versioned schemas/prompts](docs/contracts/swarm-v1), and [offline execution evidence](evidence/swarm-offline.md).
 
 ## Features
 
 - Official Kaggle metadata, authenticated downloads, explicitly authorized single-attempt uploads and submission feedback.
 - Binary/multiclass tabular classification and single-target regression, with YAML overrides for ambiguous requirements.
 - Six model families available to the agentic team: linear models, Random Forest, histogram gradient boosting, LightGBM, CatBoost and XGBoost.
-- Fold-fit preprocessing, stratified/K-fold/group/time validation and inner-fold early stopping. Deterministic mode uses bounded Optuna optimization.
+- Fold-fit preprocessing, stratified/K-fold/group/time validation and inner-fold early stopping.
 - CV-tested voting/averaging inside the experiment budget; agentic mode chooses whether to request ensembles and finalist confirmations.
 - Metric-direction handling, overfitting warnings, OOF evidence, model checkpoints, feature importance and strict submission checks.
 - Durable decisions, configuration/environment snapshots, data fingerprints, worker timeouts and interrupted-run recovery.
 - Dashboard with history, agent/tool timeline, experiment comparisons, actual feedback and artifact downloads.
-- Offline tests, synthetic demos, a real public Titanic holdout demo, Docker and uv-based CI.
+- Offline tests, synthetic demos, a real public Titanic holdout demo and uv-based CI.
 
 ## Architecture
 
@@ -76,9 +76,9 @@ flowchart LR
 | Evaluation | Requests measured rankings, error diagnostics and finalist confirmations, then reports evidence to the coordinator. |
 | Submission | Generates and validates predictions for the measured winner. Upload authorization and execution belong to trusted runtime policy. |
 
-This diagram and table describe the default agentic mode. Deterministic compatibility mode uses a Competition Planner, Data Engineer, Modeler, Evaluator and Leaderboard Reviewer with distinct tools and policies. See [architecture](docs/architecture.md), [agent contracts](docs/agents.md) and [technical decisions](docs/decisions.md).
+This diagram and table describe the agentic workflow. See [architecture](docs/architecture.md), [agent contracts](docs/agents.md) and [technical decisions](docs/decisions.md).
 
-Actual upload and Kaggle feedback retrieval occur after the agentic loop finishes. The current agentic flow records scores and account standing but does not start another LLM planning turn from that feedback. Deterministic mode can produce `next_run_plan.json` after submission or `refresh`; leaderboard-driven replanning is therefore only partially implemented across the two modes.
+Actual upload and Kaggle feedback retrieval occur after the agentic loop finishes. Scores and account standing are recorded; planning a new run from that feedback remains future work.
 
 ## Stack and installation
 
@@ -95,7 +95,7 @@ uv run --locked python -m kaggle_slayer doctor
 
 CatBoost and XGBoost are included in the standard installation; no boosting extra is needed. Run `uv sync --locked --extra dev` after updating an existing checkout. The old `boosting` extra is retained as an empty compatibility alias.
 
-Copy `.env.example` to `.env` using your editor. **The example sets `KS_LLM_PROVIDER=deterministic`, while the CLI defaults to agentic execution.** These are separate settings: choose `--execution-mode deterministic` for the offline workflow, or configure a compatible LLM provider/model and any required key before an agentic run. Setting the provider alone does not select the execution mode.
+Copy `.env.example` to `.env` using your editor. The template selects OpenRouter. Replace the model and API-key placeholders with your own configuration before starting a live agentic run. Existing working `.env` files can be kept as they are.
 
 Secrets, datasets, virtual environments and generated runs are ignored by Git. `uv.lock` records core and development dependencies. Use `uv run --locked` to preserve that dependency resolution. See [reproducibility](docs/reproducibility.md) for restricted Windows environments and lockfile policy.
 
@@ -105,36 +105,19 @@ CLI runs show the active agent, experiment/model, budget position, validation ro
 
 Each line has a UTC timestamp and is saved under `artifacts/runs/<run-id>/progress.log`. Structured worker events are saved in each experiment's `progress.jsonl`, while detailed library output stays in `worker.log`. Agent decisions remain in SQLite and `decisions.jsonl`. Raw LLM responses, credentials and raw worker stdout are not streamed to the console. `resume` and `submit` use the same live reporting; `refresh` reports reviewer activity.
 
-## Deterministic mode and legacy initial advice
+## LLM configuration
 
-`KS_LLM_PROVIDER=deterministic` disables LLM requests. Pair it with `--execution-mode deterministic` for local CSV workflows without a provider key or network access. The deterministic agents still perform specialized work, including feedback-driven tuning.
-
-```bash
-# With KS_LLM_PROVIDER=deterministic in .env and existing local CSVs:
-uv run --locked python -m kaggle_slayer run --competition titanic --data-dir data/titanic --execution-mode deterministic --no-submit
-```
-
-To configure an endpoint in `.env`:
+Configure your provider in `.env`:
 
 ```dotenv
 KS_LLM_PROVIDER=openrouter
-KS_LLM_API_KEY=your-own-key
+KS_LLM_API_KEY=your-openrouter-api-key
 KS_LLM_MODEL=your-selected-model-id
 ```
 
-Providers: `openrouter`, `groq`, `openai-compatible`, `local`, or `deterministic`. For a local compatible server, use `KS_LLM_PROVIDER=local`, `KS_LLM_BASE_URL=http://localhost:11434/v1` and a model installed on that server. No local model download is automatic. In deterministic mode, invalid/unavailable initial advice falls back to deterministic planning with a warning. Agentic mode never falls back. The legacy initial request sends bounded schema/quality and target aggregates, validation settings, budgets and model capabilities. Column names and target statistics may still be sensitive in that legacy request; agentic context uses opaque feature IDs. Raw rows, category values, class label names, credentials and local paths are excluded. Suggestions cannot change metrics, budgets or submission authorization.
+Supported live providers are `openrouter`, `groq`, `openai-compatible` and `local`. A local compatible server also needs `KS_LLM_BASE_URL` and an installed model. Agents use the configured provider throughout execution; provider failure checkpoints an incomplete run.
 
-The versioned [initial planner prompt](src/kaggle_slayer/llm/prompts.py) belongs to deterministic mode's optional legacy advice. It requests a brief rationale, allowed-model priorities and up to two dataset risks before training; Python retains the experiment policy. The agentic team instead uses the [role-specific action contracts](docs/contracts/swarm-v1) throughout execution.
-
-To test one provider request using the legacy planning schema, without downloading data or training models:
-
-```bash
-uv run --locked python -m kaggle_slayer llm-check
-```
-
-This sends **one** request with synthetic context using the configured provider/model and output budget. It checks provider connectivity and legacy advice parsing; it does not demonstrate the full agentic action protocol or workflow. `KS_LLM_MAX_TOKENS` accepts 128–32768: the code default is 700, while the supplied `.env.example` overrides it to 32768. Choose a value supported by your endpoint and within the run's aggregate budget. This is a per-request output limit, not a monetary budget. The check may consume provider credits or free-tier quota. It never retries, changes models, or contacts Kaggle. A failed check exits with code 1; a deterministic provider reports `disabled` and makes no request. The ordinary `doctor` command does not test LLM requests.
-
-Failures now identify configuration problems, HTTP authentication/credit/rate-limit errors, unsupported JSON mode, timeouts, invalid JSON, truncated output or planning-schema mismatches. Safe diagnostics include provider/model, HTTP status, a category and corrective action. Model runs save these under `metadata.llm_diagnostic` and in an agent decision, visible in the dashboard. Credentials, response bodies, headers, exception text and failed model-output values are excluded. See [LLM troubleshooting](docs/llm-troubleshooting.md).
+The template sets `KS_LLM_MAX_TOKENS=32768`. Select an output allowance supported by your endpoint and within the aggregate run budget. Agent contexts contain aggregate evidence and opaque references; credentials, local paths and raw CSV rows are excluded. See [agentic configuration and recovery](docs/agentic-usage.md) and [provider diagnostics](docs/llm-troubleshooting.md).
 
 ## Kaggle authentication and rules
 
@@ -157,9 +140,6 @@ uv run --locked python -m kaggle_slayer run --competition titanic
 # Explicitly authorize one upload after training and validation.
 uv run --locked python -m kaggle_slayer run --competition titanic --submit
 
-# Deterministic search: five baselines, tuning, an ensemble and finalist checks.
-uv run --locked python -m kaggle_slayer run --competition titanic --execution-mode deterministic --no-submit
-
 # Explicit row-limit override for a supported tabular competition.
 uv run --locked python -m kaggle_slayer run --competition playground-series-s6e10 --max-rows 4000000 --no-submit
 
@@ -169,8 +149,6 @@ uv run --locked python -m kaggle_slayer run --competition titanic --data-dir dat
 # Switch task and metric using the included profile.
 uv run --locked python -m kaggle_slayer run --competition house-prices-advanced-regression-techniques --no-submit
 
-# Optional deterministic profile with three model families and an ensemble.
-uv run --locked python -m kaggle_slayer run --competition titanic --config configs/ensemble.yaml --execution-mode deterministic --no-submit
 ```
 
 `--max-dense-cells` overrides the default 40-million encoded-cell memory guard. This estimates preprocessing size rather than enforcing an OS memory limit. Dataset row, memory and unresolved-metric failures stop agentic runs with a specific error and corrective option, instead of spending more LLM requests on unchanged constraints. Set a new limit or profile when starting a new run; saved constraints remain immutable.
@@ -179,33 +157,25 @@ Source-data size is checked during inspection; candidate-specific encoding, miss
 
 Use `uv run --locked python -m kaggle_slayer run --help` for flags. `--profile path.yaml` supplies competition schema/metric overrides; `--config path.yaml` supplies run budgets and model choices. CLI values take precedence. `--max-rows` overrides the default one-million-row CSV limit; file-size and memory limits still apply.
 
-| Setting | Agentic CLI default | Deterministic default |
-|---|---|---|
-| Run profile | `configs/agentic.yaml` | `configs/default.yaml` |
-| Experiment budget | 8 | 12 |
-| Per-experiment timeout | 180 seconds | 300 seconds |
-| Validation / CPU / total time | 5 folds / 2 threads / 30 minutes | 5 folds / 2 threads / 30 minutes |
-| Model roster | Six allowed families, including histogram gradient boosting | Five baseline families, excluding histogram gradient boosting |
-| Experiment scheduling | LLM-selected actions; tuning, ensembles and confirmations are optional capabilities | Normally five baselines, four tuning trials, one ensemble and two finalist confirmations |
+| Setting | Agentic default |
+|---|---|
+| Run profile | `configs/agentic.yaml` |
+| Experiment budget | 8 |
+| Per-experiment timeout | 180 seconds |
+| Validation / CPU / total time | 5 folds / 2 threads / 30 minutes |
+| Model roster | Six allowed families, including histogram gradient boosting |
+| Scheduling | LLM-selected actions; tuning, ensembles and confirmations are optional |
+| LLM requests / turns | 80 each |
+| Aggregate charged tokens | 1,000,000 |
+| Concurrent agent calls | 2 |
 
-The agentic profile additionally caps requests/turns at 80, aggregate charged tokens at 1,000,000 and concurrent agent calls at two. There is no mandatory baseline sequence or reserved optional-work queue in this mode. An eight-experiment budget is a ceiling, not a requirement to train eight models. Edit `models` in the selected run profile or pass an explicit `--config`; the agentic profile overrides the roster in `configs/default.yaml`.
+The experiment budget is a ceiling. Agents choose which supported families to train and whether to request tuning, ensembling or finalist confirmation. Failed training attempts consume budget; time limits may stop a run early. Saved runs retain their recorded configuration.
 
-When passing a custom `--config`, set `execution_mode: agentic` in that file or pass `--execution-mode agentic` to retain agentic execution. An explicit profile without an execution mode uses the schema's deterministic default.
-
-In deterministic mode, the planner explores leading families before concentrating remaining trials on the winner. `--max-experiments 5` funds its five baselines. Failed training attempts consume budget; time limits may stop either mode early. Saved runs retain their recorded configuration.
+For a custom `--config`, include `execution_mode: agentic` in the file or pass `--execution-mode agentic`. Edit `models` in that selected profile to change the allowed roster.
 
 Default preprocessing gives CatBoost native categorical features; other trees use unscaled, fold-imputed features with numeric missingness indicators, while linear models use scaling. Agentic pipelines can choose supported imputation, scaling and feature operations through their tool contracts. Regression losses follow MAE or squared error where supported; each experiment records its actual training contract and any surrogate/transformed-target mismatch. Ensembles keep independent preprocessing per member and must beat the best single model by more than the configured relative improvement threshold (default 0.1%).
 
 Finalist confirmations freeze hyperparameters and use a second split seed. They are diagnostics, excluded from primary ranking, and do not change selection or trigger more tuning. They reuse labels and **are not an untouched holdout**. Group/time validation is preserved and skips random-seed confirmation. The dashboard exposes stability and aggregate out-of-fold error slices; LLM planning cautions appear in decision history and metadata rather than execution warnings. See [experiment protocol](docs/experiments.md).
-
-An executed cached-data Home Data benchmark improved local MAE from **16,334.15 to 15,539.69** on identical primary folds and data fingerprints. The selected ensemble also beat the single-model finalist on a second split seed. It was **not submitted**, and the train/CV gap remains flagged. See [measured evidence and reproduction](evidence/search-improvements.md); local gains do not guarantee public-score gains.
-
-To reproduce that deterministic benchmark with cached official data, select both settings explicitly. The older command in the evidence document predates the CLI's agentic default:
-
-```powershell
-$env:KS_LLM_PROVIDER = 'deterministic'
-uv run --locked python -m kaggle_slayer run --competition home-data-for-ml-course --data-dir data/home-data-for-ml-course --execution-mode deterministic --no-submit
-```
 
 Another competition can use a profile such as:
 
@@ -248,46 +218,22 @@ Open [localhost:8501](http://localhost:8501). Overview, Agent Activity, Experime
 
 ## Demonstrations and measured results
 
-These scripts select deterministic execution directly. Keep `KS_LLM_PROVIDER=deterministic` in `.env` to disable their optional legacy LLM advice request; a configured remote provider can otherwise make a request even in deterministic execution.
+For offline integration checks, scripted agent responses exercise real model training and prediction validation without provider credentials:
 
 ```bash
-# Offline synthetic examples with KS_LLM_PROVIDER=deterministic.
-uv run --locked python scripts/demo.py
-uv run --locked python scripts/demo.py --task regression
-
-# Real public observations; public internet, no Kaggle credentials.
-uv run --locked python scripts/public_titanic_demo.py
+uv run --locked python -m examples.scripted_swarm --output artifacts/swarm-example
+uv run --locked python -m examples.scripted_swarm --task regression --output artifacts/swarm-regression
 ```
 
-The public demo downloads from the [seaborn example data repository](https://github.com/mwaskom/seaborn-data), creates a local stratified 80/20 holdout and evaluates it once after selection. It records the downloaded source hash but currently uses a mutable `master` URL rather than a pinned revision or expected hash. Future downloads may therefore differ from the historical evidence. **This is not an official Kaggle download, test set, submission or leaderboard result.** Demo data is marked in `provenance.json` and prohibited from upload.
+These examples use synthetic data and fake LLM responses. See [offline baselines and development workflows](docs/offline-baselines.md) for additional test scenarios.
 
-The real public Titanic run measured **0.82305 five-fold CV accuracy and 0.78212 untouched local holdout accuracy**, with 712 training and 179 holdout rows. The difference is reported honestly; holdout labels were never fed back into planning. Synthetic classification measured 0.78333 CV accuracy, and synthetic regression measured 0.14961 RMSLE. See the [actual execution evidence](evidence/README.md) for per-experiment results, logs and provenance. None of these numbers establishes a competition rank.
+The [official Home Data audit package](demo/home-data-for-ml-course-8ed561cbed5e/README.md) is the submission demonstration. It includes live agentic decisions, all six checkpoints, validated predictions and official Kaggle receipts.
 
-The committed [execution evidence](evidence/README.md) is a historical snapshot. It includes the original deterministic Titanic submission **57504220** with public accuracy **0.75358**, an unsubmitted House Prices run and synthetic/public-data demonstrations. The committed [swarm demonstration](evidence/swarm-offline.md) uses scripted fake LLM responses with real training; it does not itself prove live provider or Kaggle execution.
-
-**Later official runs completed with real Kaggle submissions.** The following results were verified against saved local run state and API responses on **October 22, 2026 (America/Sao_Paulo)**. All listed submissions have recorded status `COMPLETE`; the four agentic runs also contain successful live-provider telemetry.
-
-| Competition | Execution / selected model | Five-fold local CV | Kaggle public score | Submission reference |
+| Competition | Selected model | Five-fold CV MAE | Kaggle public MAE | Submission |
 |---|---|---:|---:|---|
-| Home Data for ML Course | Deterministic with initial LLM advice / LightGBM + XGBoost ensemble | 15,539.69267 MAE | 14,672.93702 | `57507548` |
-| Titanic | Agentic / Random Forest + LightGBM ensemble | 0.84061 accuracy | 0.75837 | `57532150` |
-| House Prices | Agentic / LightGBM | 0.13485 log RMSE | 0.12989 | `57533216` |
-| Playground S6E10 | Agentic / LightGBM | 0.95782 ROC AUC | 0.95712 | `57533948` |
-| Playground S5E3 | Agentic / logistic regression | 0.89480 ROC AUC | 0.86001 | `57534050` |
+| Home Data for ML Course | LightGBM + CatBoost ensemble | 15,257.82778 | **14,252.33305** | **57535510 · COMPLETE** |
 
-The corresponding run IDs are:
-
-- `home-data-for-ml-course-ed7b068bb2b0`
-- `titanic-921d899100fc`
-- `house-prices-advanced-regression-techniques-6f332cf0f5ae`
-- `playground-series-s6e10-8b8914201f44`
-- `playground-series-s5e3-905de5a43690`
-
-On the original workstation, use `uv run --locked python -m kaggle_slayer inspect RUN_ID` to inspect these records. Their detailed state, decisions, provider usage, checkpoints and upload receipts remain under ignored `artifacts/runs/<run-id>/` directories. **Those newer live-run artifacts are not included in a fresh clone or the committed evidence package.** Generating a new run creates new local evidence; it does not restore these historical runs.
-
-The separately archived personal-best run `home-data-for-ml-course-8ed561cbed5e` is the primary audit demo. Its [permanent package](demo/home-data-for-ml-course-8ed561cbed5e/README.md) includes live agentic traces and checkpoints, with public MAE **14,252.33305**. The [previous featured run](demo/home-data-for-ml-course-2655b38be9fe/README.md) is preserved separately; the older runs in the table above remain local historical records.
-
-Home Data's saved account standing was **353 of 3,862 teams (top 9.14%)**. Its scope is explicitly `current_account_best`, so it may reflect a different submission and is not conclusive proof that this run achieved top 20%. The same distinction applies to every displayed account rank. The Titanic run above also retains a substantial CV/public gap of about **0.08224**; local scores and workflow completion do not establish competitive generalization.
+The saved account standing is **304 / 3,876 teams (top 7.84%)**, scoped to `current_account_best`. The exact submission score and account-level standing are recorded separately. The evaluator's large train/CV gap warning is preserved in the audit package.
 
 ## Tests and code quality
 
@@ -307,9 +253,9 @@ A run prints its actual ID, execution status, measured metric, selected checkpoi
 
 Ordinary run checkpoints are generated as `artifacts/runs/<run-id>/experiments/<experiment-id>/model.joblib`. The primary audit demo preserves them under `demo/home-data-for-ml-course-8ed561cbed5e/runs/home-data-for-ml-course-8ed561cbed5e/experiments/`, including the selected `ens_lgbm_cat/model.joblib`. Its manifest records **77 original file hashes**; `audit.py verify` checks the **70 shareable files**, and `verify --full` additionally checks the **seven local-only label outputs**. The earlier source archive under ignored `dist/` predates these audit packages.
 
-The README, source/configuration, technical documentation, demonstration commands, logs, plots, dashboard screenshots and two live agentic audit packages with checkpoints are present. Remaining work includes establishing a submission-specific competitive standing and implementing agentic replanning after Kaggle feedback.
+The README, source/configuration, technical documentation, demonstration commands, logs, plots, dashboard screenshots and a live agentic audit package with checkpoints are present. Remaining work includes establishing a submission-specific competitive standing and implementing agentic replanning after Kaggle feedback.
 
-## Development and Docker
+## Development
 
 ```bash
 uv add pandas
@@ -318,12 +264,10 @@ uv sync --locked --extra dev
 uv lock --upgrade
 ```
 
-The Dockerfile uses uv and the OpenMP runtime needed by LightGBM. Build with `docker build -t kaggle-slayer .` and run with `docker run --rm -p 8501:8501 -v ./artifacts:/app/artifacts kaggle-slayer`. Mount credentials separately for authorized competition runs. Docker execution has not been verified in this environment.
-
 ## Limitations and next steps
 
 Scope is CPU-based, in-memory tabular CSV classification/regression with one target. Image/NLP models, arbitrary joins, multi-output problems, notebook-only submissions, distributed training and automatic rule acceptance are unsupported. Dense encoding limits may restrict large data. Leakage warnings do not prove absence of subtle leakage; grouped/time validation remains a competition-specific choice. Repeated CV selection can overfit validation. LLM endpoints and authenticated Kaggle operations require configuration. Performance and leaderboard percentile are never guaranteed.
 
-Reproduction preserves recorded seeds, data fingerprints, split indices and dependency versions, but does not promise identical live LLM choices or byte-for-byte replay. An interrupted Optuna sampler's RNG stream is not fully checkpointed, and platform/library differences can change numerical results. The public-data demo uses a mutable source; historical checkpoints outside the archived audit demo remain local-only.
+Reproduction preserves recorded seeds, data fingerprints, split indices and dependency versions, but does not promise identical live LLM choices or byte-for-byte replay. Platform and library differences can change numerical results. Additional development-workflow limitations are documented in the [offline baseline guide](docs/offline-baselines.md).
 
-Future improvements: agentic planning after leaderboard feedback, nested evaluation of selection policies, pinned public-demo inputs, richer profile discovery, stronger shift/leakage diagnostics, exact sampler-RNG replay and hosted dashboard authentication. Continue with the [demo walkthrough](docs/demo.md), [experiment protocol](docs/experiments.md) and [reproducibility guide](docs/reproducibility.md). When using older walkthroughs or evidence commands, select `--execution-mode deterministic` explicitly for historical deterministic workflows; the CLI now defaults to agentic mode.
+Future improvements: agentic planning after leaderboard feedback, nested evaluation of selection policies, pinned public-demo inputs, richer profile discovery, stronger shift/leakage diagnostics, recovery replay and hosted dashboard authentication. Continue with the [demo walkthrough](docs/demo.md), [experiment protocol](docs/experiments.md) and [reproducibility guide](docs/reproducibility.md).

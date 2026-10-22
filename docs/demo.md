@@ -1,12 +1,15 @@
 # Practical demo walkthrough
 
+For the featured live competition evidence, start with the [recorded Home Data demo](../demo/home-data-for-ml-course-8ed561cbed5e/README.md). The development walkthrough below uses compatibility workflows; see [offline baselines](offline-baselines.md) for their configuration. The current `.env.example` selects OpenRouter for agentic runs.
+
 ## Five-minute offline demonstration
 
 From the repository root:
 
-```bash
+```powershell
 uv python install
 uv sync --locked --extra dev
+$env:KS_LLM_PROVIDER = 'deterministic'
 uv run python -m kaggle_slayer doctor
 uv run python scripts/demo.py
 uv run python scripts/demo.py --task regression
@@ -29,13 +32,13 @@ Actual recorded metrics, charts, logs and screenshots are in [evidence](../evide
 
 ## Official Titanic completion after authentication
 
-1. Configure official Kaggle credentials using `.env` or the Kaggle configuration directory.
+1. Configure official Kaggle credentials using `.env` or the Kaggle configuration directory. This historical walkthrough uses deterministic execution; set `KS_LLM_PROVIDER=deterministic` in the current shell to disable optional LLM advice, as described in the offline baseline guide.
 2. Open [Titanic](https://www.kaggle.com/competitions/titanic) and accept its rules manually, if required.
 3. Verify access, download and train:
 
 ```bash
 uv run python -m kaggle_slayer doctor --competition titanic --require-kaggle
-uv run python -m kaggle_slayer run --competition titanic --max-experiments 5 --no-submit
+uv run python -m kaggle_slayer run --competition titanic --execution-mode deterministic --max-experiments 5 --no-submit
 ```
 
 4. Review the generated CSV, validation report and competition rules. If you intend to upload, run the following with the actual run ID:
@@ -52,7 +55,7 @@ The build completed official Titanic training using existing credentials: 891 tr
 ## Portability, recovery and verification
 
 ```bash
-uv run python -m kaggle_slayer run --competition house-prices-advanced-regression-techniques --no-submit
+uv run python -m kaggle_slayer run --competition house-prices-advanced-regression-techniques --execution-mode deterministic --no-submit
 uv run python -m kaggle_slayer runs
 uv run python -m kaggle_slayer inspect RUN_ID
 uv run python -m kaggle_slayer resume RUN_ID
