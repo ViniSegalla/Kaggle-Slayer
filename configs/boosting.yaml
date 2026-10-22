@@ -1,7 +1,8 @@
-# uv sync --locked --extra dev --extra boosting
+# Boosting is included in the default installation and roster.
+# Retained as an explicit run-profile example; no longer required to enable these models.
 # uv run python -m kaggle_slayer run --competition titanic --config configs/boosting.yaml --no-submit
-models: [linear, random_forest, lightgbm, xgboost, catboost]
-max_experiments: 8
-max_iterations: 2
+models: [linear, random_forest, lightgbm, catboost, xgboost]
+max_experiments: 10
+max_iterations: 3
 optuna_trials: 2
 max_seconds: 1800

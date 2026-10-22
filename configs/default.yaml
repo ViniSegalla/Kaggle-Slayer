@@ -1,7 +1,7 @@
 seed: 42
 folds: 5
-max_experiments: 5
-max_iterations: 2
+max_experiments: 10
+max_iterations: 3
 max_seconds: 1800
 experiment_timeout: 300
 n_jobs: 2
@@ -9,4 +9,4 @@ optuna_trials: 2
 max_submissions: 1
 poll_attempts: 3
 poll_interval: 10
-models: [linear, random_forest, lightgbm]
+models: [linear, random_forest, lightgbm, catboost, xgboost]

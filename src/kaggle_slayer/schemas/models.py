@@ -50,8 +50,8 @@ class Competition(Schema):
 class RunConfig(Schema):
     seed: int = 42
     folds: int = Field(default=5, ge=2, le=20)
-    max_experiments: int = Field(default=5, ge=3, le=100)
-    max_iterations: int = Field(default=2, ge=1, le=20)
+    max_experiments: int = Field(default=10, ge=3, le=100)
+    max_iterations: int = Field(default=3, ge=1, le=20)
     max_seconds: int = Field(default=1800, ge=5, le=86400)
     experiment_timeout: int = Field(default=300, ge=2, le=14400)
     n_jobs: int = Field(default=2, ge=1, le=16)
@@ -61,7 +61,9 @@ class RunConfig(Schema):
     poll_interval: int = Field(default=10, ge=1, le=60)
     models: list[
         Literal["linear", "random_forest", "hist_gradient", "lightgbm", "xgboost", "catboost"]
-    ] = Field(default_factory=lambda: ["linear", "random_forest", "lightgbm"])
+    ] = Field(
+        default_factory=lambda: ["linear", "random_forest", "lightgbm", "catboost", "xgboost"]
+    )
     submit: bool = False
     data_dir: str | None = None
     artifact_root: str = "artifacts"

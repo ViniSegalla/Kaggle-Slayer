@@ -10,7 +10,7 @@ The goal is competitive performance with minimal competition-specific code. **To
 
 - Official Kaggle metadata, authenticated downloads, explicitly authorized single-attempt uploads and submission feedback.
 - Binary/multiclass tabular classification and single-target regression, with YAML overrides for ambiguous requirements.
-- Linear baseline, Random Forest and LightGBM; histogram gradient boosting, XGBoost and CatBoost are also implemented.
+- Linear baseline, Random Forest, LightGBM, CatBoost and XGBoost enabled by default; histogram gradient boosting is also available.
 - Fold-fit preprocessing, stratified/K-fold/group/time validation, inner-fold early stopping and bounded Optuna optimization.
 - Optional CV-tested voting/averaging of the strongest two distinct model families, inside the same experiment budget.
 - Metric-direction handling, overfitting warnings, OOF evidence, model checkpoints, feature importance and strict submission checks.
@@ -64,13 +64,9 @@ uv sync --locked --extra dev
 uv run python -m kaggle_slayer doctor
 ```
 
-For every supported model family:
+CatBoost and XGBoost are included in the standard installation; no boosting extra is needed. Run `uv sync --locked --extra dev` after updating an existing checkout. The old `boosting` extra is retained as an empty compatibility alias.
 
-```bash
-uv sync --locked --extra dev --extra boosting
-```
-
-Copy `.env.example` to `.env` using your editor. Secrets, datasets, virtual environments and generated runs are ignored by Git. `uv.lock` records core, development and optional dependencies. See [reproducibility](docs/reproducibility.md) for restricted Windows environments and lockfile policy.
+Copy `.env.example` to `.env` using your editor. Secrets, datasets, virtual environments and generated runs are ignored by Git. `uv.lock` records core and development dependencies. See [reproducibility](docs/reproducibility.md) for restricted Windows environments and lockfile policy.
 
 ## Free mode and optional LLM planning
 
@@ -111,11 +107,11 @@ The authenticated check must succeed before an official run can download data. L
 ## Run a competition
 
 ```bash
-# Three baseline families, two tuning trials, validated CSV; no upload.
-uv run python -m kaggle_slayer run --competition titanic --max-experiments 5 --no-submit
+# Five baseline families and up to five tuning trials; no upload by default.
+uv run python -m kaggle_slayer run --competition titanic
 
 # Explicitly authorize one upload after training and validation.
-uv run python -m kaggle_slayer run --competition titanic --max-experiments 5 --submit
+uv run python -m kaggle_slayer run --competition titanic --submit
 
 # Use official files already downloaded locally.
 uv run python -m kaggle_slayer run --competition titanic --data-dir data/titanic --no-submit
@@ -123,14 +119,11 @@ uv run python -m kaggle_slayer run --competition titanic --data-dir data/titanic
 # Switch task and metric using the included profile.
 uv run python -m kaggle_slayer run --competition house-prices-advanced-regression-techniques --no-submit
 
-# Optional extended roster and budgets; requires the boosting extra.
-uv run python -m kaggle_slayer run --competition titanic --config configs/boosting.yaml --no-submit
-
 # Reserve one experiment for a measured voting/averaging ensemble.
 uv run python -m kaggle_slayer run --competition titanic --config configs/ensemble.yaml --no-submit
 ```
 
-Use `uv run python -m kaggle_slayer run --help` for flags. `--profile path.yaml` supplies competition schema/metric overrides; `--config path.yaml` supplies run budgets and model choices. CLI values take precedence. Defaults: five folds, five experiments, two tuning trials, two CPU threads, a 30-minute scheduling budget and five-minute experiment timeout. Failed attempts consume budget. At least four experiments are needed to optimize after three baselines.
+Use `uv run python -m kaggle_slayer run --help` for flags. `--profile path.yaml` supplies competition schema/metric overrides; `--config path.yaml` supplies run budgets and model choices. CLI values take precedence. Defaults: five folds, ten experiments, three tuning rounds with up to two trials per round, two CPU threads, a 30-minute scheduling budget and five-minute experiment timeout. The five baseline families leave up to five tuning slots. Failed attempts consume budget, and time limits may stop a run early. An explicit `--max-experiments 5` uses all five slots for baselines, leaving no tuning slots. Existing saved runs retain their original configuration on resume.
 
 Another competition can use a profile such as:
 
@@ -198,7 +191,7 @@ uv run ruff check src tests dashboard scripts examples
 uv run ruff format --check src tests dashboard scripts examples
 ```
 
-Tests cover configuration, state/recovery, fold-fit transforms, split integrity, metrics/direction, submission formats, mocked Kaggle operations, upload safety, provider fallback, installed model families and Streamlit rendering. Default tests never need live Kaggle credentials. Optional XGBoost/CatBoost cases skip when the boosting extra is absent. [Test evidence](evidence/README.md) reports the actual result; supplied GitHub Actions have not been executed remotely in this build.
+Tests cover configuration, state/recovery, fold-fit transforms, split integrity, metrics/direction, submission formats, mocked Kaggle operations, upload safety, provider fallback, all default model families and Streamlit rendering. Default tests never need live Kaggle credentials. CatBoost and XGBoost training tests are required and do not skip. [Test evidence](evidence/README.md) reports historical results; supplied GitHub Actions have not been executed remotely in this build.
 
 ## Artifacts and example output
 

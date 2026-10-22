@@ -10,8 +10,6 @@ from kaggle_slayer.tools.training_tools import train_candidate
 @pytest.mark.parametrize("family", ["hist_gradient", "lightgbm", "xgboost", "catboost"])
 @pytest.mark.parametrize("task", ["classification", "regression"])
 def test_additional_model_families(tmp_path: Path, family, task):
-    if family in {"xgboost", "catboost"}:
-        pytest.importorskip(family, reason="Install the optional boosting extra")
     directory = make_fixture(tmp_path / "data", task=task, rows=150)
     classification = task == "classification"
     c = Competition(

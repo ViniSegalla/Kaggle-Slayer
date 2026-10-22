@@ -14,6 +14,7 @@ def test_fixture_cannot_be_uploaded(fixture_data):
     config.submit = True
     store = Store(config.artifact_root)
     client = Mock()
+    client.metadata.return_value = {}
     engine = Engine(store, client)
     state = engine.create(competition, config)
     state.phase, state.submission_path = (
@@ -34,6 +35,7 @@ def test_interrupted_submission_is_never_reuploaded(fixture_data):
     config.submit, config.poll_attempts = True, 0
     store = Store(config.artifact_root)
     client = Mock()
+    client.metadata.return_value = {}
     engine = Engine(store, client)
     state = engine.create(competition, config)
     from kaggle_slayer.schemas import Plan
@@ -56,6 +58,7 @@ def test_ready_artifact_upload_integrity_and_single_attempt(fixture_data, tamper
     config.submit, config.poll_attempts = True, 1
     store = Store(config.artifact_root)
     client = Mock()
+    client.metadata.return_value = {}
     client.submit.return_value = {"ref": 123}
     client.submissions.return_value = [{"ref": 123, "status": "complete", "publicScore": 0.8}]
     engine = Engine(store, client)

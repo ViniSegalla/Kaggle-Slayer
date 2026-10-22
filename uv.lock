@@ -536,6 +536,7 @@ name = "kaggle-slayer"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "catboost" },
     { name = "httpx" },
     { name = "joblib" },
     { name = "kaggle" },
@@ -553,14 +554,11 @@ dependencies = [
     { name = "streamlit" },
     { name = "threadpoolctl" },
     { name = "typer" },
-]
-
-[package.optional-dependencies]
-boosting = [
-    { name = "catboost" },
     { name = "xgboost", version = "3.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "xgboost", version = "3.4.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
 ]
+
+[package.optional-dependencies]
 dev = [
     { name = "pytest" },
     { name = "pytest-timeout" },
@@ -569,7 +567,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "catboost", marker = "extra == 'boosting'", specifier = ">=1.2.8,<2" },
+    { name = "catboost", specifier = ">=1.2.8,<2" },
     { name = "httpx", specifier = ">=0.28,<1" },
     { name = "joblib", specifier = ">=1.4,<2" },
     { name = "kaggle", specifier = ">=1.7,<2" },
@@ -589,7 +587,7 @@ requires-dist = [
     { name = "streamlit", specifier = ">=1.45,<2" },
     { name = "threadpoolctl", specifier = ">=3.5,<4" },
     { name = "typer", specifier = ">=0.15,<1" },
-    { name = "xgboost", marker = "extra == 'boosting'", specifier = ">=3,<4" },
+    { name = "xgboost", specifier = ">=3,<4" },
 ]
 provides-extras = ["boosting", "dev"]
 

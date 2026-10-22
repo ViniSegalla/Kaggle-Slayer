@@ -118,6 +118,7 @@ def test_feedback_matches_this_run_only(fixture_data, tmp_path):
         {"ref": 1, "publicScore": 0.99, "description": "other"},
         {"ref": 12, "publicScore": 0.8, "status": "complete"},
     ]
+    api.competitions_list.return_value = []
     LeaderboardAgent(store).review(state, KaggleClient(api))
     assert state.feedback["leaderboard"]["public_score"] == 0.8
     assert state.feedback["leaderboard"]["top_20_percent"] is None
@@ -146,3 +147,58 @@ def test_planner_consumes_realistic_discrepancy_without_training(fixture_data):
     assert plan["suggested_competition_overrides"]["group_column"] == "Ticket"
     assert not plan["execute_automatically"] and not state.experiments
     assert (store.run_dir(state.run_id) / "next_run_plan.json").exists()
+
+
+@pytest.mark.parametrize(
+    "metadata,rank,top_percent",
+    [
+        ({"userRank": 20, "teamCount": 100}, 20, 20.0),
+        ({"user_rank": 50, "team_count": 100}, 50, 50.0),
+        ({"userRank": 0, "teamCount": 100}, None, None),
+        ({"userRank": 5}, 5, None),
+        ({"userRank": 101, "teamCount": 100}, 101, None),
+        ({"userRank": True, "teamCount": 100}, None, None),
+        ({}, None, None),
+    ],
+)
+def test_account_standing_separate_from_run_score(fixture_data, metadata, rank, top_percent):
+    _, c, config = fixture_data
+    config.poll_attempts = 1
+    state = RunState(
+        run_id="standing-test",
+        competition=c,
+        config=config,
+        submissions=[{"status": "COMPLETE", "reference": 12, "message": "this run"}],
+        feedback={"local_score": 0.85},
+    )
+    client = Mock()
+    client.submissions.return_value = [{"ref": 12, "publicScore": 0.8, "status": "COMPLETE"}]
+    client.metadata.return_value = metadata
+    LeaderboardAgent(Store(config.artifact_root)).review(state, client, refresh=True)
+    report = state.feedback["leaderboard"]
+    assert report["public_score"] == 0.8
+    assert report["rank"] == rank
+    assert report.get("top_percent") == top_percent
+    assert report["top_20_percent"] == (top_percent <= 20 if top_percent is not None else None)
+    assert report["standing_scope"] == "current_account_best"
+    client.leaderboard.assert_not_called()
+
+
+def test_standing_failure_preserves_submission_feedback(fixture_data):
+    _, c, config = fixture_data
+    config.poll_attempts = 1
+    state = RunState(
+        run_id="standing-error",
+        competition=c,
+        config=config,
+        submissions=[{"status": "COMPLETE", "reference": 12, "message": "this run"}],
+        feedback={"local_score": 0.85},
+    )
+    client = Mock()
+    client.submissions.return_value = [{"ref": 12, "publicScore": 0.8, "status": "COMPLETE"}]
+    client.metadata.side_effect = KaggleError("Kaggle denied access")
+    LeaderboardAgent(Store(config.artifact_root)).review(state, client, refresh=True)
+    report = state.feedback["leaderboard"]
+    assert report["public_score"] == 0.8
+    assert report["rank"] is None
+    assert report["standing_note"] == "Kaggle denied access"

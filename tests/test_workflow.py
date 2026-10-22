@@ -16,6 +16,26 @@ from kaggle_slayer.tools.data_tools import inspect_dataset
 from kaggle_slayer.tools.training_tools import run_isolated, train_candidate
 
 
+def test_default_roster_trains_both_boosters_and_tunes(fixture_data):
+    _, competition, config = fixture_data
+    # Retain the fixture's smaller folds/CPU budget, but use the production
+    # default model roster and experiment/iteration limits, without a run profile.
+    defaults = RunConfig()
+    config.max_experiments = defaults.max_experiments
+    config.max_iterations = defaults.max_iterations
+    engine = Engine(Store(config.artifact_root))
+    result = engine.execute(engine.create(competition, config))
+    assert result.status == "completed"
+    baselines = {e.model: e for e in result.experiments if e.id.startswith("baseline-")}
+    assert set(baselines) == set(defaults.models)
+    assert all(e.status == "completed" for e in baselines.values())
+    trials = [e for e in result.experiments if e.id.startswith("tune-")]
+    assert len(trials) == defaults.max_experiments - len(defaults.models)
+    assert all(e.status == "completed" for e in trials)
+    assert Path(result.submission_path).exists()
+    assert not result.submissions
+
+
 def test_end_to_end_and_resume_completed_experiments(fixture_data, monkeypatch):
     _, c, config = fixture_data
     store = Store(config.artifact_root)

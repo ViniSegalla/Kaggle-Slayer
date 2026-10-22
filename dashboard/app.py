@@ -227,21 +227,26 @@ def console():
     with tabs[3]:
         st.subheader("Local validation & Kaggle feedback")
         feedback = state["feedback"].get("leaderboard", {})
-        cards = st.columns(3)
+        cards = st.columns(4)
         cards[0].metric("Local CV", f"{best['score']:.5f}" if best else "—")
         public = feedback.get("public_score")
         cards[1].metric(
             "Kaggle public score", f"{public:.5f}" if public is not None else "Unavailable"
         )
         cards[2].metric(
-            "Leaderboard percentile",
-            "Unknown"
-            if feedback.get("top_20_percent") is None
-            else str(feedback["top_20_percent"]),
+            "Current account rank",
+            str(feedback["rank"]) if feedback.get("rank") is not None else "Unknown",
+        )
+        cards[3].metric(
+            "Current account top %",
+            "Unknown" if feedback.get("top_percent") is None else f"{feedback['top_percent']:.2f}%",
         )
         st.caption(
-            "Top 20% is an aspiration. A partial leaderboard page cannot establish a percentile."
+            "Standing uses Kaggle's account rank and team count (rank ÷ teams × 100; lower is better). "
+            "It may reflect another run's best submission. Refresh the run via the CLI to update it."
         )
+        if feedback.get("standing_note"):
+            st.info(feedback["standing_note"])
         if completed:
             progress = pd.DataFrame(completed)
             progress["step"] = range(1, len(progress) + 1)

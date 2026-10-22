@@ -5,6 +5,24 @@ from kaggle_slayer.config import Settings, load_config
 from kaggle_slayer.schemas import Competition, RunConfig
 
 
+def test_default_roster_and_tuning_capacity():
+    _, loaded = load_config("home-data-for-ml-course")
+    defaults = RunConfig()
+    assert (
+        loaded.models
+        == defaults.models
+        == ["linear", "random_forest", "lightgbm", "catboost", "xgboost"]
+    )
+    assert loaded.max_experiments == defaults.max_experiments == 10
+    assert loaded.max_iterations == defaults.max_iterations == 3
+    tuning_slots = loaded.max_experiments - len(loaded.models)
+    assert tuning_slots > 0
+    assert loaded.max_iterations * loaded.optuna_trials >= tuning_slots
+    # Explicit smaller budgets still take precedence over the new defaults.
+    _, limited = load_config("titanic", max_experiments=5)
+    assert limited.max_experiments == 5
+
+
 def test_profile_and_cli_precedence():
     c, config = load_config("titanic", max_experiments=7)
     assert c.target == "Survived" and c.metric == "accuracy"

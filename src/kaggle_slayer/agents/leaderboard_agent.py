@@ -1,5 +1,6 @@
 import math
 import time
+from datetime import datetime, timezone
 
 from kaggle_slayer.agents.base import Agent
 from kaggle_slayer.tools.evaluation_tools import direction
@@ -81,13 +82,37 @@ class LeaderboardAgent(Agent):
             report["unexpected_degradation"] = report["validation_minus_public"] > max(
                 abs(state.feedback["local_score"]) * 0.1, 0.02
             )
-        # API leaderboard pages are partial. Never infer a percentile from a partial page.
+        # Account standing can reflect a different run's best submission. Do not
+        # estimate rank by matching rounded scores on a partial leaderboard page.
+        try:
+            metadata = client.metadata(state.competition.competition)
+            rank = field(metadata, "userRank", "user_rank")
+            teams = field(metadata, "teamCount", "team_count")
+            valid_rank = isinstance(rank, int) and not isinstance(rank, bool) and rank > 0
+            valid_total = isinstance(teams, int) and not isinstance(teams, bool) and teams > 0
+            report.update(
+                rank=rank if valid_rank else None,
+                team_count=teams if valid_total else None,
+                standing_scope="current_account_best",
+                standing_source="kaggle.competitions_list",
+                standing_checked_at=datetime.now(timezone.utc).isoformat(),
+            )
+            if valid_rank and valid_total and rank <= teams:
+                report["top_percent"] = 100 * rank / teams
+                report["top_20_percent"] = rank / teams <= 0.2
+            else:
+                report["standing_note"] = (
+                    "Kaggle did not return a usable account rank and team count; "
+                    "a percentile cannot be established."
+                )
+        except KaggleError as exc:
+            report["standing_note"] = str(exc)
         state.feedback["leaderboard"] = report
         self.log(
             state,
             "review_kaggle_feedback",
-            "Associate only this run's submission; unavailable rank and percentile remain unknown.",
-            "kaggle.competition_submissions",
+            "Associate this run's score separately from the account's current competition standing.",
+            "kaggle.competition_submissions + kaggle.competitions_list",
             report,
             "planner_feedback_for_next_run",
         )

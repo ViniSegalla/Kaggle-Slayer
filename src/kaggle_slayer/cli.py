@@ -28,7 +28,16 @@ def doctor(competition: str = "titanic", require_kaggle: bool = False):
         "llm_provider": Settings().llm_provider,
         "dependencies": {
             name: version(name)
-            for name in ("pandas", "scikit-learn", "lightgbm", "kaggle", "optuna", "streamlit")
+            for name in (
+                "pandas",
+                "scikit-learn",
+                "lightgbm",
+                "catboost",
+                "xgboost",
+                "kaggle",
+                "optuna",
+                "streamlit",
+            )
         },
     }
     if result["kaggle_credentials_present"]:
