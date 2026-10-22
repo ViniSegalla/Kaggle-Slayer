@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>KaggleSlayer · Home Data personal best</title>
+  <style>
+    :root { --bg:#0c1420; --panel:#142132; --line:#2a3b50; --text:#edf3f8; --muted:#afbfce; --mint:#9ee5c9; --gold:#f6d18b; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif; }
+    a { color:var(--mint); text-underline-offset:4px; }
+    a:hover { color:#fff; }
+    a:focus-visible { outline:3px solid var(--gold); outline-offset:4px; }
+    main { max-width:1180px; margin:auto; padding:44px 28px 60px; }
+    .topline { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; color:var(--muted); font-size:.83rem; letter-spacing:.08em; text-transform:uppercase; }
+    .status { color:var(--mint); border:1px solid #427662; padding:4px 12px; border-radius:24px; letter-spacing:.04em; }
+    header { padding:40px 0 32px; border-bottom:1px solid var(--line); }
+    h1 { max-width:820px; font-size:clamp(2.2rem,5vw,3.8rem); line-height:1.12; letter-spacing:-.04em; margin:0 0 22px; }
+    h2 { font-size:1.5rem; letter-spacing:-.02em; margin:0 0 12px; }
+    h3 { font-size:1rem; margin:0 0 9px; }
+    p { margin:0 0 16px; }
+    .intro { max-width:800px; color:var(--muted); font-size:1.1rem; }
+    .runid { color:var(--muted); font-size:.82rem; overflow-wrap:anywhere; }
+    code { font-family:ui-monospace,"Cascadia Code",Consolas,monospace; font-size:.87em; overflow-wrap:anywhere; }
+    .cards { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin:28px 0; }
+    .card { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:21px; }
+    .label { display:block; font-size:.76rem; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+    .value { display:block; font-size:clamp(1.6rem,3.2vw,2rem); font-weight:650; line-height:1.3; margin:9px 0; font-variant-numeric:tabular-nums; }
+    .card small { color:var(--muted); }
+    .notice { border-left:3px solid var(--gold); background:#262a2a; padding:20px 24px; border-radius:0 9px 9px 0; }
+    .notice p { margin:0; }
+    .notice strong { color:var(--gold); }
+    section { margin-top:36px; }
+    .split { display:grid; grid-template-columns:1.5fr 1fr; gap:24px; }
+    .muted { color:var(--muted); }
+    .facts { margin:0; display:grid; grid-template-columns:120px 1fr; gap:8px 20px; }
+    dt { color:var(--muted); }
+    dd { margin:0; }
+    .table-wrap { overflow:auto; border:1px solid var(--line); border-radius:10px; }
+    table { width:100%; border-collapse:collapse; font-size:.9rem; }
+    caption { text-align:left; padding:16px 18px; background:var(--panel); color:var(--muted); }
+    th,td { padding:15px 18px; text-align:left; border-top:1px solid var(--line); vertical-align:top; }
+    thead th { color:var(--muted); font-size:.76rem; text-transform:uppercase; letter-spacing:.05em; }
+    td.num,th.num { text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
+    .winner { background:#142f2b; }
+    .winner td:first-child { border-left:3px solid var(--mint); }
+    .tag { color:var(--mint); white-space:nowrap; font-size:.8rem; }
+    .timeout { color:var(--gold); }
+    .experiment-id { display:block; color:var(--muted); font-size:.75rem; }
+    iframe { display:block; width:100%; height:530px; background:var(--panel); border:1px solid var(--line); border-radius:10px; margin:16px 0 10px; }
+    .links { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+    .links .card { padding:21px; }
+    .links p { font-size:.85rem; color:var(--muted); margin:0 0 10px; }
+    .links a { display:inline-block; margin:3px 14px 3px 0; font-size:.85rem; }
+    pre { background:#08111b; border:1px solid var(--line); border-radius:9px; overflow:auto; padding:18px; line-height:1.7; font-size:.84rem; }
+    pre code { white-space:pre; overflow-wrap:normal; }
+    .footnote { font-size:.84rem; color:var(--muted); }
+    footer { border-top:1px solid var(--line); margin-top:36px; padding-top:24px; color:var(--muted); font-size:.8rem; display:flex; flex-wrap:wrap; gap:12px 24px; }
+    @media(max-width:900px) { .cards { grid-template-columns:repeat(2,minmax(0,1fr)); } .links { grid-template-columns:repeat(2,minmax(0,1fr)); } .split { grid-template-columns:1fr; } }
+    @media(max-width:560px) { main { padding:25px 16px 40px; } header { padding-top:28px; } .links { grid-template-columns:1fr; } .card { padding:16px; } th,td { padding:12px; } .facts { grid-template-columns:95px 1fr; gap:8px 12px; } iframe { height:440px; } }
+    @media print { :root { --bg:#fff; --panel:#f4f6f8; --line:#c7d0d9; --text:#17212b; --muted:#4d5d6d; --mint:#166249; --gold:#765000; } body { font-size:11px; } main { padding:0; } .notice,.winner { background:#f4f6f8; } pre { background:#f4f6f8; } iframe { height:400px; } .card,.notice,table { break-inside:avoid; } }
+  </style>
+</head>
+<body>
+<main>
+  <div class="topline"><span>KaggleSlayer / preserved execution</span><span class="status">Personal best · completed agentic run</span></div>
+  <header>
+    <h1>New personal best on Home Data.</h1>
+    <p class="intro">A live agentic team selected a LightGBM + CatBoost ensemble and completed an official Kaggle submission. Public MAE reached <strong>14,252.33305</strong>, backed by the original checkpoints, decisions and API receipts.</p>
+    <div class="runid"><code>home-data-for-ml-course-8ed561cbed5e</code><br>October 22, 2026 · 15:54–15:59 America/Sao_Paulo · 292.406 seconds</div>
+  </header>
+
+  <div class="cards" aria-label="Recorded results">
+<div class="card"><span class="label">Local CV · MAE</span><span class="value">15,257.83</span><small>Five folds · lower is better</small></div>
+<div class="card"><span class="label">Kaggle public · MAE</span><span class="value">14,252.33</span><small>Submission 57535510 · COMPLETE</small></div>
+<div class="card"><span class="label">Improvement vs prior demo</span><span class="value">3.97%</span><small>588.50 lower public MAE</small></div>
+<div class="card"><span class="label">Model experiments</span><span class="value">6</span><small>All completed · no training timeouts</small></div>
+</div>
+
+  <aside class="notice" aria-label="Account standing caveat"><p><strong>New personal best reported by the user and supported by the saved submission score.</strong> Public MAE improved from 14,840.83581 in the previous featured demo to 14,252.33305. Recorded account standing is 304 / 3,876 teams (top 7.84%). Its scope is <code>current_account_best</code>; account rank and submission-specific score are recorded separately.</p></aside>
+
+  <section class="split" aria-labelledby="selection-title">
+    <div>
+      <h2 id="selection-title">What the agents selected</h2>
+      <p>The coordinator delegated data validation, pipeline modeling, evaluation and prediction delivery. It compared LightGBM, CatBoost and histogram gradient boosting, refined LightGBM twice, then measured an equal-weight <strong>LightGBM + CatBoost</strong> blend on the same frozen folds.</p>
+      <p class="muted">The blend reduced local CV MAE by 293.00 (1.88%) relative to the strongest single model, <code>tune_lgbm_b</code>. Fold standard deviation was 1,719.33; training MAE was 9,793.27. The large train/CV gap warning remains visible. No independent holdout result is claimed.</p>
+    </div>
+    <div class="card">
+      <h3>Execution contract</h3>
+      <dl class="facts">
+        <dt>Mode</dt><dd>Agentic · <code>swarm-v1</code></dd>
+        <dt>Validation</dt><dd>Five-fold KFold · seed 42</dd>
+        <dt>Data</dt><dd>1,460 train / 1,459 test rows</dd>
+        <dt>Provider</dt><dd>OpenRouter</dd>
+        <dt>LLM</dt><dd><code>anthropic/claude-sonnet-5.5</code></dd>
+        <dt>Repairs</dt><dd>3 schema repairs; zero invalid actions</dd>
+        <dt>Requests</dt><dd>19 total · 16 successful · 3 failed responses</dd><dt>Tokens</dt><dd>190,932 charged</dd><dt>Termination</dt><dd><code>coordinator_finished</code></dd>
+      </dl>
+    </div>
+  </section>
+
+  <section aria-labelledby="experiments-title">
+    <h2 id="experiments-title">All six measured experiments</h2>
+    <div class="table-wrap">
+      <table>
+        <caption>Primary validation MAE on lineage <code>97e41e24a8d91b2f733f</code>. Lower scores are better; standard deviation is across folds.</caption>
+        <thead><tr><th scope="col">Model / experiment</th><th scope="col">Outcome</th><th scope="col" class="num">CV MAE</th><th scope="col" class="num">Fold SD</th><th scope="col" class="num">Fit time</th></tr></thead>
+        <tbody>
+<tr><td>LightGBM<code class="experiment-id">run_lgbm</code></td><td>Completed</td><td class="num">15,663.81</td><td class="num">1,595.07</td><td class="num">2.76 s</td></tr>
+<tr><td>CatBoost<code class="experiment-id">run_cat</code></td><td>Completed</td><td class="num">16,162.14</td><td class="num">1,612.03</td><td class="num">83.75 s</td></tr>
+<tr><td>Histogram gradient boosting<code class="experiment-id">run_hist</code></td><td>Completed</td><td class="num">16,235.80</td><td class="num">1,735.69</td><td class="num">7.84 s</td></tr>
+<tr><td>LightGBM refinement A<code class="experiment-id">tune_lgbm_a</code></td><td>Completed</td><td class="num">16,197.51</td><td class="num">1,497.76</td><td class="num">3.08 s</td></tr>
+<tr><td>LightGBM refinement B<code class="experiment-id">tune_lgbm_b</code></td><td>Completed</td><td class="num">15,550.83</td><td class="num">1,565.07</td><td class="num">3.62 s</td></tr>
+<tr class="winner"><td>LightGBM + CatBoost, equal weight<code class="experiment-id">ens_lgbm_cat</code></td><td><span class="tag">Completed · selected</span></td><td class="num">15,257.83</td><td class="num">1,719.33</td><td class="num">84.64 s</td></tr>
+</tbody>
+      </table>
+    </div>
+    <p class="footnote" style="margin-top:10px">Fit time is each numerical worker’s recorded duration. Total wall time also includes LLM calls, schema repairs and orchestration. Exact values and fold scores are in <a href="metrics.json">metrics.json</a>.</p>
+  </section>
+
+  <section aria-labelledby="plot-title">
+    <h2 id="plot-title">Original comparison plot</h2>
+    <p class="muted">The preserved interactive chart is embedded from this package and includes its own Plotly runtime.</p>
+    <iframe src="runs/home-data-for-ml-course-8ed561cbed5e/comparison.html" title="Original primary cross-validation comparison" loading="lazy"></iframe>
+    <p class="footnote"><a href="runs/home-data-for-ml-course-8ed561cbed5e/comparison.html">Open the chart separately</a></p>
+  </section>
+
+  <section aria-labelledby="evidence-title">
+    <h2 id="evidence-title">Follow the evidence</h2>
+    <div class="links">
+      <article class="card"><h3>Decisions and activity</h3><p>Role delegation, measured comparisons, LightGBM refinements, schema repairs and prediction validation.</p><a href="runs/home-data-for-ml-course-8ed561cbed5e/decisions.jsonl">Decision trace</a><a href="runs/home-data-for-ml-course-8ed561cbed5e/progress.log">Progress log</a></article>
+      <article class="card"><h3>Original snapshots</h3><p>Frozen configuration, validation lineage, fingerprints, actions and provider usage.</p><a href="runs/home-data-for-ml-course-8ed561cbed5e/state.json">State</a><a href="runs/home-data-for-ml-course-8ed561cbed5e/swarm_receipt.json">Swarm receipt</a><a href="runs/home-data-for-ml-course-8ed561cbed5e/summary.json">Summary</a></article>
+      <article class="card"><h3>Kaggle receipts</h3><p>The upload response and feedback establish submission 57535510 and its public score.</p><a href="runs/home-data-for-ml-course-8ed561cbed5e/operations/upload/result.json">Upload response</a><a href="runs/home-data-for-ml-course-8ed561cbed5e/operations/final-feedback/result.json">Feedback</a></article>
+      <article class="card"><h3>Model and predictions</h3><p>The selected full-data checkpoint and its serialized, validated submission.</p><a href="runs/home-data-for-ml-course-8ed561cbed5e/experiments/ens_lgbm_cat/model.joblib">Checkpoint</a><a href="runs/home-data-for-ml-course-8ed561cbed5e/submissions/submission.csv">Submission CSV</a><a href="runs/home-data-for-ml-course-8ed561cbed5e/submissions/validation.json">Validation</a></article>
+      <article class="card"><h3>Measured diagnostics</h3><p>Model eligibility, training/CV gap, aggregate error slices and dataset metadata.</p><a href="runs/home-data-for-ml-course-8ed561cbed5e/evaluation.json">Evaluation</a><a href="runs/home-data-for-ml-course-8ed561cbed5e/operations/inspect_data/eda/dataset_report.json">Dataset report</a></article>
+      <article class="card"><h3>Integrity and reproduction</h3><p>SHA-256 inventory, compact results and local inspection instructions.</p><a href="manifest.json">Manifest</a><a href="metrics.json">Metrics JSON</a><a href="README.md">Demo README</a><a href="audit.py">Audit helper</a></article>
+    </div>
+  </section>
+
+  <section aria-labelledby="verify-title">
+    <h2 id="verify-title">Inspect from a fresh checkout</h2>
+    <p class="muted">After installing the repository’s locked dependencies, run from its root. Start the report and dashboard in separate terminals:</p>
+    <pre><code>uv run --locked python demo/home-data-for-ml-course-8ed561cbed5e/audit.py verify
+uv run --locked python demo/home-data-for-ml-course-8ed561cbed5e/audit.py serve --port 8766
+uv run --locked python demo/home-data-for-ml-course-8ed561cbed5e/audit.py dashboard --port 8502</code></pre>
+    <p class="footnote">The static report is served at <a href="http://localhost:8766">localhost:8766</a>; the derived dashboard runs at <a href="http://localhost:8502">localhost:8502</a>. The dashboard recreates an ignored database and rebases displayed paths while preserving the original snapshots.</p>
+  </section>
+
+  <section aria-labelledby="provenance-title">
+    <h2 id="provenance-title">Preserved execution, explicit boundaries</h2>
+    <p class="muted">The original run files were moved from <code>artifacts/runs/</code> unchanged. Their historical absolute paths remain in the snapshots. This report and the compact metrics are derived summaries; the manifest records checksums for audit. No new training or submission was performed while preparing this demo.</p>
+    <p class="footnote">Raw competition input CSVs and credentials are not copied here. Individual OOF labels/predictions and the original per-row target chart remain local and Git-ignored. Default verification checks shareable outputs; <code>audit.py verify --full</code> additionally verifies retained private files when available. The saved checkpoint supports optional inference with matching official data and the recorded package environment.</p>
+  </section>
+
+  <section><h2>Previous featured demo</h2><p class="muted">Run <code>home-data-for-ml-course-2655b38be9fe</code> remains in its own audit package with public MAE 14,840.83581. This run lowers that error by 3.97%. The earlier package and checksums have not been overwritten.</p></section>
+<footer><span>KaggleSlayer · offline audit package</span><span>Recorded facts, original artifacts, independently checkable hashes.</span><a href="README.md">Read the demo guide</a></footer>
+</main>
+</body>
+</html>

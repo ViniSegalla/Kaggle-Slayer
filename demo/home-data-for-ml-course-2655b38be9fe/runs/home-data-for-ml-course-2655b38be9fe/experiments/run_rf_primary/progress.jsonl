@@ -1,0 +1,15 @@
+{"stage": "inspect"}
+{"stage": "prepare_fold", "fold": 1}
+{"stage": "fit_fold", "fold": 1}
+{"stage": "fold_complete", "fold": 1, "score": 17141.29519406393}
+{"stage": "prepare_fold", "fold": 2}
+{"stage": "fit_fold", "fold": 2}
+{"stage": "fold_complete", "fold": 2, "score": 16556.87785388128}
+{"stage": "prepare_fold", "fold": 3}
+{"stage": "fit_fold", "fold": 3}
+{"stage": "fold_complete", "fold": 3, "score": 20432.06406392694}
+{"stage": "prepare_fold", "fold": 4}
+{"stage": "fit_fold", "fold": 4}
+{"stage": "fold_complete", "fold": 4, "score": 18178.836820776258}
+{"stage": "prepare_fold", "fold": 5}
+{"stage": "fit_fold", "fold": 5}

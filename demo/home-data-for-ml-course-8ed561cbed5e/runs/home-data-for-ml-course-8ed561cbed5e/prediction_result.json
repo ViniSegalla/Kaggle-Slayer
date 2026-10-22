@@ -1,0 +1,13 @@
+{
+  "path": "C:\\Users\\Vinicius\\Downloads\\Kaggle\\artifacts\\runs\\home-data-for-ml-course-8ed561cbed5e\\submissions\\submission.csv",
+  "sha256": "fe1c4471b2f71945f53215030e4335667d72d2ba066b9f7dc268fc99df4594c2",
+  "report": {
+    "valid": true,
+    "rows": 1459,
+    "columns": [
+      "Id",
+      "SalePrice"
+    ],
+    "identifier_alignment": "verified"
+  }
+}

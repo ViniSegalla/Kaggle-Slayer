@@ -1,0 +1,189 @@
+{
+  "source": "primary_out_of_fold_predictions",
+  "measure": "mean_absolute_error_original_units",
+  "rows": 1460,
+  "overall_error": 15257.82778035528,
+  "slices": [
+    {
+      "feature": "MasVnrType",
+      "slice": "value:Stone",
+      "rows": 128,
+      "error": 28668.24613559195
+    },
+    {
+      "feature": "LotFrontage",
+      "slice": "(80.0, 313.0]",
+      "rows": 284,
+      "error": 25536.681003671292
+    },
+    {
+      "feature": "GarageType",
+      "slice": "value:BuiltIn",
+      "rows": 88,
+      "error": 24441.43379488386
+    },
+    {
+      "feature": "FireplaceQu",
+      "slice": "value:Gd",
+      "rows": 380,
+      "error": 22424.658843072226
+    },
+    {
+      "feature": "GarageFinish",
+      "slice": "value:Fin",
+      "rows": 352,
+      "error": 21799.78577823144
+    },
+    {
+      "feature": "GarageYrBlt",
+      "slice": "(2002.0, 2010.0]",
+      "rows": 329,
+      "error": 21472.236110520123
+    },
+    {
+      "feature": "GarageType",
+      "slice": "value:Attchd",
+      "rows": 870,
+      "error": 16161.849189538616
+    },
+    {
+      "feature": "Fence",
+      "slice": "value:GdPrv",
+      "rows": 59,
+      "error": 16081.630422683585
+    },
+    {
+      "feature": "MasVnrType",
+      "slice": "value:BrkFace",
+      "rows": 445,
+      "error": 15906.859513757656
+    },
+    {
+      "feature": "GarageYrBlt",
+      "slice": "(1980.0, 2002.0]",
+      "rows": 349,
+      "error": 15834.743519418817
+    },
+    {
+      "feature": "FireplaceQu",
+      "slice": "value:TA",
+      "rows": 313,
+      "error": 15799.875196798359
+    },
+    {
+      "feature": "Fence",
+      "slice": "<missing>",
+      "rows": 1179,
+      "error": 15755.522531062716
+    },
+    {
+      "feature": "GarageCond",
+      "slice": "value:TA",
+      "rows": 1326,
+      "error": 15519.816812243105
+    },
+    {
+      "feature": "Alley",
+      "slice": "<missing>",
+      "rows": 1369,
+      "error": 15464.887693237639
+    },
+    {
+      "feature": "MiscFeature",
+      "slice": "<missing>",
+      "rows": 1406,
+      "error": 15432.509621681218
+    },
+    {
+      "feature": "GarageQual",
+      "slice": "value:TA",
+      "rows": 1311,
+      "error": 15404.353506646192
+    },
+    {
+      "feature": "GarageFinish",
+      "slice": "value:RFn",
+      "rows": 422,
+      "error": 14893.760784730934
+    },
+    {
+      "feature": "PoolQC",
+      "slice": "<missing>",
+      "rows": 1453,
+      "error": 14734.261253050654
+    },
+    {
+      "feature": "LotFrontage",
+      "slice": "<missing>",
+      "rows": 259,
+      "error": 13536.135057615998
+    },
+    {
+      "feature": "Fence",
+      "slice": "value:GdWo",
+      "rows": 54,
+      "error": 13273.104394876747
+    },
+    {
+      "feature": "GarageType",
+      "slice": "<missing>",
+      "rows": 81,
+      "error": 13067.006139416277
+    },
+    {
+      "feature": "GarageYrBlt",
+      "slice": "<missing>",
+      "rows": 81,
+      "error": 13067.006139416277
+    },
+    {
+      "feature": "GarageFinish",
+      "slice": "<missing>",
+      "rows": 81,
+      "error": 13067.006139416277
+    },
+    {
+      "feature": "GarageQual",
+      "slice": "<missing>",
+      "rows": 81,
+      "error": 13067.006139416277
+    },
+    {
+      "feature": "GarageCond",
+      "slice": "<missing>",
+      "rows": 81,
+      "error": 13067.006139416277
+    },
+    {
+      "feature": "MasVnrType",
+      "slice": "<missing>",
+      "rows": 872,
+      "error": 12932.534108982483
+    },
+    {
+      "feature": "Alley",
+      "slice": "value:Pave",
+      "rows": 41,
+      "error": 12751.464436264247
+    },
+    {
+      "feature": "LotFrontage",
+      "slice": "(59.0, 69.0]",
+      "rows": 297,
+      "error": 12747.061321290474
+    },
+    {
+      "feature": "GarageYrBlt",
+      "slice": "(1899.999, 1961.0]",
+      "rows": 347,
+      "error": 12620.38748208268
+    },
+    {
+      "feature": "LotFrontage",
+      "slice": "(69.0, 80.0]",
+      "rows": 316,
+      "error": 12557.861545493237
+    }
+  ],
+  "note": "Exploratory overlapping slices, not significance tests or independent holdouts."
+}

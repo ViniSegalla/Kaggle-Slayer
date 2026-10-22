@@ -1,0 +1,7 @@
+# The one-run UI database is regenerated from the immutable evidence by audit.py.
+/metadata.sqlite*
+# Deliver this run's trained checkpoints despite the repository-wide model ignore.
+!/runs/**/model.joblib
+# Preserve these original outputs locally, but exclude per-row training labels from Git.
+/runs/**/oof.npz
+/runs/**/target.html

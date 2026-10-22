@@ -1,0 +1,383 @@
+{
+  "format": "kaggle-slayer-demo-v1",
+  "run_id": "home-data-for-ml-course-2655b38be9fe",
+  "competition": "home-data-for-ml-course",
+  "submission_reference": 57534881,
+  "source": "Existing completed local run; archived without retraining, new uploads, or changes to the run files",
+  "original_run_root": "C:\\Users\\Vinicius\\Downloads\\Kaggle\\artifacts\\runs\\home-data-for-ml-course-2655b38be9fe",
+  "archive_policy": "Original run files preserved byte-for-byte. oof.npz and target.html contain per-row labels and remain local-only; default verification covers shareable files, --full covers all original files.",
+  "files": [
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/comparison.html",
+      "bytes": 4864813,
+      "sha256": "43c86881571aba0f037c7313343092f93cbb383b553f91e6e9e461cb4b5b192d",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/decisions.jsonl",
+      "bytes": 56995,
+      "sha256": "aca04fbe860bcbb12d8e17c60e902a7703238c1bc7745484821d86855245d496",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/evaluation.json",
+      "bytes": 22793,
+      "sha256": "5b5d39978de24295804c4a40ff02cff1d27ed57bbff87dfd711bc6509b4cf0b1",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/measure_lgbm_hist_blend/error_analysis.json",
+      "bytes": 4231,
+      "sha256": "a3050bb3cbe19cd0d83e441bf668703323bdbee0516b07f8ae879e3b934cdb02",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/measure_lgbm_hist_blend/model.joblib",
+      "bytes": 1507828,
+      "sha256": "38461faf6dc8a34f4f907b637e5dd738b0c981150aa3a5217d39736af07016d1",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/measure_lgbm_hist_blend/oof.npz",
+      "bytes": 15551,
+      "sha256": "277afa5c8690040b7f8227582774c53223f7d2bfbca2de527461fc9616861e4c",
+      "shareable": false
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/measure_lgbm_hist_blend/progress.jsonl",
+      "bytes": 961,
+      "sha256": "bec2282cbb2e4ca72d22766a8820fcfb6990829d558f17b5636a0a4767bb0c21",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/measure_lgbm_hist_blend/request.json",
+      "bytes": 3257,
+      "sha256": "75b51d3a6e6cf4c22cfd6d55bee30d2f773ce36a6fb15f45664c3639057cf76d",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/measure_lgbm_hist_blend/result.json",
+      "bytes": 6825,
+      "sha256": "434d81fe9d18a208673648c43dcc78714d9a440f534960cbf3c91ec07524028d",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/measure_lgbm_hist_blend/splits.npz",
+      "bytes": 13697,
+      "sha256": "86abeff6767567b28c4b5ee62e4f95ad985267b74b2aaa2a5ec120119699c440",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/measure_lgbm_hist_blend/worker.log",
+      "bytes": 1345,
+      "sha256": "c7e12a407d4e1dd2828ca1fba5dc188ed4f0a1587fbef5efa877b3ccdd1e5a74",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_hist_primary/error_analysis.json",
+      "bytes": 4232,
+      "sha256": "55712481915f978c0298363a1914a14cfaa8ef5b391008d431f0d48074fd2cf4",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_hist_primary/model.joblib",
+      "bytes": 793119,
+      "sha256": "7e95db19a0dd9d6924db2d97f70a228f19abfd30a8a00c683d65d855b6829d02",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_hist_primary/oof.npz",
+      "bytes": 15578,
+      "sha256": "6d4a3b8bad480c045cd95e3e95991821123eaac4a7ea72da9fa5668989e107bc",
+      "shareable": false
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_hist_primary/progress.jsonl",
+      "bytes": 762,
+      "sha256": "a9fc1cdd14db036e3f023cca76f01fc6c2106cd40704b5dd566e90144a3c6ea6",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_hist_primary/request.json",
+      "bytes": 2448,
+      "sha256": "0afdee21a926e3d60d6910df6151e097d3214a960903728ed970cb2484e0b5fd",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_hist_primary/result.json",
+      "bytes": 2820,
+      "sha256": "889f1b87bfd698722b82763d2ab00dee4b3292eb11d1ea1f7214e41022ec750d",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_hist_primary/splits.npz",
+      "bytes": 13697,
+      "sha256": "86abeff6767567b28c4b5ee62e4f95ad985267b74b2aaa2a5ec120119699c440",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_hist_primary/worker.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_lgbm_primary/error_analysis.json",
+      "bytes": 4221,
+      "sha256": "4eab800637c9189587366befd42f57ac8ea3c860ed18f72a31bc099961527651",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_lgbm_primary/feature_importance.csv",
+      "bytes": 9652,
+      "sha256": "0163eae5ff4e65078e96ceb3f13df068f360fffb67f9b299ad51848cc6ffdac2",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_lgbm_primary/model.joblib",
+      "bytes": 681994,
+      "sha256": "f22d6c25250daf14677ccce7433dab946a4229e1cb9ae0e1973658a04f87e732",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_lgbm_primary/oof.npz",
+      "bytes": 15571,
+      "sha256": "9f6c74128ce172a55d6f31736be2e228f4653385262c989f06e3c0e15503316a",
+      "shareable": false
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_lgbm_primary/progress.jsonl",
+      "bytes": 961,
+      "sha256": "b4874bf3d77c3014d75e6fdb81908da2ccee4c6f4be22ce9750ef4a26226ddd2",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_lgbm_primary/request.json",
+      "bytes": 2485,
+      "sha256": "021c8ee17ee5283b2d2f1bb9872310848e6cc00385e5b6a0e67bcdc0da90ac8b",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_lgbm_primary/result.json",
+      "bytes": 3089,
+      "sha256": "d07fad662a5ce4b820031ddec9e767aff91c0d3d4591812fabe9426e5b1126c1",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_lgbm_primary/splits.npz",
+      "bytes": 13697,
+      "sha256": "86abeff6767567b28c4b5ee62e4f95ad985267b74b2aaa2a5ec120119699c440",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_lgbm_primary/worker.log",
+      "bytes": 1345,
+      "sha256": "c7e12a407d4e1dd2828ca1fba5dc188ed4f0a1587fbef5efa877b3ccdd1e5a74",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_linear_baseline/error_analysis.json",
+      "bytes": 4207,
+      "sha256": "b6d346be5882f12643a4d911ecdc66d54025fa01a984cb958e68bdec33d50af8",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_linear_baseline/feature_importance.csv",
+      "bytes": 14403,
+      "sha256": "81aadf99bfae403daa9720e0c58b9a50b29acca22b7ce7a7a780c181ea989c40",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_linear_baseline/model.joblib",
+      "bytes": 26037,
+      "sha256": "d0f656e952f3eab0b69cae892d0dac3e7f94dea3a3f6a862386f272fb83ce436",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_linear_baseline/oof.npz",
+      "bytes": 15592,
+      "sha256": "892da8e846879ea9b717200fd6d1f8b4d21cb19ebae73d2dafc423ff1b907f71",
+      "shareable": false
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_linear_baseline/progress.jsonl",
+      "bytes": 759,
+      "sha256": "83af4144843bf77674e95cfef0bf13d0fbf02c1de92aacfadab079e5ed588e89",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_linear_baseline/request.json",
+      "bytes": 2310,
+      "sha256": "613ec0a3b907184a13d25af1c62cca7da9b83c69b6408a1188f5cd0b43edc18b",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_linear_baseline/result.json",
+      "bytes": 2710,
+      "sha256": "f1b327976747331ea5ac93e3b672541de992c70d107b10f3c0cca18d79e4cd3a",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_linear_baseline/splits.npz",
+      "bytes": 13697,
+      "sha256": "86abeff6767567b28c4b5ee62e4f95ad985267b74b2aaa2a5ec120119699c440",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_linear_baseline/worker.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_rf_primary/progress.jsonl",
+      "bytes": 651,
+      "sha256": "c1145a1c983d466bed4f24d631fb74ede31b9c0a8868e9242dd12e6f8403d958",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_rf_primary/request.json",
+      "bytes": 2402,
+      "sha256": "2501f8aaffc666a81b6576f76825b21becbbf1c2c29861ac42908d67d40ee19f",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/experiments/run_rf_primary/worker.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/operations/final-feedback/request.json",
+      "bytes": 188172,
+      "sha256": "8743658b5e2cf541ca15fd1f79a6be9c1f8bd11ee8d937759e65e96a47fe644a",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/operations/final-feedback/result.json",
+      "bytes": 7389,
+      "sha256": "258fa61339eafe9156db5064d66c7561f74fb31e09dbcc28be58ce7363c30470",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/operations/final-feedback/worker.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/operations/inspect_data/eda/dataset_report.json",
+      "bytes": 9420,
+      "sha256": "7d39241e00a30d1191d5f3114412869f052c54305521b18eca0670438367414a",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/operations/inspect_data/eda/missingness.html",
+      "bytes": 4865211,
+      "sha256": "50b8725759b41830e11b5e7f0d20fc25dd4ce8a6104f0303629a0b04950a6cc7",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/operations/inspect_data/eda/splits.npz",
+      "bytes": 13697,
+      "sha256": "86abeff6767567b28c4b5ee62e4f95ad985267b74b2aaa2a5ec120119699c440",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/operations/inspect_data/eda/target.html",
+      "bytes": 4871129,
+      "sha256": "129744e2d455746dcc9ab3f655880a868b546eb058f75f607cca4f03579e605c",
+      "shareable": false
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/operations/inspect_data/request.json",
+      "bytes": 11829,
+      "sha256": "cb927f5816f5cf1fe773906c35d8f713e9db2bcf7047af42302e240ff0c4b2f0",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/operations/inspect_data/result.json",
+      "bytes": 17676,
+      "sha256": "20ed22f583fb121b6d06c231582d63e631751315e913b507b0f31c424f6af0ec",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/operations/inspect_data/worker.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/operations/upload/request.json",
+      "bytes": 188013,
+      "sha256": "4dc7e66779c6dcd112500a85f693a21c6dc1e4760fece7d258abf59be99add02",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/operations/upload/result.json",
+      "bytes": 142,
+      "sha256": "7624a9625752d14bbfbc64c7792a502c15243c9eed2f87df678782b9192c9039",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/operations/upload/worker.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/prediction_request.json",
+      "bytes": 1846,
+      "sha256": "2d166bbbea9b45e6cf294797428465322a49f354909cb0021834cbdc663a94a1",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/prediction_result.json",
+      "bytes": 379,
+      "sha256": "b6815ab7f1b83d4e17d567b1b8278472fd8eee9848b4c22343f55f362e9b73f4",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/prediction_worker.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/progress.log",
+      "bytes": 34718,
+      "sha256": "9d4724fc3098f1d39088f1607f5889a1a811f791d1ec2e5d347cb4f28b806972",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/state.json",
+      "bytes": 178386,
+      "sha256": "244b1ce6e0a05f5f532e2ab5e5f01669605d8e9aa0e481050cc8c70dec7a4423",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/submissions/submission.csv",
+      "bytes": 35893,
+      "sha256": "fdac0f3bb1f340c6034b0f2d6e714ff9910450fb531a15ac12b5818e42d9e4cf",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/submissions/validation.json",
+      "bytes": 127,
+      "sha256": "6b48c9c114a1efd9995d4383646f0bf02d084a810c50a11a77b216c226794c78",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/summary.json",
+      "bytes": 60229,
+      "sha256": "850aa0c767cfbfb0e53d75f936928123502ca79f67ae7dd9c89b36a31efd26dd",
+      "shareable": true
+    },
+    {
+      "path": "runs/home-data-for-ml-course-2655b38be9fe/swarm_receipt.json",
+      "bytes": 178386,
+      "sha256": "022390bdc081afac41b1e99ae95c6e56e266c49e653b3cda10a1a060c5337308",
+      "shareable": true
+    }
+  ]
+}

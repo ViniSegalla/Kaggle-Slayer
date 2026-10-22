@@ -1,0 +1,231 @@
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:54:48+00:00] [coordinator] LLM turn | task=coordinator | request=1/80 | experiments remaining=8 | wall remaining=1800s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:54:52+00:00] [coordinator] coordinator | data_task | delegate | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:54:52+00:00] [data_validation] LLM turn | task=data_task | request=2/80 | experiments remaining=8 | wall remaining=1797s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:54:55+00:00] [data_validation] data_task | inspect_data | inspect_dataset | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:54:59+00:00] [data_validation] data_task | inspect_data | inspect_dataset | completed
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:54:59+00:00] [coordinator] LLM turn | task=coordinator | request=3/80 | experiments remaining=8 | wall remaining=1789s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:03+00:00] [coordinator] coordinator | wait_data | wait | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:03+00:00] [data_validation] LLM turn | task=data_task | request=4/80 | experiments remaining=8 | wall remaining=1785s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:06+00:00] [data_validation] data_task | configure_cv | configure_validation | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:06+00:00] [data_validation] data_task | configure_cv | configure_validation | completed
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:06+00:00] [data_validation] LLM turn | task=data_task | request=5/80 | experiments remaining=8 | wall remaining=1782s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:10+00:00] [data_validation] data_task | finish_data | finish | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:10+00:00] [data_validation] data_task | finish_data | finish | completed
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:10+00:00] [coordinator] coordinator | data_task | delegate | completed
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:10+00:00] [coordinator] coordinator | wait_data | wait | completed
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:10+00:00] [coordinator] LLM turn | task=coordinator | request=6/80 | experiments remaining=8 | wall remaining=1778s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:14+00:00] [coordinator] coordinator | model_task | delegate | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:14+00:00] [pipeline_modeling] LLM turn | task=model_task | request=7/80 | experiments remaining=8 | wall remaining=1774s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:20+00:00] [pipeline_modeling] model_task | schema repair 1/2 | response: invalid_json
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:20+00:00] [pipeline_modeling] LLM turn | task=model_task | request=8/80 | experiments remaining=8 | wall remaining=1769s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:25+00:00] [pipeline_modeling] model_task | cfg_cat | configure_pipeline | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:25+00:00] [pipeline_modeling] model_task | cfg_lgbm | configure_pipeline | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:25+00:00] [pipeline_modeling] model_task | cfg_hist | configure_pipeline | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:25+00:00] [pipeline_modeling] model_task | run_cat | run_experiment | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:25+00:00] [pipeline_modeling] model_task | run_lgbm | run_experiment | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:25+00:00] [pipeline_modeling] model_task | run_hist | run_experiment | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:25+00:00] [pipeline_modeling] model_task | wait_runs | wait | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:26+00:00] [pipeline_modeling] model_task | cfg_cat | configure_pipeline | completed
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:26+00:00] [pipeline_modeling] model_task | cfg_lgbm | configure_pipeline | completed
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:26+00:00] [pipeline_modeling] model_task | cfg_hist | configure_pipeline | completed
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:27+00:00] [pipeline_modeling] run_cat | inspecting dataset and fixed folds
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:27+00:00] [pipeline_modeling] run_lgbm | inspecting dataset and fixed folds
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:28+00:00] [pipeline_modeling] run_cat | fold 1/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:28+00:00] [pipeline_modeling] run_cat | fold 1/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:28+00:00] [pipeline_modeling] run_lgbm | fold 1/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:28+00:00] [pipeline_modeling] run_lgbm | fold 1/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:28+00:00] [pipeline_modeling] run_lgbm | fold 1/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:28+00:00] [pipeline_modeling] run_lgbm | fold 1/5: validation complete | mae=16496.1
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:28+00:00] [pipeline_modeling] run_lgbm | fold 2/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:28+00:00] [pipeline_modeling] run_lgbm | fold 2/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:28+00:00] [pipeline_modeling] run_lgbm | fold 2/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:28+00:00] [pipeline_modeling] run_lgbm | fold 2/5: validation complete | mae=15112.7
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:28+00:00] [pipeline_modeling] run_lgbm | fold 3/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:28+00:00] [pipeline_modeling] run_lgbm | fold 3/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:29+00:00] [pipeline_modeling] run_lgbm | fold 3/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:29+00:00] [pipeline_modeling] run_lgbm | fold 3/5: validation complete | mae=17840.8
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:29+00:00] [pipeline_modeling] run_lgbm | fold 4/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:29+00:00] [pipeline_modeling] run_lgbm | fold 4/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:29+00:00] [pipeline_modeling] run_lgbm | fold 4/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:29+00:00] [pipeline_modeling] run_lgbm | fold 4/5: validation complete | mae=15842.6
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:29+00:00] [pipeline_modeling] run_lgbm | fold 5/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:29+00:00] [pipeline_modeling] run_lgbm | fold 5/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:30+00:00] [pipeline_modeling] run_lgbm | fold 5/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:30+00:00] [pipeline_modeling] run_lgbm | fold 5/5: validation complete | mae=13026.8
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:30+00:00] [pipeline_modeling] run_lgbm | refitting on all training rows
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:30+00:00] [pipeline_modeling] model_task | run_lgbm | run_experiment | completed | measured score=15663.8
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:30+00:00] [pipeline_modeling] run_lgbm | checkpoint and diagnostics saved
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:36+00:00] [pipeline_modeling] run_cat | still running: fold 1/5: selecting stopping iterations on inner training data | elapsed=10s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:41+00:00] [pipeline_modeling] run_cat | fold 1/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:46+00:00] [pipeline_modeling] run_cat | still running: fold 1/5: fitting training fold | elapsed=20s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:54+00:00] [pipeline_modeling] run_cat | fold 1/5: validation complete | mae=16616.9
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:54+00:00] [pipeline_modeling] run_cat | fold 2/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:54+00:00] [pipeline_modeling] run_cat | fold 2/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:55:56+00:00] [pipeline_modeling] run_cat | still running: fold 2/5: selecting stopping iterations on inner training data | elapsed=30s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:02+00:00] [pipeline_modeling] run_cat | fold 2/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:06+00:00] [pipeline_modeling] run_cat | fold 2/5: validation complete | mae=16596.2
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:06+00:00] [pipeline_modeling] run_cat | fold 3/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:06+00:00] [pipeline_modeling] run_cat | fold 3/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:06+00:00] [pipeline_modeling] run_cat | still running: fold 3/5: selecting stopping iterations on inner training data | elapsed=41s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:16+00:00] [pipeline_modeling] run_cat | fold 3/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:16+00:00] [pipeline_modeling] run_cat | still running: fold 3/5: fitting training fold | elapsed=51s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:23+00:00] [pipeline_modeling] run_cat | fold 3/5: validation complete | mae=17069.6
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:23+00:00] [pipeline_modeling] run_cat | fold 4/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:23+00:00] [pipeline_modeling] run_cat | fold 4/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:26+00:00] [pipeline_modeling] run_cat | still running: fold 4/5: selecting stopping iterations on inner training data | elapsed=61s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:30+00:00] [pipeline_modeling] run_cat | fold 4/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:34+00:00] [pipeline_modeling] run_cat | fold 4/5: validation complete | mae=17518
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:34+00:00] [pipeline_modeling] run_cat | fold 5/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:34+00:00] [pipeline_modeling] run_cat | fold 5/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:37+00:00] [pipeline_modeling] run_cat | still running: fold 5/5: selecting stopping iterations on inner training data | elapsed=71s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:42+00:00] [pipeline_modeling] run_cat | fold 5/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:47+00:00] [pipeline_modeling] run_cat | fold 5/5: validation complete | mae=13010
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:47+00:00] [pipeline_modeling] run_cat | refitting on all training rows
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:47+00:00] [pipeline_modeling] run_cat | still running: refitting on all training rows | elapsed=81s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:51+00:00] [pipeline_modeling] model_task | run_cat | run_experiment | completed | measured score=16162.1
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:51+00:00] [pipeline_modeling] run_cat | checkpoint and diagnostics saved
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:53+00:00] [pipeline_modeling] run_hist | inspecting dataset and fixed folds
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:53+00:00] [pipeline_modeling] run_hist | fold 1/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:53+00:00] [pipeline_modeling] run_hist | fold 1/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:55+00:00] [pipeline_modeling] run_hist | fold 1/5: validation complete | mae=17158.7
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:55+00:00] [pipeline_modeling] run_hist | fold 2/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:55+00:00] [pipeline_modeling] run_hist | fold 2/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:56+00:00] [pipeline_modeling] run_hist | fold 2/5: validation complete | mae=16275.8
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:56+00:00] [pipeline_modeling] run_hist | fold 3/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:56+00:00] [pipeline_modeling] run_hist | fold 3/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:56+00:00] [pipeline_modeling] run_hist | fold 3/5: validation complete | mae=18492.9
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:56+00:00] [pipeline_modeling] run_hist | fold 4/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:56+00:00] [pipeline_modeling] run_hist | fold 4/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:58+00:00] [pipeline_modeling] run_hist | fold 4/5: validation complete | mae=16027.7
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:58+00:00] [pipeline_modeling] run_hist | fold 5/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:58+00:00] [pipeline_modeling] run_hist | fold 5/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:59+00:00] [pipeline_modeling] run_hist | fold 5/5: validation complete | mae=13223.8
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:56:59+00:00] [pipeline_modeling] run_hist | refitting on all training rows
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:01+00:00] [pipeline_modeling] model_task | run_hist | run_experiment | completed | measured score=16235.8
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:01+00:00] [pipeline_modeling] run_hist | checkpoint and diagnostics saved
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:01+00:00] [pipeline_modeling] model_task | wait_runs | wait | completed
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:01+00:00] [pipeline_modeling] LLM turn | task=model_task | request=9/80 | experiments remaining=5 | wall remaining=1668s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:09+00:00] [pipeline_modeling] model_task | schema repair 1/2 | response: invalid_json
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:09+00:00] [pipeline_modeling] LLM turn | task=model_task | request=10/80 | experiments remaining=5 | wall remaining=1659s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:18+00:00] [pipeline_modeling] model_task | tune_lgbm_a | tune_experiment | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:18+00:00] [pipeline_modeling] model_task | tune_lgbm_b | tune_experiment | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:18+00:00] [pipeline_modeling] model_task | ens_lgbm_cat | ensemble | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:20+00:00] [pipeline_modeling] tune_lgbm_a | inspecting dataset and fixed folds
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:20+00:00] [pipeline_modeling] tune_lgbm_a | fold 1/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:20+00:00] [pipeline_modeling] tune_lgbm_a | fold 1/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:20+00:00] [pipeline_modeling] tune_lgbm_a | fold 1/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:20+00:00] [pipeline_modeling] tune_lgbm_b | inspecting dataset and fixed folds
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:20+00:00] [pipeline_modeling] tune_lgbm_b | fold 1/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:20+00:00] [pipeline_modeling] tune_lgbm_b | fold 1/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:20+00:00] [pipeline_modeling] tune_lgbm_b | fold 1/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:20+00:00] [pipeline_modeling] tune_lgbm_a | fold 1/5: validation complete | mae=16657.9
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:20+00:00] [pipeline_modeling] tune_lgbm_a | fold 2/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:20+00:00] [pipeline_modeling] tune_lgbm_a | fold 2/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:20+00:00] [pipeline_modeling] tune_lgbm_a | fold 2/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:20+00:00] [pipeline_modeling] tune_lgbm_b | fold 1/5: validation complete | mae=16417.9
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:20+00:00] [pipeline_modeling] tune_lgbm_b | fold 2/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:20+00:00] [pipeline_modeling] tune_lgbm_b | fold 2/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:20+00:00] [pipeline_modeling] tune_lgbm_b | fold 2/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:21+00:00] [pipeline_modeling] tune_lgbm_a | fold 2/5: validation complete | mae=16230.4
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:21+00:00] [pipeline_modeling] tune_lgbm_a | fold 3/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:21+00:00] [pipeline_modeling] tune_lgbm_a | fold 3/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:21+00:00] [pipeline_modeling] tune_lgbm_a | fold 3/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:21+00:00] [pipeline_modeling] tune_lgbm_a | fold 3/5: validation complete | mae=18044.2
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:21+00:00] [pipeline_modeling] tune_lgbm_a | fold 4/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:21+00:00] [pipeline_modeling] tune_lgbm_a | fold 4/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:21+00:00] [pipeline_modeling] tune_lgbm_b | fold 2/5: validation complete | mae=15248.3
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:21+00:00] [pipeline_modeling] tune_lgbm_b | fold 3/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:21+00:00] [pipeline_modeling] tune_lgbm_b | fold 3/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:21+00:00] [pipeline_modeling] tune_lgbm_b | fold 3/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:21+00:00] [pipeline_modeling] tune_lgbm_a | fold 4/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:22+00:00] [pipeline_modeling] tune_lgbm_b | fold 3/5: validation complete | mae=17290.3
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:22+00:00] [pipeline_modeling] tune_lgbm_b | fold 4/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:22+00:00] [pipeline_modeling] tune_lgbm_b | fold 4/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:22+00:00] [pipeline_modeling] tune_lgbm_a | fold 4/5: validation complete | mae=16585.6
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:22+00:00] [pipeline_modeling] tune_lgbm_a | fold 5/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:22+00:00] [pipeline_modeling] tune_lgbm_a | fold 5/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:22+00:00] [pipeline_modeling] tune_lgbm_a | fold 5/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:22+00:00] [pipeline_modeling] tune_lgbm_b | fold 4/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:22+00:00] [pipeline_modeling] tune_lgbm_a | fold 5/5: validation complete | mae=13469.4
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:22+00:00] [pipeline_modeling] tune_lgbm_a | refitting on all training rows
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:23+00:00] [pipeline_modeling] model_task | tune_lgbm_a | tune_experiment | completed | measured score=16197.5
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:23+00:00] [pipeline_modeling] tune_lgbm_b | fold 4/5: validation complete | mae=16090.5
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:23+00:00] [pipeline_modeling] tune_lgbm_b | fold 5/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:23+00:00] [pipeline_modeling] tune_lgbm_b | fold 5/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:23+00:00] [pipeline_modeling] tune_lgbm_b | fold 5/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:23+00:00] [pipeline_modeling] tune_lgbm_a | checkpoint and diagnostics saved
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:23+00:00] [pipeline_modeling] tune_lgbm_b | fold 5/5: validation complete | mae=12707.1
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:23+00:00] [pipeline_modeling] tune_lgbm_b | refitting on all training rows
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:23+00:00] [pipeline_modeling] model_task | tune_lgbm_b | tune_experiment | completed | measured score=15550.8
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:23+00:00] [pipeline_modeling] tune_lgbm_b | checkpoint and diagnostics saved
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:25+00:00] [pipeline_modeling] ens_lgbm_cat | inspecting dataset and fixed folds
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:25+00:00] [pipeline_modeling] ens_lgbm_cat | fold 1/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:25+00:00] [pipeline_modeling] ens_lgbm_cat | fold 1/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:25+00:00] [pipeline_modeling] ens_lgbm_cat | fold 1/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:34+00:00] [pipeline_modeling] ens_lgbm_cat | still running: fold 1/5: selecting stopping iterations on inner training data | elapsed=10s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:38+00:00] [pipeline_modeling] ens_lgbm_cat | fold 1/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:44+00:00] [pipeline_modeling] ens_lgbm_cat | still running: fold 1/5: fitting training fold | elapsed=20s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:51+00:00] [pipeline_modeling] ens_lgbm_cat | fold 1/5: validation complete | mae=15939.9
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:51+00:00] [pipeline_modeling] ens_lgbm_cat | fold 2/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:51+00:00] [pipeline_modeling] ens_lgbm_cat | fold 2/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:51+00:00] [pipeline_modeling] ens_lgbm_cat | fold 2/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:54+00:00] [pipeline_modeling] ens_lgbm_cat | still running: fold 2/5: selecting stopping iterations on inner training data | elapsed=30s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:57:59+00:00] [pipeline_modeling] ens_lgbm_cat | fold 2/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:04+00:00] [pipeline_modeling] ens_lgbm_cat | fold 2/5: validation complete | mae=15281.9
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:04+00:00] [pipeline_modeling] ens_lgbm_cat | fold 3/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:04+00:00] [pipeline_modeling] ens_lgbm_cat | fold 3/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:04+00:00] [pipeline_modeling] ens_lgbm_cat | fold 3/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:04+00:00] [pipeline_modeling] ens_lgbm_cat | still running: fold 3/5: selecting stopping iterations on inner training data | elapsed=41s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:13+00:00] [pipeline_modeling] ens_lgbm_cat | fold 3/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:14+00:00] [pipeline_modeling] ens_lgbm_cat | still running: fold 3/5: fitting training fold | elapsed=51s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:19+00:00] [pipeline_modeling] ens_lgbm_cat | fold 3/5: validation complete | mae=17013.6
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:19+00:00] [pipeline_modeling] ens_lgbm_cat | fold 4/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:19+00:00] [pipeline_modeling] ens_lgbm_cat | fold 4/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:19+00:00] [pipeline_modeling] ens_lgbm_cat | fold 4/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:24+00:00] [pipeline_modeling] ens_lgbm_cat | still running: fold 4/5: selecting stopping iterations on inner training data | elapsed=61s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:26+00:00] [pipeline_modeling] ens_lgbm_cat | fold 4/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:31+00:00] [pipeline_modeling] ens_lgbm_cat | fold 4/5: validation complete | mae=16051.9
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:31+00:00] [pipeline_modeling] ens_lgbm_cat | fold 5/5: preparing fold-specific preprocessing and training settings
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:31+00:00] [pipeline_modeling] ens_lgbm_cat | fold 5/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:31+00:00] [pipeline_modeling] ens_lgbm_cat | fold 5/5: selecting stopping iterations on inner training data
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:34+00:00] [pipeline_modeling] ens_lgbm_cat | still running: fold 5/5: selecting stopping iterations on inner training data | elapsed=71s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:39+00:00] [pipeline_modeling] ens_lgbm_cat | fold 5/5: fitting training fold
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:44+00:00] [pipeline_modeling] ens_lgbm_cat | fold 5/5: validation complete | mae=12001.8
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:44+00:00] [pipeline_modeling] ens_lgbm_cat | refitting on all training rows
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:44+00:00] [pipeline_modeling] ens_lgbm_cat | still running: refitting on all training rows | elapsed=81s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:49+00:00] [pipeline_modeling] model_task | ens_lgbm_cat | ensemble | completed | measured score=15257.8
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:49+00:00] [pipeline_modeling] ens_lgbm_cat | checkpoint and diagnostics saved
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:49+00:00] [pipeline_modeling] LLM turn | task=model_task | request=11/80 | experiments remaining=2 | wall remaining=1559s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:54+00:00] [pipeline_modeling] model_task | finish_model_task | finish | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:54+00:00] [pipeline_modeling] model_task | finish_model_task | finish | completed
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:54+00:00] [coordinator] coordinator | model_task | delegate | completed
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:58:54+00:00] [coordinator] LLM turn | task=coordinator | request=12/80 | experiments remaining=2 | wall remaining=1554s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:00+00:00] [coordinator] coordinator | eval_task | delegate | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:00+00:00] [coordinator] coordinator | submit_task | delegate | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:00+00:00] [coordinator] coordinator | wait_final | wait | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:00+00:00] [evaluation] LLM turn | task=eval_task | request=13/80 | experiments remaining=2 | wall remaining=1548s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:03+00:00] [evaluation] eval_task | evaluate_primary | evaluate | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:03+00:00] [evaluator] Comparing primary CV results and auditing train/validation gaps
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:04+00:00] [evaluator] Best: ens_lgbm_cat | mae=15257.8 | train/CV gap=5464.56 | warnings=1
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:04+00:00] [evaluation] eval_task | evaluate_primary | evaluate | completed
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:04+00:00] [evaluation] LLM turn | task=eval_task | request=14/80 | experiments remaining=2 | wall remaining=1545s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:08+00:00] [evaluation] eval_task | schema repair 1/2 | actions.0.finish.summary: string_too_long
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:08+00:00] [evaluation] LLM turn | task=eval_task | request=15/80 | experiments remaining=2 | wall remaining=1540s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:12+00:00] [evaluation] eval_task | finish_eval | finish | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:12+00:00] [evaluation] eval_task | finish_eval | finish | completed
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:12+00:00] [coordinator] coordinator | eval_task | delegate | completed
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:13+00:00] [submission] LLM turn | task=submit_task | request=16/80 | experiments remaining=2 | wall remaining=1536s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:16+00:00] [submission] submit_task | generate_preds | generate_predictions | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:18+00:00] [submission] submit_task | generate_preds | generate_predictions | completed
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:18+00:00] [submission] LLM turn | task=submit_task | request=17/80 | experiments remaining=2 | wall remaining=1530s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:21+00:00] [submission] submit_task | validate_preds | validate_predictions | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:21+00:00] [submission] submit_task | validate_preds | validate_predictions | completed
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:21+00:00] [submission] LLM turn | task=submit_task | request=18/80 | experiments remaining=2 | wall remaining=1527s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:30+00:00] [submission] submit_task | results_done | finish | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:30+00:00] [submission] submit_task | results_done | finish | completed
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:30+00:00] [coordinator] coordinator | submit_task | delegate | completed
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:30+00:00] [coordinator] coordinator | wait_final | wait | completed
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:30+00:00] [coordinator] LLM turn | task=coordinator | request=19/80 | experiments remaining=2 | wall remaining=1518s
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:34+00:00] [coordinator] coordinator | finish_run | finish | accepted
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:34+00:00] [coordinator] coordinator | finish_run | finish | completed
+[home-data-for-ml-course-8ed561cbed5e] [2026-10-22T18:59:34+00:00] [orchestrator] Submission authorized: validating integrity before one Kaggle upload

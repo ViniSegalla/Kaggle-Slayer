@@ -1,0 +1,2 @@
+# Preserve archived execution bytes so SHA-256 manifests survive Git checkout.
+**/runs/** -text

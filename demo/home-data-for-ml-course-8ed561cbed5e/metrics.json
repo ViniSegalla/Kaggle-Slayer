@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "run_id": "home-data-for-ml-course-8ed561cbed5e",
+  "source_snapshot": "runs/home-data-for-ml-course-8ed561cbed5e/state.json",
+  "competition": {
+    "slug": "home-data-for-ml-course",
+    "title": "Housing Prices Competition for Kaggle Learn Users",
+    "data_source": "official_kaggle_api",
+    "target": "SalePrice",
+    "metric": "mae",
+    "direction": "minimize"
+  },
+  "execution": {
+    "mode": "agentic",
+    "protocol": "swarm-v1",
+    "status": "completed",
+    "termination_reason": "coordinator_finished",
+    "created_at": "2026-10-22T18:54:48.721867+00:00",
+    "updated_at": "2026-10-22T18:59:41.225879+00:00",
+    "elapsed_seconds": 292.40599999999904,
+    "experiment_attempts": 6,
+    "completed_experiments": 6,
+    "timed_out_experiments": 0,
+    "new_training_or_submission_performed_for_promotion": false
+  },
+  "dataset": {
+    "train_rows": 1460,
+    "test_rows": 1459,
+    "input_features": 79,
+    "sha256": {
+      "train.csv": "1e18addf81e5e4d347cc17ee6075bbe4a42b7fa26b9e5b063e8f692a5f929d41",
+      "test.csv": "8fdd3d829d4d986b58f845c9553b225e67dd8383624d90fb6ca1d4bed5798c1e",
+      "sample_submission.csv": "f19e99699b925aa3085c8d2ae43c62f15fbcd35e4a953b98025f8392c3ffa807"
+    }
+  },
+  "validation": {
+    "method": "kfold",
+    "folds": 5,
+    "seed": 42,
+    "lineage": "97e41e24a8d91b2f733f"
+  },
+  "selected_model": {
+    "experiment_id": "ens_lgbm_cat",
+    "family": "ensemble",
+    "members": [
+      "lightgbm",
+      "catboost"
+    ],
+    "aggregation": "equal_weight_original_target_values",
+    "local_cv_mae": 15257.827780355281,
+    "fold_standard_deviation": 1719.3277065708269,
+    "fold_scores": [
+      15939.906780645002,
+      15281.919676383048,
+      17013.567341559465,
+      16051.903869082555,
+      12001.841234106327
+    ],
+    "train_mae": 9793.271717090334,
+    "checkpoint": "runs/home-data-for-ml-course-8ed561cbed5e/experiments/ens_lgbm_cat/model.joblib",
+    "checkpoint_sha256": "7f6f589d7896306da738f4c91b74672c2a1998ff416dc730d8f0f6f4283f348b",
+    "warnings": [
+      "Large train/CV gap; favor regularization or revise validation"
+    ]
+  },
+  "submission": {
+    "reference": 57535510,
+    "status": "COMPLETE",
+    "public_mae": 14252.33305,
+    "requested_at": "2026-10-22T18:59:34.510900+00:00",
+    "kaggle_timestamp": "2026-10-22T18:59:35.873Z",
+    "rows": 1459,
+    "columns": [
+      "Id",
+      "SalePrice"
+    ],
+    "identifier_alignment": "verified",
+    "path": "runs/home-data-for-ml-course-8ed561cbed5e/submissions/submission.csv",
+    "sha256": "fe1c4471b2f71945f53215030e4335667d72d2ba066b9f7dc268fc99df4594c2"
+  },
+  "account_standing": {
+    "rank": 304,
+    "team_count": 3876,
+    "top_percent": 7.8431372549019605,
+    "top_20_percent": true,
+    "scope": "current_account_best",
+    "source": "kaggle.competitions_list",
+    "checked_at": "2026-10-22T18:59:41.089971+00:00",
+    "attributed_to_this_submission": false,
+    "note": "Account standing can reflect a different submission; this is not a submission-specific rank."
+  },
+  "provider_usage": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-sonnet-5.5",
+    "requests": 19,
+    "successful_requests": 16,
+    "failed_requests": 3,
+    "tokens_charged": 190932,
+    "schema_repairs": 3,
+    "invalid_actions": 0
+  },
+  "experiments": [
+    {
+      "id": "run_lgbm",
+      "model": "lightgbm",
+      "display_name": "LightGBM",
+      "status": "completed",
+      "cv_mae": 15663.805436079227,
+      "fold_standard_deviation": 1595.0703464206906,
+      "duration_seconds": 2.764999999999418,
+      "selected": false,
+      "error": null
+    },
+    {
+      "id": "run_cat",
+      "model": "catboost",
+      "display_name": "CatBoost",
+      "status": "completed",
+      "cv_mae": 16162.14491892847,
+      "fold_standard_deviation": 1612.034870477862,
+      "duration_seconds": 83.75,
+      "selected": false,
+      "error": null
+    },
+    {
+      "id": "run_hist",
+      "model": "hist_gradient",
+      "display_name": "Histogram gradient boosting",
+      "status": "completed",
+      "cv_mae": 16235.797959866835,
+      "fold_standard_deviation": 1735.6860566718135,
+      "duration_seconds": 7.84400000000096,
+      "selected": false,
+      "error": null
+    },
+    {
+      "id": "tune_lgbm_a",
+      "model": "lightgbm",
+      "display_name": "LightGBM refinement A",
+      "status": "completed",
+      "cv_mae": 16197.506036367797,
+      "fold_standard_deviation": 1497.7581596754965,
+      "duration_seconds": 3.0780000000013388,
+      "selected": false,
+      "error": null
+    },
+    {
+      "id": "tune_lgbm_b",
+      "model": "lightgbm",
+      "display_name": "LightGBM refinement B",
+      "status": "completed",
+      "cv_mae": 15550.830315044197,
+      "fold_standard_deviation": 1565.0713195740273,
+      "duration_seconds": 3.625,
+      "selected": false,
+      "error": null
+    },
+    {
+      "id": "ens_lgbm_cat",
+      "model": "ensemble",
+      "display_name": "LightGBM + CatBoost, equal weight",
+      "status": "completed",
+      "cv_mae": 15257.827780355281,
+      "fold_standard_deviation": 1719.3277065708269,
+      "duration_seconds": 84.64099999999962,
+      "selected": true,
+      "error": null
+    }
+  ],
+  "personal_best": {
+    "reported_by_user": true,
+    "previous_featured_run": "home-data-for-ml-course-2655b38be9fe",
+    "previous_featured_public_mae": 14840.83581,
+    "mae_reduction_vs_previous_demo": 588.5027600000012,
+    "percent_reduction_vs_previous_demo": 3.9654286829550283,
+    "previous_recorded_best_run": "home-data-for-ml-course-ed7b068bb2b0",
+    "previous_recorded_best_public_mae": 14672.93702,
+    "best_among_prior_recorded_scores": true
+  }
+}

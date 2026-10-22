@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "run_id": "home-data-for-ml-course-2655b38be9fe",
+  "source_snapshot": "runs/home-data-for-ml-course-2655b38be9fe/state.json",
+  "competition": {
+    "slug": "home-data-for-ml-course",
+    "title": "Housing Prices Competition for Kaggle Learn Users",
+    "data_source": "official_kaggle_api",
+    "target": "SalePrice",
+    "metric": "mae",
+    "direction": "minimize"
+  },
+  "execution": {
+    "mode": "agentic",
+    "protocol": "swarm-v1",
+    "status": "completed",
+    "termination_reason": "coordinator_finished",
+    "created_at": "2026-10-22T18:26:48.244406+00:00",
+    "updated_at": "2026-10-22T18:33:26.319289+00:00",
+    "elapsed_seconds": 397.9850000000006,
+    "experiment_attempts": 5,
+    "completed_experiments": 4,
+    "timed_out_experiments": 1,
+    "new_training_or_submission_performed_for_promotion": false
+  },
+  "dataset": {
+    "train_rows": 1460,
+    "test_rows": 1459,
+    "input_features": 79,
+    "sha256": {
+      "train.csv": "1e18addf81e5e4d347cc17ee6075bbe4a42b7fa26b9e5b063e8f692a5f929d41",
+      "test.csv": "8fdd3d829d4d986b58f845c9553b225e67dd8383624d90fb6ca1d4bed5798c1e",
+      "sample_submission.csv": "f19e99699b925aa3085c8d2ae43c62f15fbcd35e4a953b98025f8392c3ffa807"
+    }
+  },
+  "validation": {
+    "method": "kfold",
+    "folds": 5,
+    "seed": 42,
+    "lineage": "97e41e24a8d91b2f733f"
+  },
+  "selected_model": {
+    "experiment_id": "measure_lgbm_hist_blend",
+    "family": "ensemble",
+    "members": ["lightgbm", "hist_gradient"],
+    "aggregation": "equal_weight_original_target_values",
+    "local_cv_mae": 15839.304811501846,
+    "fold_standard_deviation": 1630.3776276518167,
+    "fold_scores": [
+      16487.42750862942,
+      15610.610842876133,
+      17904.345097164412,
+      16250.492144020647,
+      12943.648464818616
+    ],
+    "train_mae": 8874.48025858452,
+    "checkpoint": "runs/home-data-for-ml-course-2655b38be9fe/experiments/measure_lgbm_hist_blend/model.joblib",
+    "checkpoint_sha256": "38461faf6dc8a34f4f907b637e5dd738b0c981150aa3a5217d39736af07016d1",
+    "warnings": ["Large train/CV gap; favor regularization or revise validation"]
+  },
+  "submission": {
+    "reference": 57534881,
+    "status": "COMPLETE",
+    "public_mae": 14840.83581,
+    "requested_at": "2026-10-22T18:33:19.246928+00:00",
+    "kaggle_timestamp": "2026-10-22T18:33:21.113Z",
+    "rows": 1459,
+    "columns": ["Id", "SalePrice"],
+    "identifier_alignment": "verified",
+    "path": "runs/home-data-for-ml-course-2655b38be9fe/submissions/submission.csv",
+    "sha256": "fdac0f3bb1f340c6034b0f2d6e714ff9910450fb531a15ac12b5818e42d9e4cf"
+  },
+  "account_standing": {
+    "rank": 352,
+    "team_count": 3876,
+    "top_percent": 9.081527347781218,
+    "top_20_percent": true,
+    "scope": "current_account_best",
+    "source": "kaggle.competitions_list",
+    "checked_at": "2026-10-22T18:33:26.192933+00:00",
+    "attributed_to_this_submission": false,
+    "note": "Account standing can reflect a different submission; this is not a submission-specific rank."
+  },
+  "provider_usage": {
+    "provider": "openrouter",
+    "model": "openai/gpt-6-luna",
+    "requests": 32,
+    "successful_requests": 32,
+    "failed_requests": 0,
+    "tokens_charged": 247349,
+    "schema_repairs": 1,
+    "invalid_actions": 0
+  },
+  "experiments": [
+    {
+      "id": "run_linear_baseline",
+      "model": "linear",
+      "display_name": "Ridge regression",
+      "status": "completed",
+      "cv_mae": 18161.995899852875,
+      "fold_standard_deviation": 1339.0292443268986,
+      "duration_seconds": 0.75,
+      "selected": false,
+      "error": null
+    },
+    {
+      "id": "run_hist_primary",
+      "model": "hist_gradient",
+      "display_name": "Histogram gradient boosting",
+      "status": "completed",
+      "cv_mae": 16099.527294378538,
+      "fold_standard_deviation": 1733.6034751505701,
+      "duration_seconds": 12.75,
+      "selected": false,
+      "error": null
+    },
+    {
+      "id": "run_rf_primary",
+      "model": "random_forest",
+      "display_name": "Random Forest",
+      "status": "timeout",
+      "cv_mae": null,
+      "fold_standard_deviation": null,
+      "duration_seconds": 180.01599999999962,
+      "selected": false,
+      "error": "Experiment exceeded 180.0s; worker terminated"
+    },
+    {
+      "id": "run_lgbm_primary",
+      "model": "lightgbm",
+      "display_name": "LightGBM",
+      "status": "completed",
+      "cv_mae": 16064.993040557438,
+      "fold_standard_deviation": 1540.094541338355,
+      "duration_seconds": 3.514999999999418,
+      "selected": false,
+      "error": null
+    },
+    {
+      "id": "measure_lgbm_hist_blend",
+      "model": "ensemble",
+      "display_name": "LightGBM + HistGradient, equal weight",
+      "status": "completed",
+      "cv_mae": 15839.304811501846,
+      "fold_standard_deviation": 1630.3776276518167,
+      "duration_seconds": 14.375,
+      "selected": true,
+      "error": null
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{"stage": "inspect"}
+{"stage": "prepare_fold", "fold": 1}
+{"stage": "early_stopping", "fold": 1}
+{"stage": "fit_fold", "fold": 1}
+{"stage": "fold_complete", "fold": 1, "score": 16417.903405833356}
+{"stage": "prepare_fold", "fold": 2}
+{"stage": "early_stopping", "fold": 2}
+{"stage": "fit_fold", "fold": 2}
+{"stage": "fold_complete", "fold": 2, "score": 15248.315590647317}
+{"stage": "prepare_fold", "fold": 3}
+{"stage": "early_stopping", "fold": 3}
+{"stage": "fit_fold", "fold": 3}
+{"stage": "fold_complete", "fold": 3, "score": 17290.296297551024}
+{"stage": "prepare_fold", "fold": 4}
+{"stage": "early_stopping", "fold": 4}
+{"stage": "fit_fold", "fold": 4}
+{"stage": "fold_complete", "fold": 4, "score": 16090.548655342764}
+{"stage": "prepare_fold", "fold": 5}
+{"stage": "early_stopping", "fold": 5}
+{"stage": "fit_fold", "fold": 5}
+{"stage": "fold_complete", "fold": 5, "score": 12707.087625846514}
+{"stage": "refit"}
+{"stage": "saved"}

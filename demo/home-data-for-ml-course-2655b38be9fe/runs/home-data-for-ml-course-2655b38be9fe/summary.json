@@ -1,0 +1,1987 @@
+{
+  "run_id": "home-data-for-ml-course-2655b38be9fe",
+  "execution_mode": "agentic",
+  "protocol": "swarm-v1",
+  "status": "completed",
+  "termination_reason": "coordinator_finished",
+  "error": null,
+  "best_id": "measure_lgbm_hist_blend",
+  "submission_path": "C:\\Users\\Vinicius\\Downloads\\Kaggle\\artifacts\\runs\\home-data-for-ml-course-2655b38be9fe\\submissions\\submission.csv",
+  "feedback": {
+    "eligible_ids": [
+      "measure_lgbm_hist_blend",
+      "run_lgbm_primary",
+      "run_hist_primary",
+      "run_linear_baseline"
+    ],
+    "best_id": "measure_lgbm_hist_blend",
+    "local_score": 15839.304811501846,
+    "metric": "mae",
+    "train_validation_gap": 6964.824552917327,
+    "rejected_for_final": [
+      "run_linear_baseline"
+    ],
+    "recommendation": "Audit MasVnrType slice value:Stone (128 held-out rows): mean_absolute_error_original_units=29748 versus overall 15839. Compare model families and a fixed blend; slice differences are exploratory, not proof of a defect.",
+    "warnings": [
+      "Large train/CV gap; favor regularization or revise validation"
+    ],
+    "ensemble_below_improvement_threshold": [],
+    "error_analysis": {
+      "source": "primary_out_of_fold_predictions",
+      "measure": "mean_absolute_error_original_units",
+      "rows": 1460,
+      "overall_error": 15839.304811501845,
+      "slices": [
+        {
+          "feature": "MasVnrType",
+          "slice": "value:Stone",
+          "rows": 128,
+          "error": 29747.95952032732
+        },
+        {
+          "feature": "LotFrontage",
+          "slice": "(80.0, 313.0]",
+          "rows": 284,
+          "error": 26328.843378716265
+        },
+        {
+          "feature": "GarageType",
+          "slice": "value:BuiltIn",
+          "rows": 88,
+          "error": 25485.946750478655
+        },
+        {
+          "feature": "FireplaceQu",
+          "slice": "value:Gd",
+          "rows": 380,
+          "error": 23287.529651792378
+        },
+        {
+          "feature": "GarageFinish",
+          "slice": "value:Fin",
+          "rows": 352,
+          "error": 22822.643319040453
+        },
+        {
+          "feature": "GarageYrBlt",
+          "slice": "(2002.0, 2010.0]",
+          "rows": 329,
+          "error": 22465.9953954135
+        },
+        {
+          "feature": "Fence",
+          "slice": "value:GdPrv",
+          "rows": 59,
+          "error": 16838.431315653386
+        },
+        {
+          "feature": "GarageType",
+          "slice": "value:Attchd",
+          "rows": 870,
+          "error": 16743.64797908194
+        },
+        {
+          "feature": "MasVnrType",
+          "slice": "value:BrkFace",
+          "rows": 445,
+          "error": 16603.320989438547
+        },
+        {
+          "feature": "GarageYrBlt",
+          "slice": "(1980.0, 2002.0]",
+          "rows": 349,
+          "error": 16600.130314198028
+        },
+        {
+          "feature": "FireplaceQu",
+          "slice": "value:TA",
+          "rows": 313,
+          "error": 16449.883591906128
+        },
+        {
+          "feature": "Fence",
+          "slice": "<missing>",
+          "rows": 1179,
+          "error": 16386.888725847548
+        },
+        {
+          "feature": "GarageCond",
+          "slice": "value:TA",
+          "rows": 1326,
+          "error": 16106.667639175615
+        },
+        {
+          "feature": "Alley",
+          "slice": "<missing>",
+          "rows": 1369,
+          "error": 16043.610002201758
+        },
+        {
+          "feature": "GarageQual",
+          "slice": "value:TA",
+          "rows": 1311,
+          "error": 16030.968521475894
+        },
+        {
+          "feature": "MiscFeature",
+          "slice": "<missing>",
+          "rows": 1406,
+          "error": 15988.099773864606
+        },
+        {
+          "feature": "GarageFinish",
+          "slice": "value:RFn",
+          "rows": 422,
+          "error": 15539.362012193958
+        },
+        {
+          "feature": "PoolQC",
+          "slice": "<missing>",
+          "rows": 1453,
+          "error": 15331.180878318748
+        },
+        {
+          "feature": "LotFrontage",
+          "slice": "<missing>",
+          "rows": 259,
+          "error": 14034.51072716175
+        },
+        {
+          "feature": "Alley",
+          "slice": "value:Pave",
+          "rows": 41,
+          "error": 13769.325135444979
+        },
+        {
+          "feature": "Fence",
+          "slice": "value:GdWo",
+          "rows": 54,
+          "error": 13638.726322321649
+        },
+        {
+          "feature": "GarageType",
+          "slice": "<missing>",
+          "rows": 81,
+          "error": 13535.511384947156
+        },
+        {
+          "feature": "GarageYrBlt",
+          "slice": "<missing>",
+          "rows": 81,
+          "error": 13535.511384947156
+        },
+        {
+          "feature": "GarageFinish",
+          "slice": "<missing>",
+          "rows": 81,
+          "error": 13535.511384947156
+        },
+        {
+          "feature": "GarageQual",
+          "slice": "<missing>",
+          "rows": 81,
+          "error": 13535.511384947156
+        },
+        {
+          "feature": "GarageCond",
+          "slice": "<missing>",
+          "rows": 81,
+          "error": 13535.511384947156
+        },
+        {
+          "feature": "MasVnrType",
+          "slice": "<missing>",
+          "rows": 872,
+          "error": 13366.561064708725
+        },
+        {
+          "feature": "LotFrontage",
+          "slice": "(59.0, 69.0]",
+          "rows": 297,
+          "error": 13301.08962067651
+        },
+        {
+          "feature": "LotFrontage",
+          "slice": "(20.999, 59.0]",
+          "rows": 304,
+          "error": 13288.360568570833
+        },
+        {
+          "feature": "GarageYrBlt",
+          "slice": "(1899.999, 1961.0]",
+          "rows": 347,
+          "error": 12902.314810261174
+        }
+      ],
+      "note": "Exploratory overlapping slices, not significance tests or independent holdouts."
+    },
+    "leaderboard": {
+      "status": "COMPLETE",
+      "public_score": 14840.83581,
+      "rank": 352,
+      "top_20_percent": true,
+      "recommendation": "Keep local CV as the selection criterion; inspect distribution shift before any new run.",
+      "validation_minus_public": -998.4690015018459,
+      "unexpected_degradation": false,
+      "team_count": 3876,
+      "standing_scope": "current_account_best",
+      "standing_source": "kaggle.competitions_list",
+      "standing_checked_at": "2026-10-22T18:33:26.192933+00:00",
+      "top_percent": 9.081527347781218
+    }
+  },
+  "experiments": [
+    {
+      "id": "run_linear_baseline",
+      "model": "linear",
+      "params": {
+        "alpha": 10.0
+      },
+      "status": "completed",
+      "score": 18161.995899852875,
+      "train_score": 15034.465697546339,
+      "fold_scores": [
+        19226.44298898501,
+        18679.1761290137,
+        18846.581567732304,
+        18533.541427135922,
+        15524.237386397437
+      ],
+      "std": 1339.0292443268986,
+      "duration": 0.75,
+      "error": null,
+      "error_code": null,
+      "error_details": {},
+      "checkpoint": "C:\\Users\\Vinicius\\Downloads\\Kaggle\\artifacts\\runs\\home-data-for-ml-course-2655b38be9fe\\experiments\\run_linear_baseline\\model.joblib",
+      "oof_path": "C:\\Users\\Vinicius\\Downloads\\Kaggle\\artifacts\\runs\\home-data-for-ml-course-2655b38be9fe\\experiments\\run_linear_baseline\\oof.npz",
+      "importance_path": "C:\\Users\\Vinicius\\Downloads\\Kaggle\\artifacts\\runs\\home-data-for-ml-course-2655b38be9fe\\experiments\\run_linear_baseline\\feature_importance.csv",
+      "effective_params": {
+        "alpha": 10.0
+      },
+      "validation_role": "primary",
+      "validation_seed": 42,
+      "parent_id": null,
+      "diagnostics_path": "C:\\Users\\Vinicius\\Downloads\\Kaggle\\artifacts\\runs\\home-data-for-ml-course-2655b38be9fe\\experiments\\run_linear_baseline\\error_analysis.json",
+      "training_contract": {
+        "model": "linear",
+        "preprocessing": "scaled_one_hot_with_missing_indicators",
+        "feature_profile": "generic",
+        "metric": "mae",
+        "target_transform": "none",
+        "objective_params": {},
+        "metric_aligned_loss": false,
+        "note": "Surrogate or transformed-target loss; selection uses the original competition metric. Classification uses a probabilistic surrogate rather than directly optimizing accuracy/F1/AUC.",
+        "pipeline_config": {
+          "numeric_imputation": "median",
+          "scaling": "standard",
+          "missing_indicators": true,
+          "max_categories": 64,
+          "min_frequency": 2,
+          "features": []
+        },
+        "dataset_fingerprints": {
+          "train.csv": "1e18addf81e5e4d347cc17ee6075bbe4a42b7fa26b9e5b063e8f692a5f929d41",
+          "test.csv": "8fdd3d829d4d986b58f845c9553b225e67dd8383624d90fb6ca1d4bed5798c1e",
+          "sample_submission.csv": "f19e99699b925aa3085c8d2ae43c62f15fbcd35e4a953b98025f8392c3ffa807"
+        },
+        "validation": {
+          "method": "kfold",
+          "folds": 5,
+          "seed": 42
+        },
+        "effective_params": {
+          "alpha": 10.0
+        },
+        "resource_estimates": [
+          {
+            "train_rows": 1460,
+            "test_rows": 1459,
+            "rows": 1460,
+            "feature_count": 79,
+            "derived_features": 0,
+            "encoded_width": 306,
+            "estimated_dense_cells": 446760
+          }
+        ]
+      },
+      "lineage": "97e41e24a8d91b2f733f"
+    },
+    {
+      "id": "run_hist_primary",
+      "model": "hist_gradient",
+      "params": {
+        "max_iter": 300,
+        "max_leaf_nodes": 20,
+        "learning_rate": 0.06,
+        "l2_regularization": 2.0,
+        "min_samples_leaf": 15
+      },
+      "status": "completed",
+      "score": 16099.527294378538,
+      "train_score": 8992.30649531475,
+      "fold_scores": [
+        16888.853272509663,
+        15870.470145961697,
+        18320.761893551567,
+        16374.479419345993,
+        13043.071740523768
+      ],
+      "std": 1733.6034751505701,
+      "duration": 12.75,
+      "error": null,
+      "error_code": null,
+      "error_details": {},
+      "checkpoint": "C:\\Users\\Vinicius\\Downloads\\Kaggle\\artifacts\\runs\\home-data-for-ml-course-2655b38be9fe\\experiments\\run_hist_primary\\model.joblib",
+      "oof_path": "C:\\Users\\Vinicius\\Downloads\\Kaggle\\artifacts\\runs\\home-data-for-ml-course-2655b38be9fe\\experiments\\run_hist_primary\\oof.npz",
+      "importance_path": null,
+      "effective_params": {
+        "max_iter": 300,
+        "max_leaf_nodes": 20,
+        "learning_rate": 0.06,
+        "l2_regularization": 2.0,
+        "min_samples_leaf": 15
+      },
+      "validation_role": "primary",
+      "validation_seed": 42,
+      "parent_id": null,
+      "diagnostics_path": "C:\\Users\\Vinicius\\Downloads\\Kaggle\\artifacts\\runs\\home-data-for-ml-course-2655b38be9fe\\experiments\\run_hist_primary\\error_analysis.json",
+      "training_contract": {
+        "model": "hist_gradient",
+        "preprocessing": "unscaled_one_hot_with_missing_indicators",
+        "feature_profile": "generic",
+        "metric": "mae",
+        "target_transform": "none",
+        "objective_params": {
+          "loss": "absolute_error"
+        },
+        "metric_aligned_loss": true,
+        "note": "Aligned loss (RMSE/R2 use squared error).",
+        "pipeline_config": {
+          "numeric_imputation": "median",
+          "scaling": "none",
+          "missing_indicators": true,
+          "max_categories": 64,
+          "min_frequency": 2,
+          "features": []
+        },
+        "dataset_fingerprints": {
+          "train.csv": "1e18addf81e5e4d347cc17ee6075bbe4a42b7fa26b9e5b063e8f692a5f929d41",
+          "test.csv": "8fdd3d829d4d986b58f845c9553b225e67dd8383624d90fb6ca1d4bed5798c1e",
+          "sample_submission.csv": "f19e99699b925aa3085c8d2ae43c62f15fbcd35e4a953b98025f8392c3ffa807"
+        },
+        "validation": {
+          "method": "kfold",
+          "folds": 5,
+          "seed": 42
+        },
+        "effective_params": {
+          "max_iter": 300,
+          "max_leaf_nodes": 20,
+          "learning_rate": 0.06,
+          "l2_regularization": 2.0,
+          "min_samples_leaf": 15
+        },
+        "resource_estimates": [
+          {
+            "train_rows": 1460,
+            "test_rows": 1459,
+            "rows": 1460,
+            "feature_count": 79,
+            "derived_features": 0,
+            "encoded_width": 306,
+            "estimated_dense_cells": 446760
+          }
+        ]
+      },
+      "lineage": "97e41e24a8d91b2f733f"
+    },
+    {
+      "id": "run_rf_primary",
+      "model": "random_forest",
+      "params": {
+        "n_estimators": 300,
+        "max_depth": 18,
+        "min_samples_leaf": 2,
+        "max_features": 0.8
+      },
+      "status": "timeout",
+      "score": null,
+      "train_score": null,
+      "fold_scores": [],
+      "std": null,
+      "duration": 180.01599999999962,
+      "error": "Experiment exceeded 180.0s; worker terminated",
+      "error_code": null,
+      "error_details": {},
+      "checkpoint": null,
+      "oof_path": null,
+      "importance_path": null,
+      "effective_params": {},
+      "validation_role": "primary",
+      "validation_seed": 42,
+      "parent_id": null,
+      "diagnostics_path": null,
+      "training_contract": {},
+      "lineage": "97e41e24a8d91b2f733f"
+    },
+    {
+      "id": "run_lgbm_primary",
+      "model": "lightgbm",
+      "params": {
+        "n_estimators": 350,
+        "num_leaves": 20,
+        "learning_rate": 0.03,
+        "max_depth": 8,
+        "reg_alpha": 0.1,
+        "reg_lambda": 2.0,
+        "min_child_samples": 15
+      },
+      "status": "completed",
+      "score": 16064.993040557438,
+      "train_score": 8856.520503526037,
+      "fold_scores": [
+        16646.85681803848,
+        15977.694627756693,
+        17937.280655879953,
+        16495.073923318047,
+        13268.059177794012
+      ],
+      "std": 1540.094541338355,
+      "duration": 3.514999999999418,
+      "error": null,
+      "error_code": null,
+      "error_details": {},
+      "checkpoint": "C:\\Users\\Vinicius\\Downloads\\Kaggle\\artifacts\\runs\\home-data-for-ml-course-2655b38be9fe\\experiments\\run_lgbm_primary\\model.joblib",
+      "oof_path": "C:\\Users\\Vinicius\\Downloads\\Kaggle\\artifacts\\runs\\home-data-for-ml-course-2655b38be9fe\\experiments\\run_lgbm_primary\\oof.npz",
+      "importance_path": "C:\\Users\\Vinicius\\Downloads\\Kaggle\\artifacts\\runs\\home-data-for-ml-course-2655b38be9fe\\experiments\\run_lgbm_primary\\feature_importance.csv",
+      "effective_params": {
+        "n_estimators": 349,
+        "num_leaves": 20,
+        "learning_rate": 0.03,
+        "max_depth": 8,
+        "reg_alpha": 0.1,
+        "reg_lambda": 2.0,
+        "min_child_samples": 15
+      },
+      "validation_role": "primary",
+      "validation_seed": 42,
+      "parent_id": null,
+      "diagnostics_path": "C:\\Users\\Vinicius\\Downloads\\Kaggle\\artifacts\\runs\\home-data-for-ml-course-2655b38be9fe\\experiments\\run_lgbm_primary\\error_analysis.json",
+      "training_contract": {
+        "model": "lightgbm",
+        "preprocessing": "unscaled_one_hot_with_missing_indicators",
+        "feature_profile": "generic",
+        "metric": "mae",
+        "target_transform": "none",
+        "objective_params": {
+          "objective": "regression_l1"
+        },
+        "metric_aligned_loss": true,
+        "note": "Aligned loss (RMSE/R2 use squared error).",
+        "pipeline_config": {
+          "numeric_imputation": "median",
+          "scaling": "none",
+          "missing_indicators": true,
+          "max_categories": 64,
+          "min_frequency": 2,
+          "features": []
+        },
+        "dataset_fingerprints": {
+          "train.csv": "1e18addf81e5e4d347cc17ee6075bbe4a42b7fa26b9e5b063e8f692a5f929d41",
+          "test.csv": "8fdd3d829d4d986b58f845c9553b225e67dd8383624d90fb6ca1d4bed5798c1e",
+          "sample_submission.csv": "f19e99699b925aa3085c8d2ae43c62f15fbcd35e4a953b98025f8392c3ffa807"
+        },
+        "validation": {
+          "method": "kfold",
+          "folds": 5,
+          "seed": 42
+        },
+        "effective_params": {
+          "n_estimators": 349,
+          "num_leaves": 20,
+          "learning_rate": 0.03,
+          "max_depth": 8,
+          "reg_alpha": 0.1,
+          "reg_lambda": 2.0,
+          "min_child_samples": 15
+        },
+        "resource_estimates": [
+          {
+            "train_rows": 1460,
+            "test_rows": 1459,
+            "rows": 1460,
+            "feature_count": 79,
+            "derived_features": 0,
+            "encoded_width": 306,
+            "estimated_dense_cells": 446760
+          }
+        ]
+      },
+      "lineage": "97e41e24a8d91b2f733f"
+    },
+    {
+      "id": "measure_lgbm_hist_blend",
+      "model": "ensemble",
+      "params": {
+        "members": [
+          {
+            "model": "lightgbm",
+            "params": {
+              "n_estimators": 350,
+              "num_leaves": 20,
+              "learning_rate": 0.03,
+              "max_depth": 8,
+              "reg_alpha": 0.1,
+              "reg_lambda": 2.0,
+              "min_child_samples": 15
+            },
+            "pipeline": {
+              "numeric_imputation": "median",
+              "scaling": "none",
+              "missing_indicators": true,
+              "max_categories": 64,
+              "min_frequency": 2,
+              "features": []
+            }
+          },
+          {
+            "model": "hist_gradient",
+            "params": {
+              "max_iter": 300,
+              "max_leaf_nodes": 20,
+              "learning_rate": 0.06,
+              "l2_regularization": 2.0,
+              "min_samples_leaf": 15
+            },
+            "pipeline": {
+              "numeric_imputation": "median",
+              "scaling": "none",
+              "missing_indicators": true,
+              "max_categories": 64,
+              "min_frequency": 2,
+              "features": []
+            }
+          }
+        ]
+      },
+      "status": "completed",
+      "score": 15839.304811501846,
+      "train_score": 8874.48025858452,
+      "fold_scores": [
+        16487.42750862942,
+        15610.610842876133,
+        17904.345097164412,
+        16250.492144020647,
+        12943.648464818616
+      ],
+      "std": 1630.3776276518167,
+      "duration": 14.375,
+      "error": null,
+      "error_code": null,
+      "error_details": {},
+      "checkpoint": "C:\\Users\\Vinicius\\Downloads\\Kaggle\\artifacts\\runs\\home-data-for-ml-course-2655b38be9fe\\experiments\\measure_lgbm_hist_blend\\model.joblib",
+      "oof_path": "C:\\Users\\Vinicius\\Downloads\\Kaggle\\artifacts\\runs\\home-data-for-ml-course-2655b38be9fe\\experiments\\measure_lgbm_hist_blend\\oof.npz",
+      "importance_path": null,
+      "effective_params": {
+        "members": [
+          {
+            "model": "lightgbm",
+            "params": {
+              "n_estimators": 349,
+              "num_leaves": 20,
+              "learning_rate": 0.03,
+              "max_depth": 8,
+              "reg_alpha": 0.1,
+              "reg_lambda": 2.0,
+              "min_child_samples": 15
+            },
+            "pipeline": {
+              "numeric_imputation": "median",
+              "scaling": "none",
+              "missing_indicators": true,
+              "max_categories": 64,
+              "min_frequency": 2,
+              "features": []
+            }
+          },
+          {
+            "model": "hist_gradient",
+            "params": {
+              "max_iter": 300,
+              "max_leaf_nodes": 20,
+              "learning_rate": 0.06,
+              "l2_regularization": 2.0,
+              "min_samples_leaf": 15
+            },
+            "pipeline": {
+              "numeric_imputation": "median",
+              "scaling": "none",
+              "missing_indicators": true,
+              "max_categories": 64,
+              "min_frequency": 2,
+              "features": []
+            }
+          }
+        ]
+      },
+      "validation_role": "primary",
+      "validation_seed": 42,
+      "parent_id": null,
+      "diagnostics_path": "C:\\Users\\Vinicius\\Downloads\\Kaggle\\artifacts\\runs\\home-data-for-ml-course-2655b38be9fe\\experiments\\measure_lgbm_hist_blend\\error_analysis.json",
+      "training_contract": {
+        "model": "ensemble",
+        "preprocessing": "independent_member_pipelines",
+        "aggregation": "equal_weight_probabilities_or_original_target_values",
+        "members": [
+          {
+            "model": "lightgbm",
+            "preprocessing": "unscaled_one_hot_with_missing_indicators",
+            "feature_profile": "generic",
+            "metric": "mae",
+            "target_transform": "none",
+            "objective_params": {
+              "objective": "regression_l1"
+            },
+            "metric_aligned_loss": true,
+            "note": "Aligned loss (RMSE/R2 use squared error).",
+            "pipeline_config": {
+              "numeric_imputation": "median",
+              "scaling": "none",
+              "missing_indicators": true,
+              "max_categories": 64,
+              "min_frequency": 2,
+              "features": []
+            }
+          },
+          {
+            "model": "hist_gradient",
+            "preprocessing": "unscaled_one_hot_with_missing_indicators",
+            "feature_profile": "generic",
+            "metric": "mae",
+            "target_transform": "none",
+            "objective_params": {
+              "loss": "absolute_error"
+            },
+            "metric_aligned_loss": true,
+            "note": "Aligned loss (RMSE/R2 use squared error).",
+            "pipeline_config": {
+              "numeric_imputation": "median",
+              "scaling": "none",
+              "missing_indicators": true,
+              "max_categories": 64,
+              "min_frequency": 2,
+              "features": []
+            }
+          }
+        ],
+        "pipeline_config": {},
+        "dataset_fingerprints": {
+          "train.csv": "1e18addf81e5e4d347cc17ee6075bbe4a42b7fa26b9e5b063e8f692a5f929d41",
+          "test.csv": "8fdd3d829d4d986b58f845c9553b225e67dd8383624d90fb6ca1d4bed5798c1e",
+          "sample_submission.csv": "f19e99699b925aa3085c8d2ae43c62f15fbcd35e4a953b98025f8392c3ffa807"
+        },
+        "validation": {
+          "method": "kfold",
+          "folds": 5,
+          "seed": 42
+        },
+        "effective_params": {
+          "members": [
+            {
+              "model": "lightgbm",
+              "params": {
+                "n_estimators": 349,
+                "num_leaves": 20,
+                "learning_rate": 0.03,
+                "max_depth": 8,
+                "reg_alpha": 0.1,
+                "reg_lambda": 2.0,
+                "min_child_samples": 15
+              },
+              "pipeline": {
+                "numeric_imputation": "median",
+                "scaling": "none",
+                "missing_indicators": true,
+                "max_categories": 64,
+                "min_frequency": 2,
+                "features": []
+              }
+            },
+            {
+              "model": "hist_gradient",
+              "params": {
+                "max_iter": 300,
+                "max_leaf_nodes": 20,
+                "learning_rate": 0.06,
+                "l2_regularization": 2.0,
+                "min_samples_leaf": 15
+              },
+              "pipeline": {
+                "numeric_imputation": "median",
+                "scaling": "none",
+                "missing_indicators": true,
+                "max_categories": 64,
+                "min_frequency": 2,
+                "features": []
+              }
+            }
+          ]
+        },
+        "resource_estimates": [
+          {
+            "train_rows": 1460,
+            "test_rows": 1459,
+            "rows": 1460,
+            "feature_count": 79,
+            "derived_features": 0,
+            "encoded_width": 306,
+            "estimated_dense_cells": 446760
+          },
+          {
+            "train_rows": 1460,
+            "test_rows": 1459,
+            "rows": 1460,
+            "feature_count": 79,
+            "derived_features": 0,
+            "encoded_width": 306,
+            "estimated_dense_cells": 446760
+          }
+        ]
+      },
+      "lineage": "97e41e24a8d91b2f733f"
+    }
+  ],
+  "budget": {
+    "requests": 32,
+    "tokens_charged": 247349,
+    "experiment_attempts": 5,
+    "turns": 32,
+    "schema_repairs": 1,
+    "invalid_actions": 0,
+    "elapsed_seconds": 397.9850000000006
+  },
+  "provider_usage": [
+    {
+      "status": "success",
+      "completion_tokens": 130,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 3.156,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 3406,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 73,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 3.422,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 2061,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 108,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 3.563,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 6313,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 123,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 3.578,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 3976,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 175,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 3.64,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 4089,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 221,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 3.984,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 6636,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 258,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 3.906,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 6099,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 119,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 3.531,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 7041,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 450,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 5.312,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 6271,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 189,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 3.532,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 6850,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 261,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 6.813,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 7380,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 127,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 3.297,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 7535,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 489,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 6.859,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 7895,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 124,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 3.297,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 9773,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 73,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 2.0,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 3496,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 325,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 4.375,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 10058,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 238,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 4.765,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 4938,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 274,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 3.828,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 10140,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 115,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 3.094,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 7368,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 505,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 5.828,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 10297,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 76,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 2.265,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 5722,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 202,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 4.515,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 7270,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 159,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 2.907,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 12169,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 167,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 4.891,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 12015,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 247,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 5.016,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 7252,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 138,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 8.172,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 11521,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 71,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 2.437,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 6356,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 227,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 3.594,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 11600,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 85,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 3.203,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 6566,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 229,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 4.797,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 11422,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 181,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 5.11,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 6747,
+      "request_attempts": 1,
+      "validation_issues": []
+    },
+    {
+      "status": "success",
+      "completion_tokens": 184,
+      "action": null,
+      "code": "ok",
+      "duration_seconds": 3.859,
+      "message": "The API returned valid structured actions.",
+      "provider": "openrouter",
+      "http_status": 200,
+      "model": "openai/gpt-6-luna",
+      "prompt_tokens": 10744,
+      "request_attempts": 1,
+      "validation_issues": []
+    }
+  ],
+  "evidence": {
+    "inspect_data": {
+      "train_rows": 1460,
+      "test_rows": 1459,
+      "feature_count": 79,
+      "target_summary": {
+        "count": 1460.0,
+        "mean": 180921.19589041095,
+        "std": 79442.50288288662,
+        "min": 34900.0,
+        "50%": 163000.0,
+        "max": 755000.0
+      },
+      "duplicate_rows": 0,
+      "fingerprint": "c73bb175b46fc485d6ba73015c033059a94751a6ff85673db834ab2452f0b4f0",
+      "features": [
+        {
+          "ref": "feature-0",
+          "kind": "numeric",
+          "missing_fraction": 0.0,
+          "cardinality": null
+        },
+        {
+          "ref": "feature-1",
+          "kind": "categorical",
+          "missing_fraction": 0.0,
+          "cardinality": 5
+        },
+        {
+          "ref": "feature-2",
+          "kind": "numeric",
+          "missing_fraction": 0.1773972602739726,
+          "cardinality": null
+        },
+        {
+          "ref": "feature-3",
+          "kind": "numeric",
+          "missing_fraction": 0.0,
+          "cardinality": null
+        },
+        {
+          "ref": "feature-4",
+          "kind": "categorical",
+          "missing_fraction": 0.0,
+          "cardinality": 2
+        },
+        {
+          "ref": "feature-5",
+          "kind": "categorical",
+          "missing_fraction": 0.9376712328767123,
+          "cardinality": 2
+        },
+        {
+          "ref": "feature-6",
+          "kind": "categorical",
+          "missing_fraction": 0.0,
+          "cardinality": 4
+        },
+        {
+          "ref": "feature-7",
+          "kind": "categorical",
+          "missing_fraction": 0.0,
+          "cardinality": 4
+        },
+        {
+          "ref": "feature-8",
+          "kind": "categorical",
+          "missing_fraction": 0.0,
+          "cardinality": 2
+        },
+        {
+          "ref": "feature-9",
+          "kind": "categorical",
+          "missing_fraction": 0.0,
+          "cardinality": 5
+        },
+        {
+          "ref": "feature-10",
+          "kind": "categorical",
+          "missing_fraction": 0.0,
+          "cardinality": 3
+        },
+        {
+          "ref": "feature-11",
+          "kind": "categorical",
+          "missing_fraction": 0.0,
+          "cardinality": 25
+        },
+        {
+          "ref": "feature-12",
+          "kind": "categorical",
+          "missing_fraction": 0.0,
+          "cardinality": 9
+        },
+        {
+          "ref": "feature-13",
+          "kind": "categorical",
+          "missing_fraction": 0.0,
+          "cardinality": 8
+        },
+        {
+          "ref": "feature-14",
+          "kind": "categorical",
+          "missing_fraction": 0.0,
+          "cardinality": 5
+        },
+        {
+          "ref": "feature-15",
+          "kind": "categorical",
+          "missing_fraction": 0.0,
+          "cardinality": 8
+        },
+        {
+          "ref": "feature-16",
+          "kind": "numeric",
+          "missing_fraction": 0.0,
+          "cardinality": null
+        },
+        {
+          "ref": "feature-17",
+          "kind": "numeric",
+          "missing_fraction": 0.0,
+          "cardinality": null
+        },
+        {
+          "ref": "feature-18",
+          "kind": "numeric",
+          "missing_fraction": 0.0,
+          "cardinality": null
+        },
+        {
+          "ref": "feature-19",
+          "kind": "numeric",
+          "missing_fraction": 0.0,
+          "cardinality": null
+        },
+        {
+          "ref": "feature-20",
+          "kind": "categorical",
+          "missing_fraction": 0.0,
+          "cardinality": 6
+        },
+        {
+          "ref": "feature-21",
+          "kind": "categorical",
+          "missing_fraction": 0.0,
+          "cardinality": 8
+        },
+        {
+          "ref": "feature-22",
+          "kind": "categorical",
+          "missing_fraction": 0.0,
+          "cardinality": 15
+        },
+        {
+          "ref": "feature-23",
+          "kind": "categorical",
+          "missing_fraction": 0.0,
+          "cardinality": 16
+        },
+        {
+          "ref": "feature-24",
+          "kind": "categorical",
+          "missing_fraction": 0.5972602739726027,
+          "cardinality": 3
+        },
+        {
+          "ref": "feature-25",
+          "kind": "numeric",
+          "missing_fraction": 0.005479452054794521,
+          "cardinality": null
+        },
+        {
+          "ref": "feature-26",
+          "kind": "categorical",
+          "missing_fraction": 0.0,
+          "cardinality": 4
+        },
+        {
+          "ref": "feature-27",
+          "kind": "categorical",
+          "missing_fraction": 0.0,
+          "cardinality": 5
+        },
+        {
+          "ref": "feature-28",
+          "kind": "categorical",
+          "missing_fraction": 0.0,
+          "cardinality": 6
+        },
+        {
+          "ref": "feature-29",
+          "kind": "categorical",
+          "missing_fraction": 0.025342465753424658,
+          "cardinality": 4
+        },
+        {
+          "ref": "feature-30",
+          "kind": "categorical",
+          "missing_fraction": 0.025342465753424658,
+          "cardinality": 4
+        },
+        {
+          "ref": "feature-31",
+          "kind": "categorical",
+          "missing_fraction": 0.026027397260273973,
+          "cardinality": 4
+        }
+      ],
+      "features_truncated": true,
+      "structural_validation": {
+        "group_available": false,
+        "time_available": false
+      },
+      "warning_count": 0
+    },
+    "configure_kfold": {
+      "method": "kfold",
+      "lineage": "97e41e24a8d91b2f733f",
+      "folds": 5,
+      "seed": 42
+    },
+    "linear_baseline_config": {
+      "pipeline_ref": "linear_baseline_config",
+      "contract": {
+        "model": "linear",
+        "params": {
+          "alpha": 10.0
+        },
+        "pipeline": {
+          "numeric_imputation": "median",
+          "scaling": "standard",
+          "missing_indicators": true,
+          "max_categories": 64,
+          "min_frequency": 2,
+          "features": []
+        }
+      }
+    },
+    "run_linear_baseline": {
+      "experiment_ref": "run_linear_baseline",
+      "status": "completed",
+      "score": 18161.995899852875,
+      "std": 1339.0292443268986,
+      "fold_scores": [
+        19226.44298898501,
+        18679.1761290137,
+        18846.581567732304,
+        18533.541427135922,
+        15524.237386397437
+      ],
+      "train_score": 15034.465697546339,
+      "model": "linear",
+      "lineage": "97e41e24a8d91b2f733f",
+      "validation_role": "primary",
+      "effective_pipeline": {
+        "pipeline_config": {
+          "numeric_imputation": "median",
+          "scaling": "standard",
+          "missing_indicators": true,
+          "max_categories": 64,
+          "min_frequency": 2,
+          "features": []
+        },
+        "effective_params": {
+          "alpha": 10.0
+        },
+        "validation": {
+          "method": "kfold",
+          "folds": 5,
+          "seed": 42
+        },
+        "metric": "mae",
+        "preprocessing": "scaled_one_hot_with_missing_indicators"
+      },
+      "artifact_ref": "run_linear_baseline",
+      "error": null
+    },
+    "configure_rf": {
+      "pipeline_ref": "configure_rf",
+      "contract": {
+        "model": "random_forest",
+        "params": {
+          "n_estimators": 300,
+          "max_depth": 18,
+          "min_samples_leaf": 2,
+          "max_features": 0.8
+        },
+        "pipeline": {
+          "numeric_imputation": "median",
+          "scaling": "none",
+          "missing_indicators": true,
+          "max_categories": 64,
+          "min_frequency": 2,
+          "features": []
+        }
+      }
+    },
+    "configure_hist": {
+      "pipeline_ref": "configure_hist",
+      "contract": {
+        "model": "hist_gradient",
+        "params": {
+          "max_iter": 300,
+          "max_leaf_nodes": 20,
+          "learning_rate": 0.06,
+          "l2_regularization": 2.0,
+          "min_samples_leaf": 15
+        },
+        "pipeline": {
+          "numeric_imputation": "median",
+          "scaling": "none",
+          "missing_indicators": true,
+          "max_categories": 64,
+          "min_frequency": 2,
+          "features": []
+        }
+      }
+    },
+    "run_hist_primary": {
+      "experiment_ref": "run_hist_primary",
+      "status": "completed",
+      "score": 16099.527294378538,
+      "std": 1733.6034751505701,
+      "fold_scores": [
+        16888.853272509663,
+        15870.470145961697,
+        18320.761893551567,
+        16374.479419345993,
+        13043.071740523768
+      ],
+      "train_score": 8992.30649531475,
+      "model": "hist_gradient",
+      "lineage": "97e41e24a8d91b2f733f",
+      "validation_role": "primary",
+      "effective_pipeline": {
+        "pipeline_config": {
+          "numeric_imputation": "median",
+          "scaling": "none",
+          "missing_indicators": true,
+          "max_categories": 64,
+          "min_frequency": 2,
+          "features": []
+        },
+        "effective_params": {
+          "max_iter": 300,
+          "max_leaf_nodes": 20,
+          "learning_rate": 0.06,
+          "l2_regularization": 2.0,
+          "min_samples_leaf": 15
+        },
+        "validation": {
+          "method": "kfold",
+          "folds": 5,
+          "seed": 42
+        },
+        "metric": "mae",
+        "preprocessing": "unscaled_one_hot_with_missing_indicators"
+      },
+      "artifact_ref": "run_hist_primary",
+      "error": null
+    },
+    "configure_lgbm": {
+      "pipeline_ref": "configure_lgbm",
+      "contract": {
+        "model": "lightgbm",
+        "params": {
+          "n_estimators": 350,
+          "num_leaves": 20,
+          "learning_rate": 0.03,
+          "max_depth": 8,
+          "reg_alpha": 0.1,
+          "reg_lambda": 2.0,
+          "min_child_samples": 15
+        },
+        "pipeline": {
+          "numeric_imputation": "median",
+          "scaling": "none",
+          "missing_indicators": true,
+          "max_categories": 64,
+          "min_frequency": 2,
+          "features": []
+        }
+      }
+    },
+    "run_lgbm_primary": {
+      "experiment_ref": "run_lgbm_primary",
+      "status": "completed",
+      "score": 16064.993040557438,
+      "std": 1540.094541338355,
+      "fold_scores": [
+        16646.85681803848,
+        15977.694627756693,
+        17937.280655879953,
+        16495.073923318047,
+        13268.059177794012
+      ],
+      "train_score": 8856.520503526037,
+      "model": "lightgbm",
+      "lineage": "97e41e24a8d91b2f733f",
+      "validation_role": "primary",
+      "effective_pipeline": {
+        "pipeline_config": {
+          "numeric_imputation": "median",
+          "scaling": "none",
+          "missing_indicators": true,
+          "max_categories": 64,
+          "min_frequency": 2,
+          "features": []
+        },
+        "effective_params": {
+          "n_estimators": 349,
+          "num_leaves": 20,
+          "learning_rate": 0.03,
+          "max_depth": 8,
+          "reg_alpha": 0.1,
+          "reg_lambda": 2.0,
+          "min_child_samples": 15
+        },
+        "validation": {
+          "method": "kfold",
+          "folds": 5,
+          "seed": 42
+        },
+        "metric": "mae",
+        "preprocessing": "unscaled_one_hot_with_missing_indicators"
+      },
+      "artifact_ref": "run_lgbm_primary",
+      "error": null
+    },
+    "evaluate_primary_results": {
+      "best_ref": "run_lgbm_primary",
+      "metric": "mae",
+      "direction": "minimize",
+      "ranking": [
+        {
+          "ref": "run_lgbm_primary",
+          "score": 16064.993040557438,
+          "std": 1540.094541338355,
+          "train_score": 8856.520503526037,
+          "fold_scores": [
+            16646.85681803848,
+            15977.694627756693,
+            17937.280655879953,
+            16495.073923318047,
+            13268.059177794012
+          ]
+        },
+        {
+          "ref": "run_hist_primary",
+          "score": 16099.527294378538,
+          "std": 1733.6034751505701,
+          "train_score": 8992.30649531475,
+          "fold_scores": [
+            16888.853272509663,
+            15870.470145961697,
+            18320.761893551567,
+            16374.479419345993,
+            13043.071740523768
+          ]
+        },
+        {
+          "ref": "run_linear_baseline",
+          "score": 18161.995899852875,
+          "std": 1339.0292443268986,
+          "train_score": 15034.465697546339,
+          "fold_scores": [
+            19226.44298898501,
+            18679.1761290137,
+            18846.581567732304,
+            18533.541427135922,
+            15524.237386397437
+          ]
+        }
+      ],
+      "eligibility": {
+        "complete": true,
+        "lineage": "97e41e24a8d91b2f733f",
+        "eligible_count": 3,
+        "excluded_count": 1,
+        "excluded": [
+          {
+            "ref": "run_rf_primary",
+            "reason": "experiment_not_completed",
+            "score": null
+          }
+        ],
+        "excluded_truncated": false,
+        "min_relative_improvement": 0.001,
+        "ensemble_baseline_ref": "run_lgbm_primary",
+        "ensemble_baseline_score": 16064.993040557438,
+        "required_ensemble_improvement": 16.06499304055744,
+        "ensemble_comparison": "strictly_greater_than",
+        "rejected_for_final": [
+          "run_linear_baseline"
+        ]
+      },
+      "gap": 7208.472537031401,
+      "diagnostics": {
+        "overall_error": 16064.99304055744,
+        "measure": "mean_absolute_error_original_units",
+        "slice_count": 30,
+        "slices": [
+          {
+            "ref": "slice-0",
+            "feature_ref": "feature-24",
+            "rows": 128,
+            "error": 29749.940738434252
+          },
+          {
+            "ref": "slice-1",
+            "feature_ref": "feature-2",
+            "rows": 284,
+            "error": 26844.022294110186
+          },
+          {
+            "ref": "slice-2",
+            "feature_ref": "feature-57",
+            "rows": 88,
+            "error": 26799.701096391815
+          },
+          {
+            "ref": "slice-3",
+            "feature_ref": "feature-56",
+            "rows": 380,
+            "error": 23651.373756296915
+          },
+          {
+            "ref": "slice-4",
+            "feature_ref": "feature-59",
+            "rows": 352,
+            "error": 23549.336651238442
+          },
+          {
+            "ref": "slice-5",
+            "feature_ref": "feature-58",
+            "rows": 329,
+            "error": 23001.818113946883
+          },
+          {
+            "ref": "slice-6",
+            "feature_ref": "feature-24",
+            "rows": 445,
+            "error": 17263.312573476032
+          },
+          {
+            "ref": "slice-7",
+            "feature_ref": "feature-57",
+            "rows": 870,
+            "error": 17004.317383723373
+          }
+        ]
+      }
+    },
+    "measure_lgbm_hist_blend": {
+      "experiment_ref": "measure_lgbm_hist_blend",
+      "status": "completed",
+      "score": 15839.304811501846,
+      "std": 1630.3776276518167,
+      "fold_scores": [
+        16487.42750862942,
+        15610.610842876133,
+        17904.345097164412,
+        16250.492144020647,
+        12943.648464818616
+      ],
+      "train_score": 8874.48025858452,
+      "model": "ensemble",
+      "lineage": "97e41e24a8d91b2f733f",
+      "validation_role": "primary",
+      "effective_pipeline": {
+        "pipeline_config": {},
+        "effective_params": {
+          "members": [
+            {
+              "model": "lightgbm",
+              "params": {
+                "n_estimators": 349,
+                "num_leaves": 20,
+                "learning_rate": 0.03,
+                "max_depth": 8,
+                "reg_alpha": 0.1,
+                "reg_lambda": 2.0,
+                "min_child_samples": 15
+              },
+              "pipeline": {
+                "numeric_imputation": "median",
+                "scaling": "none",
+                "missing_indicators": true,
+                "max_categories": 64,
+                "min_frequency": 2,
+                "features": []
+              }
+            },
+            {
+              "model": "hist_gradient",
+              "params": {
+                "max_iter": 300,
+                "max_leaf_nodes": 20,
+                "learning_rate": 0.06,
+                "l2_regularization": 2.0,
+                "min_samples_leaf": 15
+              },
+              "pipeline": {
+                "numeric_imputation": "median",
+                "scaling": "none",
+                "missing_indicators": true,
+                "max_categories": 64,
+                "min_frequency": 2,
+                "features": []
+              }
+            }
+          ]
+        },
+        "validation": {
+          "method": "kfold",
+          "folds": 5,
+          "seed": 42
+        },
+        "metric": null,
+        "preprocessing": "independent_member_pipelines"
+      },
+      "artifact_ref": "measure_lgbm_hist_blend",
+      "error": null
+    },
+    "evaluate_blend_ranking": {
+      "best_ref": "measure_lgbm_hist_blend",
+      "metric": "mae",
+      "direction": "minimize",
+      "ranking": [
+        {
+          "ref": "measure_lgbm_hist_blend",
+          "score": 15839.304811501846,
+          "std": 1630.3776276518167,
+          "train_score": 8874.48025858452,
+          "fold_scores": [
+            16487.42750862942,
+            15610.610842876133,
+            17904.345097164412,
+            16250.492144020647,
+            12943.648464818616
+          ]
+        },
+        {
+          "ref": "run_lgbm_primary",
+          "score": 16064.993040557438,
+          "std": 1540.094541338355,
+          "train_score": 8856.520503526037,
+          "fold_scores": [
+            16646.85681803848,
+            15977.694627756693,
+            17937.280655879953,
+            16495.073923318047,
+            13268.059177794012
+          ]
+        },
+        {
+          "ref": "run_hist_primary",
+          "score": 16099.527294378538,
+          "std": 1733.6034751505701,
+          "train_score": 8992.30649531475,
+          "fold_scores": [
+            16888.853272509663,
+            15870.470145961697,
+            18320.761893551567,
+            16374.479419345993,
+            13043.071740523768
+          ]
+        },
+        {
+          "ref": "run_linear_baseline",
+          "score": 18161.995899852875,
+          "std": 1339.0292443268986,
+          "train_score": 15034.465697546339,
+          "fold_scores": [
+            19226.44298898501,
+            18679.1761290137,
+            18846.581567732304,
+            18533.541427135922,
+            15524.237386397437
+          ]
+        }
+      ],
+      "eligibility": {
+        "complete": true,
+        "lineage": "97e41e24a8d91b2f733f",
+        "eligible_count": 4,
+        "excluded_count": 1,
+        "excluded": [
+          {
+            "ref": "run_rf_primary",
+            "reason": "experiment_not_completed",
+            "score": null
+          }
+        ],
+        "excluded_truncated": false,
+        "min_relative_improvement": 0.001,
+        "ensemble_baseline_ref": "run_lgbm_primary",
+        "ensemble_baseline_score": 16064.993040557438,
+        "required_ensemble_improvement": 16.06499304055744,
+        "ensemble_comparison": "strictly_greater_than",
+        "rejected_for_final": [
+          "run_linear_baseline"
+        ]
+      },
+      "gap": 6964.824552917327,
+      "diagnostics": {
+        "overall_error": 15839.304811501845,
+        "measure": "mean_absolute_error_original_units",
+        "slice_count": 30,
+        "slices": [
+          {
+            "ref": "slice-0",
+            "feature_ref": "feature-24",
+            "rows": 128,
+            "error": 29747.95952032732
+          },
+          {
+            "ref": "slice-1",
+            "feature_ref": "feature-2",
+            "rows": 284,
+            "error": 26328.843378716265
+          },
+          {
+            "ref": "slice-2",
+            "feature_ref": "feature-57",
+            "rows": 88,
+            "error": 25485.946750478655
+          },
+          {
+            "ref": "slice-3",
+            "feature_ref": "feature-56",
+            "rows": 380,
+            "error": 23287.529651792378
+          },
+          {
+            "ref": "slice-4",
+            "feature_ref": "feature-59",
+            "rows": 352,
+            "error": 22822.643319040453
+          },
+          {
+            "ref": "slice-5",
+            "feature_ref": "feature-58",
+            "rows": 329,
+            "error": 22465.9953954135
+          },
+          {
+            "ref": "slice-6",
+            "feature_ref": "feature-72",
+            "rows": 59,
+            "error": 16838.431315653386
+          },
+          {
+            "ref": "slice-7",
+            "feature_ref": "feature-57",
+            "rows": 870,
+            "error": 16743.64797908194
+          }
+        ]
+      }
+    },
+    "generate_winner_predictions": {
+      "prediction_ref": "generate_winner_predictions",
+      "best_ref": "measure_lgbm_hist_blend",
+      "sha256": "fdac0f3bb1f340c6034b0f2d6e714ff9910450fb531a15ac12b5818e42d9e4cf",
+      "rows": 1459
+    },
+    "validate_blend_predictions": {
+      "valid": true,
+      "rows": 1459,
+      "sha256": "fdac0f3bb1f340c6034b0f2d6e714ff9910450fb531a15ac12b5818e42d9e4cf"
+    }
+  }
+}
