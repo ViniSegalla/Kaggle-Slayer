@@ -1,0 +1,1523 @@
+{
+  "provider_execution": "scripted fake; real numerical workers; no live LLM or Kaggle",
+  "runs": [
+    {
+      "run_id": "agentic-fixture-5c151450e3df",
+      "task": "classification",
+      "status": "completed",
+      "termination_reason": null,
+      "llm_requests": 18,
+      "experiments": [
+        {
+          "id": "model-run_experiment",
+          "model": "linear",
+          "status": "completed",
+          "score": 0.7333333333333334,
+          "lineage": "b728e67f3cae7d364227"
+        }
+      ],
+      "actions": [
+        {
+          "action_id": "data",
+          "task": "coordinator",
+          "kind": "delegate",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {}
+        },
+        {
+          "action_id": "data-inspect_dataset",
+          "task": "data",
+          "kind": "tool",
+          "tool": "inspect_dataset",
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {}
+        },
+        {
+          "action_id": "wait-3",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "data"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "data-configure_validation",
+          "task": "data",
+          "kind": "tool",
+          "tool": "configure_validation",
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {
+            "lineage": "b728e67f3cae7d364227"
+          }
+        },
+        {
+          "action_id": "data-finish",
+          "task": "data",
+          "kind": "finish",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {
+            "outcome": "complete"
+          }
+        },
+        {
+          "action_id": "model",
+          "task": "coordinator",
+          "kind": "delegate",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {}
+        },
+        {
+          "action_id": "model-configure_pipeline",
+          "task": "model",
+          "kind": "tool",
+          "tool": "configure_pipeline",
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {}
+        },
+        {
+          "action_id": "wait-8",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "model"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "model-run_experiment",
+          "task": "model",
+          "kind": "tool",
+          "tool": "run_experiment",
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {
+            "experiment_ref": "model-run_experiment",
+            "score": 0.7333333333333334,
+            "lineage": "b728e67f3cae7d364227"
+          }
+        },
+        {
+          "action_id": "model-finish",
+          "task": "model",
+          "kind": "finish",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {
+            "outcome": "complete"
+          }
+        },
+        {
+          "action_id": "audit",
+          "task": "coordinator",
+          "kind": "delegate",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {}
+        },
+        {
+          "action_id": "audit_again",
+          "task": "coordinator",
+          "kind": "delegate",
+          "tool": null,
+          "status": "completed",
+          "reused_from": "audit",
+          "depends_on": [],
+          "result": {}
+        },
+        {
+          "action_id": "audit-evaluate",
+          "task": "audit",
+          "kind": "tool",
+          "tool": "evaluate",
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {
+            "best_ref": "model-run_experiment"
+          }
+        },
+        {
+          "action_id": "wait-13",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "audit-finish",
+          "task": "audit",
+          "kind": "finish",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {
+            "outcome": "complete"
+          }
+        },
+        {
+          "action_id": "results",
+          "task": "coordinator",
+          "kind": "delegate",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {}
+        },
+        {
+          "action_id": "results_again",
+          "task": "coordinator",
+          "kind": "delegate",
+          "tool": null,
+          "status": "completed",
+          "reused_from": "results",
+          "depends_on": [],
+          "result": {}
+        },
+        {
+          "action_id": "finish_when_drained",
+          "task": "coordinator",
+          "kind": "finish",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {
+            "outcome": "complete"
+          }
+        },
+        {
+          "action_id": "results-generate_predictions",
+          "task": "results",
+          "kind": "tool",
+          "tool": "generate_predictions",
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {
+            "prediction_ref": "results-generate_predictions",
+            "best_ref": "model-run_experiment",
+            "sha256": "94262798146c27e030996c4227a1c77488e7a8249a2863a9b1727a09b7fb3a0e"
+          }
+        },
+        {
+          "action_id": "results-validate_predictions",
+          "task": "results",
+          "kind": "tool",
+          "tool": "validate_predictions",
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {
+            "valid": true,
+            "sha256": "94262798146c27e030996c4227a1c77488e7a8249a2863a9b1727a09b7fb3a0e"
+          }
+        },
+        {
+          "action_id": "results-finish",
+          "task": "results",
+          "kind": "finish",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {
+            "outcome": "complete"
+          }
+        },
+        {
+          "action_id": "old_wait_0",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_1",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_2",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_3",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_4",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_5",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_6",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_7",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_8",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_9",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_10",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_11",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_12",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_13",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_14",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_15",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_16",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_17",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_18",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_19",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_20",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_21",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_22",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_23",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_24",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_25",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_26",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_27",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_28",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_29",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_30",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_31",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_32",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_33",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_34",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_35",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_36",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_37",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_38",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_39",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "audit_later",
+          "task": "coordinator",
+          "kind": "delegate",
+          "tool": null,
+          "status": "completed",
+          "reused_from": "audit",
+          "depends_on": [],
+          "result": {}
+        }
+      ],
+      "artifact_hashes": {
+        "model-run_experiment": [
+          "fd1e089294d52d7d6343e33a94fddca63a05a897fbae7411ed2a034c9c5686a4",
+          "f9782975f0cda4dd729cdd1f6fa569a2cba6ea2cf5121b06b080db9b0f2204cb",
+          "809a3449fb5be427ab0f8635611768c2e0b22bf262ac0e04fdc565aa29cbe8c8"
+        ],
+        "results-generate_predictions": [
+          "94262798146c27e030996c4227a1c77488e7a8249a2863a9b1727a09b7fb3a0e"
+        ]
+      }
+    },
+    {
+      "run_id": "agentic-fixture-9d36e47acd3d",
+      "task": "regression",
+      "status": "completed",
+      "termination_reason": null,
+      "llm_requests": 18,
+      "experiments": [
+        {
+          "id": "model-run_experiment",
+          "model": "linear",
+          "status": "completed",
+          "score": 17565.177366389526,
+          "lineage": "ce5cd170117454b12387"
+        }
+      ],
+      "actions": [
+        {
+          "action_id": "data",
+          "task": "coordinator",
+          "kind": "delegate",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {}
+        },
+        {
+          "action_id": "data-inspect_dataset",
+          "task": "data",
+          "kind": "tool",
+          "tool": "inspect_dataset",
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {}
+        },
+        {
+          "action_id": "wait-3",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "data"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "data-configure_validation",
+          "task": "data",
+          "kind": "tool",
+          "tool": "configure_validation",
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {
+            "lineage": "ce5cd170117454b12387"
+          }
+        },
+        {
+          "action_id": "data-finish",
+          "task": "data",
+          "kind": "finish",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {
+            "outcome": "complete"
+          }
+        },
+        {
+          "action_id": "model",
+          "task": "coordinator",
+          "kind": "delegate",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {}
+        },
+        {
+          "action_id": "model-configure_pipeline",
+          "task": "model",
+          "kind": "tool",
+          "tool": "configure_pipeline",
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {}
+        },
+        {
+          "action_id": "wait-8",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "model"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "model-run_experiment",
+          "task": "model",
+          "kind": "tool",
+          "tool": "run_experiment",
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {
+            "experiment_ref": "model-run_experiment",
+            "score": 17565.177366389526,
+            "lineage": "ce5cd170117454b12387"
+          }
+        },
+        {
+          "action_id": "model-finish",
+          "task": "model",
+          "kind": "finish",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {
+            "outcome": "complete"
+          }
+        },
+        {
+          "action_id": "audit",
+          "task": "coordinator",
+          "kind": "delegate",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {}
+        },
+        {
+          "action_id": "audit_again",
+          "task": "coordinator",
+          "kind": "delegate",
+          "tool": null,
+          "status": "completed",
+          "reused_from": "audit",
+          "depends_on": [],
+          "result": {}
+        },
+        {
+          "action_id": "audit-evaluate",
+          "task": "audit",
+          "kind": "tool",
+          "tool": "evaluate",
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {
+            "best_ref": "model-run_experiment"
+          }
+        },
+        {
+          "action_id": "wait-13",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "audit-finish",
+          "task": "audit",
+          "kind": "finish",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {
+            "outcome": "complete"
+          }
+        },
+        {
+          "action_id": "results",
+          "task": "coordinator",
+          "kind": "delegate",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {}
+        },
+        {
+          "action_id": "results_again",
+          "task": "coordinator",
+          "kind": "delegate",
+          "tool": null,
+          "status": "completed",
+          "reused_from": "results",
+          "depends_on": [],
+          "result": {}
+        },
+        {
+          "action_id": "finish_when_drained",
+          "task": "coordinator",
+          "kind": "finish",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {
+            "outcome": "complete"
+          }
+        },
+        {
+          "action_id": "results-generate_predictions",
+          "task": "results",
+          "kind": "tool",
+          "tool": "generate_predictions",
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {
+            "prediction_ref": "results-generate_predictions",
+            "best_ref": "model-run_experiment",
+            "sha256": "40c9e53a14ff966101dec9e7258e6ac6bba9d059c32e6b342de4369aed5d6f7e"
+          }
+        },
+        {
+          "action_id": "results-validate_predictions",
+          "task": "results",
+          "kind": "tool",
+          "tool": "validate_predictions",
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {
+            "valid": true,
+            "sha256": "40c9e53a14ff966101dec9e7258e6ac6bba9d059c32e6b342de4369aed5d6f7e"
+          }
+        },
+        {
+          "action_id": "results-finish",
+          "task": "results",
+          "kind": "finish",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [],
+          "result": {
+            "outcome": "complete"
+          }
+        },
+        {
+          "action_id": "old_wait_0",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_1",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_2",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_3",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_4",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_5",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_6",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_7",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_8",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_9",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_10",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_11",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_12",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_13",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_14",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_15",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_16",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_17",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_18",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_19",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_20",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_21",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_22",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_23",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_24",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_25",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_26",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_27",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_28",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_29",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_30",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_31",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_32",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_33",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_34",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_35",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_36",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_37",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_38",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "old_wait_39",
+          "task": "coordinator",
+          "kind": "wait",
+          "tool": null,
+          "status": "completed",
+          "reused_from": null,
+          "depends_on": [
+            "audit"
+          ],
+          "result": {}
+        },
+        {
+          "action_id": "audit_later",
+          "task": "coordinator",
+          "kind": "delegate",
+          "tool": null,
+          "status": "completed",
+          "reused_from": "audit",
+          "depends_on": [],
+          "result": {}
+        }
+      ],
+      "artifact_hashes": {
+        "model-run_experiment": [
+          "3ebcce1d5ec16658af4e4d8bfd364c27e89307e012669afbef0462911238078a",
+          "3fe35386010c5624f6aaa286f241fcbe03342bc4b112cb21f6fc2e5542d16b6b",
+          "c47950ac06291ea82aad540ab950c29559c961498c02286a1d2eb97238d192a3"
+        ],
+        "results-generate_predictions": [
+          "40c9e53a14ff966101dec9e7258e6ac6bba9d059c32e6b342de4369aed5d6f7e"
+        ]
+      }
+    }
+  ]
+}

@@ -19,10 +19,29 @@ def emit(value):
 
 
 def llm_failure(result):
+    """Return a diagnostic only when it explains this checkpoint's termination.
+
+    Usage contains history across repairs and resumes. Older snapshots without a
+    termination reason cannot establish that a historical provider error caused
+    the current stop; their usage remains available through inspect.
+    """
     if result.status == "completed":
         return None
-    usage = (getattr(result, "swarm", None) or {}).get("usage", [])
-    return next((item for item in reversed(usage) if item.get("status") == "failed"), None)
+    swarm = getattr(result, "swarm", None) or {}
+    usage = swarm.get("usage", [])
+    reason = swarm.get("termination_reason")
+    if not usage or not isinstance(reason, str):
+        return None
+    latest = usage[-1]
+    if latest.get("status") != "failed":
+        return None
+    code = latest.get("code")
+    if reason == "llm_" + str(code) or (
+        reason == "llm_schema_repair_exhausted"
+        and code in {"schema_mismatch", "invalid_advice_json"}
+    ):
+        return latest
+    return None
 
 
 @app.command()

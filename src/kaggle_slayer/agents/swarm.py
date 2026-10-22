@@ -24,6 +24,10 @@ depends_on accepts earlier action/task IDs (including earlier in this response).
 Tool results arrive on the next turn. Do not claim a score, trained model, valid prediction,
 or result without tool evidence. An error is an observation: correct it or finish incomplete.
 Use wait for pending dependencies; finish a specialist task once its requested work ends.
+progress contains durable measured receipts even when older observations leave the window.
+Reuse those evidence IDs; a new task name does not require another execution of unchanged work.
+Complete only the delegated scope, then finish with its evidence. Finish waits for existing
+work to drain; do not add duplicate finishing tasks while a wait or finish is pending.
 Only primary results of the current validation lineage may guide model selection/tuning.
 Confirmation starts a terminal diagnostic stage: no further primary search is permitted.
 Feedback is available only after finalization and cannot guide this run's model selection.
@@ -34,6 +38,10 @@ ROLE_PROMPTS = {
     "coordinator": """Decompose the user's goal, delegate only needed specialists, schedule
 dependencies and independent work, allocate remaining budgets, resolve proposals, and decide
 whether to continue or finish. Revisit specialists when new measured evidence warrants it.
+Read progress.receipts and progress.finish_blockers before delegating. Reuse completed
+evaluation/prediction/validation receipts for the current revision. Wait for existing
+tasks instead of creating equivalent tasks under fresh IDs. When evidence is sufficient,
+finish once; the runtime drains outstanding tasks before accepting terminal completion.
 You can delegate to data_validation, pipeline_modeling, evaluation and submission. Specialists
 can delegate evaluation/data audits within depth limits. Finish complete only after runtime
 evaluation and validated predictions; otherwise finish incomplete with a brief reason.""",

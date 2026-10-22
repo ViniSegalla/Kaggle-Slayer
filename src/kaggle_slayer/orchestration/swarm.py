@@ -163,6 +163,73 @@ class SwarmRuntime:
             ):
                 raise ToolError("artifact_integrity")
 
+    def measurement_revision(self):
+        return digest(
+            {
+                "dataset": self.state.report.get("fingerprints") if self.state.report else None,
+                "validation": self.session.validation,
+                "experiments": [
+                    {"id": e.id, "status": e.status, "lineage": e.lineage}
+                    for e in self.state.experiments
+                ],
+            }
+        )
+
+    def progress(self):
+        """Durable bounded receipts, independent of the rolling dialogue window."""
+        s = self.state
+        receipts = {}
+        for ref, record in self.session.actions.items():
+            if record.status != "completed" or record.action.kind != "tool":
+                continue
+            result, name = record.result, record.action.tool
+            if name == "evaluate" and s.best_id and result.get("best_ref") == s.best_id:
+                receipts["evaluation"] = {"action_id": ref, "result": result}
+            elif name == "generate_predictions" and (
+                self.session.finalized
+                and result.get("best_ref") == s.best_id
+                and result.get("sha256") == s.metadata.get("submission_sha256")
+            ):
+                receipts["predictions"] = {"action_id": ref, "result": result}
+            elif name == "validate_predictions" and (
+                result.get("valid")
+                and result.get("sha256")
+                == s.metadata.get("swarm_submission_validated")
+                == s.metadata.get("submission_sha256")
+            ):
+                receipts["validation"] = {"action_id": ref, "result": result}
+        blockers = [
+            {
+                "action_id": ref,
+                "task_id": rec.task_id,
+                "kind": rec.action.kind,
+                "status": rec.status,
+                "depends_on": rec.action.depends_on,
+            }
+            for ref, rec in self.session.actions.items()
+            if rec.status in {"pending", "reserved"} and rec.action.kind != "finish"
+        ]
+        return {
+            "revision": self.measurement_revision(),
+            "best_ref": s.best_id,
+            "receipts": receipts,
+            "experiments": [
+                {
+                    "ref": e.id,
+                    "model": e.model,
+                    "status": e.status,
+                    "score": e.score,
+                    "lineage": e.lineage,
+                    "validation_role": e.validation_role,
+                }
+                for e in s.experiments[-16:]
+            ],
+            "finish_blockers": blockers,
+            "ready_to_finish": bool(
+                receipts.get("validation") and receipts.get("evaluation") and not blockers
+            ),
+        }
+
     def context(self, task):
         s, session = self.state, self.session
         # Only locally constructed aggregates/opaque IDs cross the provider boundary.
@@ -251,8 +318,17 @@ class SwarmRuntime:
             "validation": session.validation,
             "confirmation_started": session.confirmation_started,
             "finalized": session.finalized,
+            "progress": self.progress(),
             "tasks": [
-                {"id": t.id, "role": t.role, "status": t.status, "parent": t.parent}
+                {
+                    "id": t.id,
+                    "role": t.role,
+                    "status": t.status,
+                    "parent": t.parent,
+                    "goal": t.goal,
+                    "depends_on": t.depends_on,
+                    "evidence": t.evidence,
+                }
                 for t in session.tasks.values()
             ]
             if task.role == "coordinator"
@@ -263,6 +339,7 @@ class SwarmRuntime:
                     "task_id": rec.task_id,
                     "kind": rec.action.kind,
                     "depends_on": rec.action.depends_on,
+                    "reused_from": rec.reused_from,
                 }
                 for ref, rec in session.actions.items()
                 if rec.status in {"pending", "reserved"}
@@ -577,6 +654,13 @@ class SwarmRuntime:
         if any(self.dependency_status(ref) is None for ref in action.depends_on):
             raise ToolError("unknown_dependency")
         if any(
+            ref in session.actions
+            and session.actions[ref].task_id == task.id
+            and session.actions[ref].action.kind == "finish"
+            for ref in action.depends_on
+        ):
+            raise ToolError("work_after_finish")
+        if any(
             ref not in session.actions or session.actions[ref].status not in {"completed", "failed"}
             for ref in action.evidence
         ):
@@ -613,7 +697,31 @@ class SwarmRuntime:
             session.signatures[signature] = count
             if count > self.state.config.max_action_repeats:
                 raise StopRun("repeated_action_limit")
-        session.actions[action.action_id] = ActionRecord(task_id=task.id, action=action)
+        record = ActionRecord(task_id=task.id, action=action)
+        if action.kind == "delegate":
+            record.task_scope = digest(
+                {
+                    "parent": task.id,
+                    "recipient": action.recipient,
+                    "goal": " ".join(action.task.split()),
+                    "dependencies": sorted(action.depends_on),
+                    "evidence": sorted(action.evidence),
+                    "revision": self.measurement_revision(),
+                }
+            )
+            source = next(
+                (
+                    ref
+                    for ref, existing in session.actions.items()
+                    if existing.task_scope == record.task_scope
+                    and existing.status != "failed"
+                    and not existing.reused_from
+                ),
+                None,
+            )
+            if source:
+                record.reused_from = source
+        session.actions[action.action_id] = record
         self.log(task.id, action, {"status": "accepted"})
 
     def complete(self, ref, result, status="completed"):
@@ -648,6 +756,14 @@ class SwarmRuntime:
                 continue
             self.guard()
             action, task = record.action, self.session.tasks[record.task_id]
+            if record.reused_from:
+                source = self.session.actions[record.reused_from]
+                if source.status in {"completed", "failed"}:
+                    self.complete(
+                        ref, {**source.result, "reused_from": record.reused_from}, source.status
+                    )
+                    progressed = True
+                continue
             statuses = [self.dependency_status(dep) for dep in action.depends_on]
             if any(status == "failed" for status in statuses):
                 self.complete(ref, {"error": "dependency_failed"}, "failed")
@@ -655,6 +771,22 @@ class SwarmRuntime:
                 continue
             if any(status != "completed" for status in statuses):
                 continue
+            # Finish is a barrier over existing work, not a failed new experiment.
+            if action.kind == "finish":
+                if any(
+                    key != ref
+                    and other.task_id == task.id
+                    and other.status in {"pending", "reserved"}
+                    and other.action.kind != "finish"
+                    for key, other in self.session.actions.items()
+                ):
+                    continue
+                if task.role == "coordinator" and any(
+                    t.status not in {"completed", "failed"}
+                    for t in self.session.tasks.values()
+                    if t.id != task.id
+                ):
+                    continue
             progressed = True
             try:
                 if action.kind == "delegate":
@@ -673,22 +805,7 @@ class SwarmRuntime:
                 elif action.kind == "wait":
                     self.complete(ref, {"dependencies": "completed"})
                 elif action.kind == "finish":
-                    outstanding = [
-                        other
-                        for key, other in self.session.actions.items()
-                        if key != ref
-                        and other.task_id == task.id
-                        and other.status in {"pending", "reserved"}
-                    ]
-                    if outstanding:
-                        raise ToolError("pending_work")
                     if task.role == "coordinator":
-                        if any(
-                            t.status not in {"completed", "failed"}
-                            for t in self.session.tasks.values()
-                            if t.id != task.id
-                        ):
-                            raise ToolError("pending_tasks")
                         valid = self.state.metadata.get("swarm_submission_validated")
                         if action.outcome == "complete" and (
                             not valid or valid != self.state.metadata.get("submission_sha256")
@@ -780,6 +897,12 @@ class SwarmRuntime:
                         # All non-worker tools run on the owner thread. Never mutate
                         # validation or selection while a worker uses its snapshot.
                         if training:
+                            continue
+                        record.tool_snapshot = self.dispatcher.reuse_key(action, args)
+                        reused = self.dispatcher.reuse(action, record.tool_snapshot)
+                        if reused:
+                            source, result = reused
+                            self.complete(ref, {**result, "reused_from": source})
                             continue
                         record.status = "reserved"
                         self.checkpoint()
@@ -928,6 +1051,28 @@ class SwarmRuntime:
             if value is not None and self.state.competition.model_dump()[key] != value:
                 raise StopRun("immutable_user_constraints_changed")
 
+    def coordinator_waiting(self):
+        return any(
+            record.task_id == "coordinator"
+            and record.status in {"pending", "reserved"}
+            and record.action.kind in {"wait", "finish"}
+            for record in self.session.actions.values()
+        )
+
+    def release_deadlocked_barriers(self):
+        # With no runnable specialist or tool, return a dependency error for the
+        # coordinator to resolve. Do not spin on a cyclic wait/finish graph.
+        blocked = [
+            ref
+            for ref, record in self.session.actions.items()
+            if record.status == "pending" and record.action.kind in {"wait", "finish"}
+        ]
+        for ref in blocked:
+            self.complete(
+                ref, {"error": "coordination_deadlock", "blocked_actions": blocked[:16]}, "failed"
+            )
+        return bool(blocked)
+
     def run(self):
         try:
             self.validate_constraints()
@@ -951,20 +1096,27 @@ class SwarmRuntime:
                 self.drain_ready()
                 if self.session.termination_reason:
                     break
-                ready = [
-                    task
-                    for task in self.session.tasks.values()
-                    if task.role != "coordinator"
-                    and task.status == "ready"
-                    and all(self.dependency_status(dep) == "completed" for dep in task.depends_on)
-                    and not any(
-                        r.task_id == task.id and r.status in {"pending", "reserved"}
-                        for r in self.session.actions.values()
-                    )
-                ]
+                ready = sorted(
+                    [
+                        task
+                        for task in self.session.tasks.values()
+                        if task.role != "coordinator"
+                        and task.status == "ready"
+                        and all(
+                            self.dependency_status(dep) == "completed" for dep in task.depends_on
+                        )
+                        and not any(
+                            r.task_id == task.id and r.status in {"pending", "reserved"}
+                            for r in self.session.actions.values()
+                        )
+                    ],
+                    key=lambda task: task.turns,
+                )
                 if ready:
                     self.call_agents(ready[: self.state.config.agent_concurrency])
                 else:
+                    if self.release_deadlocked_barriers():
+                        continue
                     coordinator = self.session.tasks["coordinator"]
                     self.call_agents([coordinator])
                 # Coordinator receives feedback after every specialist/tool round,
@@ -972,7 +1124,7 @@ class SwarmRuntime:
                 self.drain_ready()
                 if any(task.repair_pending for task in self.session.tasks.values()):
                     continue
-                if not self.session.termination_reason and ready:
+                if not self.session.termination_reason and ready and not self.coordinator_waiting():
                     self.call_agents([self.session.tasks["coordinator"]])
             self.state.status = (
                 "completed"

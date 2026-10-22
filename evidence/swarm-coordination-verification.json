@@ -1,0 +1,38 @@
+{
+  "provider_execution": "scripted fake providers and mock transports; no live LLM or Kaggle calls",
+  "full_suite": {
+    "name": "pytest",
+    "errors": "0",
+    "failures": "0",
+    "skipped": "0",
+    "tests": "216",
+    "time": "315.750",
+    "timestamp": "2026-10-22T13:11:24.230364-03:00",
+    "hostname": "Vinicius"
+  },
+  "final_focused_checks_after_deadlock_guard": {
+    "name": "pytest",
+    "errors": "0",
+    "failures": "0",
+    "skipped": "0",
+    "tests": "23",
+    "time": "37.167",
+    "timestamp": "2026-10-22T13:15:33.559340-03:00",
+    "hostname": "Vinicius"
+  },
+  "lint": "passed",
+  "format": "passed",
+  "coverage": [
+    "durable measured progress outside rolling context",
+    "same-intent delegation aliases at stable measured revisions",
+    "finish barriers and fair waiting schedules",
+    "classification/regression real training and resume",
+    "verified local tool-result reuse and tamper rejection",
+    "legacy specialist cycle recovery",
+    "current-cause-only CLI provider diagnostics"
+  ],
+  "junit": [
+    "artifacts/swarm-coordination-full-tests.xml",
+    "artifacts/swarm-coordination-final-tests.xml"
+  ]
+}

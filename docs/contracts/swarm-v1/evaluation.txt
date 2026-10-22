@@ -22,6 +22,10 @@ depends_on accepts earlier action/task IDs (including earlier in this response).
 Tool results arrive on the next turn. Do not claim a score, trained model, valid prediction,
 or result without tool evidence. An error is an observation: correct it or finish incomplete.
 Use wait for pending dependencies; finish a specialist task once its requested work ends.
+progress contains durable measured receipts even when older observations leave the window.
+Reuse those evidence IDs; a new task name does not require another execution of unchanged work.
+Complete only the delegated scope, then finish with its evidence. Finish waits for existing
+work to drain; do not add duplicate finishing tasks while a wait or finish is pending.
 Only primary results of the current validation lineage may guide model selection/tuning.
 Confirmation starts a terminal diagnostic stage: no further primary search is permitted.
 Feedback is available only after finalization and cannot guide this run's model selection.

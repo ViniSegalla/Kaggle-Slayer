@@ -126,6 +126,9 @@ class ActionRecord(Schema):
     status: Literal["pending", "reserved", "completed", "failed"] = "pending"
     result: dict = Field(default_factory=dict)
     reservation: dict = Field(default_factory=dict)
+    tool_snapshot: str | None = None
+    task_scope: str | None = None
+    reused_from: Id | None = None
 
 
 class SwarmState(Schema):

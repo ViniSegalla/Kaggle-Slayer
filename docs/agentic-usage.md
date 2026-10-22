@@ -32,6 +32,8 @@ the task's consecutive repair allowance. Pending repairs survive resume.
 Exhaustion reports `llm_schema_repair_exhausted`. Provider errors stop without transport
 retries and use specific reasons such as `llm_rate_limit` or `llm_invalid_request`.
 CLI results include the safe `llm_diagnostic` (including field errors when available).
+This field describes the current provider-caused stop only. A previous 402 is retained
+in usage history but is not reported as the cause of a later deadline/budget stop.
 An incomplete run exits with code 2 without printing a misleading `Error: 2` message.
 Prompts use role-specific examples: the coordinator delegates inspection to
 `data_validation`, which invokes `inspect_dataset` as a tool. Permission errors return
@@ -50,6 +52,18 @@ invalid-action counter once, without increasing any configured resource limit.
 References to pending/reserved work deduplicate without consuming the executed-action
 repeat allowance; LLM request, token, turn and wall limits still apply. The dispatcher
 activates newly unblocked actions before requesting another coordinator decision.
+
+The coordinator receives durable `progress.receipts`, current experiment summaries and
+`finish_blockers`, even after earlier dialogue leaves the bounded observation window.
+It should reference completed evidence or wait for existing tasks instead of delegating
+equivalent work again. Identical task intentions at the same measured revision share
+work across new action names. Evaluation and prediction tools reuse verified results
+only when scientific inputs and artifacts still match; returned `reused_from` IDs link
+to the executed evidence. A new experiment/lineage invalidates reuse. Feedback retrieval
+and uploads are never cached, and experiment attempts retain their normal accounting.
+Queued finishes wait for outstanding work; the scheduler suppresses coordinator polling
+while waits/finishes drain and gives ready specialists a fair share of turns. A blocked
+dependency cycle is returned as `coordination_deadlock`, not silently retried forever.
 
 Competition profiles provide metric, target/schema overrides, prediction format and
 structural validation columns. A metric is required from configuration or official
@@ -121,6 +135,11 @@ requests a follow-up trial only after observing measured evaluation. `example_tr
 links task/action IDs, tool results, measured experiments and hashed artifacts. It is
 protocol/integration validation, not a live LLM benchmark. No live provider or Kaggle
 execution is implied. See [recorded offline evidence](../evidence/swarm-offline.md).
+The [coordination regression trace](../evidence/swarm-coordination-trace.json) records
+classification/regression fixture runs with duplicate intentions, a queued finish and
+resume. Both complete with measured models and validated predictions; delegation
+aliases link to the shared task evidence. See the
+[coordination verification report](../evidence/swarm-coordination-verification.json).
 
 The dashboard and `inspect` show execution mode, task handoffs, action/dependency status,
 provider usage, charged resources, effective pipelines, evidence and termination reason.

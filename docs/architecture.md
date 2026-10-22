@@ -18,6 +18,22 @@ slots; their CPU allocations sum to no more than `n_jobs`. Workers return result
 owner. No specialist can write state, reserve counters, select a winner or authorize an
 upload. There is no agentic baseline/tuning/ensemble/confirmation queue policy.
 
+Coordinator context contains durable `progress` receipts for the current measured
+evaluation, generated predictions and serialized validation, in addition to recent
+observations. Task goals/dependencies and finish blockers remain visible. Ready tasks
+are served by least-used turn count; an explicit coordinator wait or queued finish
+lets existing specialists run without extra coordinator calls. A finish is a barrier:
+it drains outstanding work before verifying artifacts and recording completion. A
+dependency graph with no runnable work returns a structured deadlock observation.
+
+Equivalent delegations with the same parent, goal, dependencies, evidence and measured
+revision share one task; new aliases retain their own action IDs and source references.
+Unchanged evaluation/prediction/validation requests can reuse executed results across
+tasks after checking live dataset fingerprints and artifact hashes. Keys exclude task
+names and include relevant scientific inputs. A changed lineage or measurement starts
+new work. Training and external feedback/upload effects are never served from this
+reuse mechanism. The LLM still chooses experiments, dependencies and whether to finish.
+
 Each accepted action has a stable ID and persisted status. The scheduler validates role,
 schema, dependencies, lineage, parameter bounds, artifact hashes and resources. Local
 receipts bridge commits; reserved workers with completed matching result files are
@@ -31,6 +47,9 @@ numerical training/prediction use bounded execution; cancellation terminates sub
 LLM HTTP transports run in killable child processes with hard total deadlines and no shared-state write capability. Provider
 failure and exhausted budgets yield explicit incomplete checkpoints. Old snapshots lacking
 mode/session fields remain deterministic; changing their mode is rejected.
+Older agentic records without reuse keys execute normally on their next request;
+completed IDs and artifacts are preserved. Final CLI provider diagnostics must match
+the current termination reason; historical errors remain in persisted usage history.
 
 Only aggregate evidence and opaque IDs are sent remotely. Validation changes create
 separate comparison lineages. Terminal confirmation cannot feed tuning. Final predictions

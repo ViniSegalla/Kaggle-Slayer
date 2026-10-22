@@ -3,6 +3,7 @@
 import hashlib
 import json
 import math
+from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -18,7 +19,7 @@ from kaggle_slayer.schemas.actions import (
     ValidationArgs,
 )
 from kaggle_slayer.schemas.models import Candidate
-from kaggle_slayer.tools.data_tools import inspect_dataset
+from kaggle_slayer.tools.data_tools import fingerprint, inspect_dataset
 from kaggle_slayer.tools.evaluation_tools import direction, validate_submission
 
 
@@ -232,6 +233,122 @@ class Dispatcher:
         if role not in cap.roles:
             raise ToolError("role_permission")
         return cap.arguments.model_validate(action.arguments)
+
+    def reuse_key(self, action, args):
+        """Identify repeatable local work by measured inputs, never by task prose."""
+        if action.tool not in {"evaluate", "generate_predictions", "validate_predictions"}:
+            return None
+        s, session = self.state, self.session
+        if not s.report or not session.validation:
+            return None
+        if any(
+            record.status in {"pending", "reserved"}
+            and record.action.kind == "tool"
+            and CAPABILITIES[record.action.tool].experiment
+            for record in session.actions.values()
+        ):
+            return None
+        paths = [
+            Path(s.config.data_dir) / s.competition.train_file,
+            Path(s.config.data_dir) / s.competition.test_file,
+        ]
+        if s.competition.sample_file:
+            paths.append(Path(s.config.data_dir) / s.competition.sample_file)
+        if fingerprint(paths) != s.report["fingerprints"]:
+            raise ToolError("dataset_fingerprint_changed")
+        experiments = []
+        for experiment in s.experiments:
+            if experiment.lineage != session.validation["lineage"]:
+                continue
+            if experiment.status == "completed":
+                if (
+                    experiment.training_contract.get("dataset_fingerprints")
+                    != s.report["fingerprints"]
+                ):
+                    raise ToolError("dataset_fingerprint_changed")
+                self.runtime.verify_artifact(experiment.id)
+            experiments.append(
+                {
+                    "experiment": experiment.model_dump(
+                        exclude={
+                            "checkpoint",
+                            "oof_path",
+                            "diagnostics_path",
+                            "importance_path",
+                            "error",
+                        }
+                    ),
+                    "hashes": [
+                        f["sha256"]
+                        for f in session.artifacts.get(experiment.id, {}).get("files", [])
+                    ],
+                }
+            )
+        snapshot = {
+            "tool": action.tool,
+            "arguments": args.model_dump(),
+            "dataset": s.report["fingerprints"],
+            "requirements": s.competition.model_dump(),
+            "validation": session.validation,
+            "experiments": experiments,
+            "confirmation_started": session.confirmation_started,
+        }
+        if action.tool != "evaluate":
+            if not s.best_id:
+                return None
+            self.experiment(s.best_id)
+            snapshot["best_ref"] = s.best_id
+        if action.tool == "validate_predictions":
+            if not session.finalized or not s.submission_path:
+                return None
+            current = hashlib.sha256(Path(s.submission_path).read_bytes()).hexdigest()
+            if current != s.metadata.get("submission_sha256"):
+                raise ToolError("prediction_integrity")
+            snapshot["submission_sha256"] = current
+        return hashlib.sha256(json.dumps(snapshot, sort_keys=True).encode()).hexdigest()
+
+    def reuse(self, action, key):
+        """Return verified evidence for the same snapshot without repeating effects."""
+        if key is None:
+            return None
+        args = CAPABILITIES[action.tool].arguments.model_validate(action.arguments)
+        if self.reuse_key(action, args) != key:
+            return None
+        s, session = self.state, self.session
+        for ref, record in session.actions.items():
+            if (
+                record.status != "completed"
+                or record.action.kind != "tool"
+                or record.action.tool != action.tool
+                or record.tool_snapshot != key
+            ):
+                continue
+            result = record.result
+            if action.tool == "evaluate":
+                if result.get("best_ref") != s.best_id:
+                    continue
+            elif action.tool == "generate_predictions":
+                if (
+                    not session.finalized
+                    or not s.submission_path
+                    or result.get("best_ref") != s.best_id
+                    or result.get("sha256") != s.metadata.get("submission_sha256")
+                ):
+                    continue
+                self.runtime.verify_artifact(result["prediction_ref"])
+                if (
+                    hashlib.sha256(Path(s.submission_path).read_bytes()).hexdigest()
+                    != result["sha256"]
+                ):
+                    raise ToolError("prediction_integrity")
+            elif (
+                not result.get("valid")
+                or result.get("sha256") != s.metadata.get("swarm_submission_validated")
+                or result.get("sha256") != s.metadata.get("submission_sha256")
+            ):
+                continue
+            return ref, deepcopy(result) | {"reused_from": ref}
+        return None
 
     def candidate(self, action, args):
         s, session = self.state, self.session
