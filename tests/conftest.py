@@ -33,5 +33,8 @@ def fixture_data(tmp_path):
         max_experiments=4,
         max_seconds=180,
         n_jobs=1,
+        models=["linear", "random_forest", "lightgbm"],
+        ensemble=False,
+        confirmation_top_k=0,
     )
     return directory, competition, config

@@ -1,6 +1,7 @@
 """Explicit model registry: provider suggestions cannot instantiate arbitrary code."""
 
 import numpy as np
+from catboost import CatBoostClassifier, CatBoostRegressor
 from sklearn.compose import TransformedTargetRegressor
 from sklearn.ensemble import (
     HistGradientBoostingClassifier,
@@ -13,28 +14,28 @@ from sklearn.ensemble import (
 from sklearn.linear_model import LogisticRegression, Ridge
 from sklearn.pipeline import Pipeline
 
+from kaggle_slayer.ml.objectives import objective_params
 from kaggle_slayer.ml.preprocessing import preprocessor
+
+
+class NativeCategoricalFit:
+    def fit(self, X, y=None, **kwargs):
+        self.set_params(cat_features=list(X.select_dtypes(exclude="number").columns))
+        return super().fit(X, y, **kwargs)
+
+
+class NativeCatBoostClassifier(NativeCategoricalFit, CatBoostClassifier):
+    pass
+
+
+class NativeCatBoostRegressor(NativeCategoricalFit, CatBoostRegressor):
+    pass
 
 
 def estimator(name, task, seed, jobs, params):
     classification = task == "classification"
     if name == "ensemble":
-        members = params.get("members", [])
-        if len(members) != 2 or any(
-            member["model"]
-            not in {"linear", "random_forest", "hist_gradient", "lightgbm", "xgboost", "catboost"}
-            for member in members
-        ):
-            raise ValueError("Ensemble requires exactly two approved model families")
-        estimators = [
-            (f"member_{i}", estimator(member["model"], task, seed, jobs, member["params"]))
-            for i, member in enumerate(members)
-        ]
-        return (
-            VotingClassifier(estimators=estimators, voting="soft", n_jobs=1)
-            if classification
-            else VotingRegressor(estimators=estimators, n_jobs=1)
-        )
+        raise ValueError("Build ensembles with pipeline() so each member retains its preprocessing")
     if name == "linear":
         return (
             LogisticRegression(max_iter=1500, random_state=seed, **params)
@@ -94,9 +95,7 @@ def estimator(name, task, seed, jobs, params):
             ),
         )
     if name == "catboost":
-        from catboost import CatBoostClassifier, CatBoostRegressor
-
-        cls = CatBoostClassifier if classification else CatBoostRegressor
+        cls = NativeCatBoostClassifier if classification else NativeCatBoostRegressor
         return cls(
             thread_count=jobs,
             random_seed=seed,
@@ -108,10 +107,35 @@ def estimator(name, task, seed, jobs, params):
 
 
 def pipeline(name, competition, config, params):
+    if name == "hist_gradient" and competition.validation in {"group", "time"}:
+        params = params | {"early_stopping": False}
+    if name == "ensemble":
+        members = params.get("members", [])
+        allowed = {"linear", "random_forest", "hist_gradient", "lightgbm", "xgboost", "catboost"}
+        if len(members) != 2 or any(m["model"] not in allowed for m in members):
+            raise ValueError("Ensemble requires exactly two approved model families")
+        estimators = [
+            (f"member_{i}", pipeline(m["model"], competition, config, m["params"]))
+            for i, m in enumerate(members)
+        ]
+        return (
+            VotingClassifier(estimators=estimators, voting="soft", n_jobs=1)
+            if competition.task == "classification"
+            else VotingRegressor(estimators=estimators, n_jobs=1)
+        )
     model = Pipeline(
         [
-            ("preprocess", preprocessor(competition.feature_profile)),
-            ("model", estimator(name, competition.task, config.seed, config.n_jobs, params)),
+            ("preprocess", preprocessor(competition.feature_profile, name)),
+            (
+                "model",
+                estimator(
+                    name,
+                    competition.task,
+                    config.seed,
+                    config.n_jobs,
+                    objective_params(name, competition) | params,
+                ),
+            ),
         ]
     )
     if competition.target_transform == "log1p":

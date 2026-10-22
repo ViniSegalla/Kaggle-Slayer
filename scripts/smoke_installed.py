@@ -17,7 +17,7 @@ with tempfile.TemporaryDirectory(prefix="kaggle-slayer-wheel-") as directory:
         os.chdir(directory)
         titanic, config = load_config("titanic")
         house, _ = load_config("house-prices-advanced-regression-techniques")
-        assert titanic.target == "Survived" and config.max_experiments == 10
+        assert titanic.target == "Survived" and config.max_experiments == 12
         assert {"catboost", "xgboost"} <= set(config.models)
         assert house.metric == "log_rmse" and house.target == "SalePrice"
         item = ApiCompetition()

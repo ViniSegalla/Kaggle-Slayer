@@ -294,6 +294,7 @@ def test_truncation_reports_configured_budget(api):
 def test_llm_can_only_reorder_allowlisted_models(fixture_data, monkeypatch):
     directory, c, config = fixture_data
     config.max_experiments = 10
+    config.models = ["linear", "random_forest", "lightgbm", "catboost", "xgboost"]
     state = RunState(run_id="llm-plan", competition=c, config=config)
     state.report = inspect_dataset(directory, c, config).report
     monkeypatch.setattr(

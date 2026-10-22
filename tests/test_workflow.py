@@ -23,6 +23,9 @@ def test_default_roster_trains_both_boosters_and_tunes(fixture_data):
     defaults = RunConfig()
     config.max_experiments = defaults.max_experiments
     config.max_iterations = defaults.max_iterations
+    config.models = defaults.models
+    config.ensemble = defaults.ensemble
+    config.confirmation_top_k = defaults.confirmation_top_k
     engine = Engine(Store(config.artifact_root))
     result = engine.execute(engine.create(competition, config))
     assert result.status == "completed"
@@ -30,8 +33,22 @@ def test_default_roster_trains_both_boosters_and_tunes(fixture_data):
     assert set(baselines) == set(defaults.models)
     assert all(e.status == "completed" for e in baselines.values())
     trials = [e for e in result.experiments if e.id.startswith("tune-")]
-    assert len(trials) == defaults.max_experiments - len(defaults.models)
+    assert len(trials) == 4
     assert all(e.status == "completed" for e in trials)
+    assert len({e.model for e in trials}) >= 3
+    assert (
+        len(
+            [
+                e
+                for e in result.experiments
+                if e.model == "ensemble" and e.validation_role == "primary"
+            ]
+        )
+        == 1
+    )
+    assert result.feedback["stability"]["status"] == "completed"
+    assert len(result.experiments) == defaults.max_experiments
+    assert all(e.status == "completed" for e in result.experiments)
     assert Path(result.submission_path).exists()
     assert not result.submissions
 

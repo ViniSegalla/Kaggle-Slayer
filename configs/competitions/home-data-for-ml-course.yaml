@@ -1,0 +1,9 @@
+competition: home-data-for-ml-course
+target: SalePrice
+id_column: Id
+task: regression
+metric: mae
+prediction_kind: value
+train_file: train.csv
+test_file: test.csv
+sample_file: sample_submission.csv

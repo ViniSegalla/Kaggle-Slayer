@@ -50,7 +50,7 @@ class Competition(Schema):
 class RunConfig(Schema):
     seed: int = 42
     folds: int = Field(default=5, ge=2, le=20)
-    max_experiments: int = Field(default=10, ge=3, le=100)
+    max_experiments: int = Field(default=12, ge=3, le=100)
     max_iterations: int = Field(default=3, ge=1, le=20)
     max_seconds: int = Field(default=1800, ge=5, le=86400)
     experiment_timeout: int = Field(default=300, ge=2, le=14400)
@@ -70,16 +70,15 @@ class RunConfig(Schema):
     max_rows: int = Field(default=1000000, ge=20)
     max_features: int = Field(default=10000, ge=10)
     max_dense_cells: int = Field(default=25000000, ge=1000)
-    ensemble: bool = False
+    ensemble: bool = True
+    tuning_families: int = Field(default=3, ge=1, le=6)
+    confirmation_top_k: int = Field(default=2, ge=0, le=3)
+    min_relative_improvement: float = Field(default=0.001, ge=0, le=0.1)
 
     @model_validator(mode="after")
     def unique_models(self):
         if len(set(self.models)) < 3:
             raise ValueError("Configure at least three distinct baseline model families")
-        if self.ensemble and self.max_experiments < 4:
-            raise ValueError(
-                "Ensembling requires at least four experiments to preserve three baseline families"
-            )
         return self
 
 
@@ -90,6 +89,9 @@ class Candidate(Schema):
     rationale: str
     parent_id: str | None = None
     trial_number: int | None = None
+    validation_role: Literal["primary", "confirmation"] = "primary"
+    validation_seed: int | None = None
+    study_family: str | None = None
 
 
 class Plan(Schema):
@@ -115,6 +117,11 @@ class Experiment(Schema):
     oof_path: str | None = None
     importance_path: str | None = None
     effective_params: dict[str, Any] = Field(default_factory=dict)
+    validation_role: Literal["primary", "confirmation"] = "primary"
+    validation_seed: int | None = None
+    parent_id: str | None = None
+    diagnostics_path: str | None = None
+    training_contract: dict[str, Any] = Field(default_factory=dict)
 
 
 class Decision(Schema):

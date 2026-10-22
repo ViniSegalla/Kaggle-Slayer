@@ -44,7 +44,10 @@ def rank_experiments(experiments, metric):
     eligible = [
         e
         for e in experiments
-        if e.status == "completed" and e.score is not None and np.isfinite(e.score)
+        if e.status == "completed"
+        and e.score is not None
+        and np.isfinite(e.score)
+        and e.validation_role == "primary"
     ]
     return sorted(eligible, key=lambda e: e.score, reverse=direction(metric) == "maximize")
 

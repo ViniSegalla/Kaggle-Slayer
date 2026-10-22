@@ -21,7 +21,9 @@ class ModelingAgent(Agent):
         result = run_isolated(
             candidate,
             state.competition,
-            state.config,
+            state.config.model_copy(update={"seed": candidate.validation_seed})
+            if candidate.validation_seed is not None
+            else state.config,
             output,
             min(remaining_seconds, state.config.experiment_timeout),
         )
@@ -39,6 +41,7 @@ class ModelingAgent(Agent):
                     result.checkpoint,
                     result.oof_path,
                     result.importance_path,
+                    result.diagnostics_path,
                     str(output / "worker.log"),
                 )
                 if x

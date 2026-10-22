@@ -13,9 +13,9 @@ def test_default_roster_and_tuning_capacity():
         == defaults.models
         == ["linear", "random_forest", "lightgbm", "catboost", "xgboost"]
     )
-    assert loaded.max_experiments == defaults.max_experiments == 10
+    assert loaded.max_experiments == defaults.max_experiments == 12
     assert loaded.max_iterations == defaults.max_iterations == 3
-    tuning_slots = loaded.max_experiments - len(loaded.models)
+    tuning_slots = loaded.max_experiments - len(loaded.models) - 1 - loaded.confirmation_top_k
     assert tuning_slots > 0
     assert loaded.max_iterations * loaded.optuna_trials >= tuning_slots
     # Explicit smaller budgets still take precedence over the new defaults.
@@ -73,8 +73,7 @@ def test_run_yaml_and_ensemble_budget(tmp_path):
     path.write_text("ensemble: true\nmax_experiments: 6\nfolds: 3\n")
     _, config = load_config("titanic", run_profile=path, max_experiments=7)
     assert config.ensemble and config.folds == 3 and config.max_experiments == 7
-    with pytest.raises(ValidationError, match="at least four"):
-        RunConfig(ensemble=True, max_experiments=3)
+    assert RunConfig(ensemble=True, max_experiments=3).max_experiments == 3
 
 
 @pytest.mark.parametrize("value", [0, 127, 8193])

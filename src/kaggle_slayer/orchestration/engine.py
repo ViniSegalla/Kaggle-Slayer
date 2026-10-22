@@ -11,7 +11,7 @@ from kaggle_slayer.agents.leaderboard_agent import LeaderboardAgent, field
 from kaggle_slayer.agents.modeling_agent import ModelingAgent
 from kaggle_slayer.agents.planner import CompetitionPlanner
 from kaggle_slayer.schemas import Decision, RunState
-from kaggle_slayer.schemas.models import now
+from kaggle_slayer.schemas.models import Candidate, now
 from kaggle_slayer.storage.store import Store, write_json
 from kaggle_slayer.tools.kaggle_client import KaggleClient, KaggleError
 
@@ -104,6 +104,21 @@ class Engine:
                     state.warnings.append(
                         "No optimization trial completed; increase experiment/time/iteration budget"
                     )
+                # Persist the frozen audit queue so recovery never changes finalists.
+                if "confirmation_queue" not in state.metadata:
+                    state.metadata["confirmation_queue"] = [
+                        c.model_dump() for c in self.planner.confirmation_candidates(state)
+                    ]
+                checkpoint("confirming")
+                for raw in state.metadata["confirmation_queue"]:
+                    candidate = Candidate.model_validate(raw)
+                    if any(e.id == candidate.id for e in state.experiments):
+                        continue
+                    if remaining() < 3 or len(state.experiments) >= state.config.max_experiments:
+                        break
+                    self.modeler.train(state, candidate, remaining())
+                    checkpoint()
+                self.evaluator.review_stability(state)
                 self.evaluator.create_submission(state, data)
                 checkpoint("submission_ready")
             if state.config.submit and state.config.max_submissions and not state.submissions:

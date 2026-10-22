@@ -1,4 +1,6 @@
 # Keep the total budget fixed: three baselines, one Optuna trial, one ensemble.
+models: [linear, random_forest, lightgbm]
+confirmation_top_k: 0
 ensemble: true
 max_experiments: 5
 optuna_trials: 1

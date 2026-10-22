@@ -1,4 +1,6 @@
 import hashlib
+import json
+from pathlib import Path
 
 import pandas as pd
 import plotly.express as px
@@ -17,6 +19,17 @@ class EvaluationAgent(Agent):
         ranking = rank_experiments(state.experiments, metric)
         if not ranking:
             raise ValueError("All experiments failed; inspect worker logs and dataset report")
+        singles = [e for e in ranking if e.model != "ensemble"]
+        rejected_ensembles = []
+        if singles:
+            sign = 1 if direction(metric) == "maximize" else -1
+            threshold = max(abs(singles[0].score), 1e-9) * state.config.min_relative_improvement
+            rejected_ensembles = [
+                e.id
+                for e in ranking
+                if e.model == "ensemble" and sign * (e.score - singles[0].score) <= threshold
+            ]
+            ranking = [e for e in ranking if e.id not in rejected_ensembles]
         state.best_id = ranking[0].id
         best = ranking[0]
         sign = 1 if direction(metric) == "maximize" else -1
@@ -40,7 +53,19 @@ class EvaluationAgent(Agent):
             "rejected_for_final": rejected,
             "recommendation": "Tune regularization and model complexity using the same fixed folds; keep the baseline for comparison.",
             "warnings": warnings,
+            "ensemble_below_improvement_threshold": rejected_ensembles,
         }
+        if best.diagnostics_path:
+            analysis = json.loads(Path(best.diagnostics_path).read_text(encoding="utf-8"))
+            state.feedback["error_analysis"] = analysis
+            if analysis["slices"]:
+                worst = analysis["slices"][0]
+                state.feedback["recommendation"] = (
+                    f"Audit {worst['feature']} slice {worst['slice']} ({worst['rows']} held-out rows): "
+                    f"{analysis['measure']}={worst['error']:.5g} versus overall "
+                    f"{analysis['overall_error']:.5g}. Compare model families and a fixed blend; "
+                    "slice differences are exploratory, not proof of a defect."
+                )
         output = self.store.run_dir(state.run_id)
         write_json(
             output / "evaluation.json",
@@ -71,6 +96,54 @@ class EvaluationAgent(Agent):
             [str(output / "evaluation.json"), str(output / "comparison.html")],
         )
         return best
+
+    def review_stability(self, state):
+        confirmations = [e for e in state.experiments if e.validation_role == "confirmation"]
+        valid = [e for e in confirmations if e.status == "completed"]
+        sign = 1 if direction(state.competition.metric) == "maximize" else -1
+        primary = {e.id: e for e in state.experiments if e.validation_role == "primary"}
+        report = {
+            "status": "completed" if len(valid) >= 2 else "unavailable",
+            "selection_changed": False,
+            "reason": "A second split seed is diagnostic; it is not an untouched holdout and does not trigger further tuning.",
+            "results": [
+                {
+                    "parent_id": e.parent_id,
+                    "status": e.status,
+                    "score": e.score,
+                    "seed": e.validation_seed,
+                    "primary_score": primary[e.parent_id].score,
+                }
+                for e in confirmations
+                if e.parent_id in primary
+            ],
+        }
+        if len(valid) >= 2:
+            winner = max(valid, key=lambda e: sign * e.score)
+            report["same_winner"] = winner.parent_id == state.best_id
+            if not report["same_winner"]:
+                warning = "Finalist ordering changed on the confirmation split; performance gains are split-sensitive"
+                state.warnings = list(dict.fromkeys(state.warnings + [warning]))
+        elif state.competition.validation in {"group", "time"}:
+            report["reason"] = (
+                "Group/time validation retained; random-seed confirmation is not applicable."
+            )
+        else:
+            report["reason"] = (
+                "Fewer than two confirmations completed within the configured experiment/time budget."
+            )
+        state.feedback["stability"] = report
+        output = self.store.run_dir(state.run_id) / "stability.json"
+        write_json(output, report)
+        self.log(
+            state,
+            "check_finalist_stability",
+            report["reason"],
+            "confirmation_cv",
+            report,
+            "create_submission",
+            [str(output)],
+        )
 
     def create_submission(self, state, data):
         best = next(e for e in state.experiments if e.id == state.best_id)

@@ -28,6 +28,8 @@ flowchart TD
 
 `schemas/` defines validated configuration, queue entries, experiments, decisions and shared state. `agents/` contains policy and specialization. `tools/` implements external Kaggle access, data inspection, metric computation and training. `ml/` contains transformations, model factories and a worker entry point. `storage/` owns persistence. `orchestration/` handles transitions, budgets and recovery. `dashboard/` reads the same store as the CLI.
 
+The planner reserves optional ensemble/confirmation work inside the total experiment budget. Primary CV compares baselines, trials across leading families, and a fixed ensemble. Independent member pipelines support CatBoost native categories alongside scaled linear and unscaled tree encodings. Each experiment records its training objective and preprocessing contract. Finalist confirmations use a persisted frozen queue and a second seed; their role excludes them from primary ranking and their results never trigger more tuning. Group/time profiles retain their structural splits and skip random confirmation. The evaluator reports stability and aggregate OOF error slices. LLM planning cautions are retained as planning advice rather than measured execution warnings.
+
 The default loop runs three independent families followed by two seeded Optuna trials. The evaluator returns the best eligible model, train/CV gap, rejected candidates and a specific next-experiment recommendation. The planner consumes that feedback and asks Optuna for bounded parameters in the best family. Failed trials consume the experiment budget and do not enter the ranking. There is no guarantee that tuning improves a score.
 
 ## State and recovery

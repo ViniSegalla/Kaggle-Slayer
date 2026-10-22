@@ -13,7 +13,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from threadpoolctl import threadpool_limits
 
+from kaggle_slayer.ml.diagnostics import error_report
 from kaggle_slayer.ml.models import estimator, pipeline
+from kaggle_slayer.ml.objectives import objective_params, training_contract
 from kaggle_slayer.ml.preprocessing import preprocessor
 from kaggle_slayer.schemas import Competition, Experiment, RunConfig
 from kaggle_slayer.storage.store import write_json
@@ -23,6 +25,18 @@ from kaggle_slayer.tools.evaluation_tools import score
 
 def early_stopping_params(name, params, X, y, competition, config):
     """Use only an inner portion of the outer training fold for stopping decisions."""
+    if name == "ensemble":
+        return params | {
+            "members": [
+                {
+                    "model": m["model"],
+                    "params": early_stopping_params(
+                        m["model"], m["params"], X, y, competition, config
+                    ),
+                }
+                for m in params["members"]
+            ]
+        }
     if (
         name not in {"lightgbm", "xgboost", "catboost"}
         or competition.validation in {"group", "time"}
@@ -39,10 +53,16 @@ def early_stopping_params(name, params, X, y, competition, config):
         random_state=config.seed,
         stratify=y if competition.task == "classification" else None,
     )
-    prep = preprocessor(competition.feature_profile)
+    prep = preprocessor(competition.feature_profile, name)
     fit_X, stop_X = prep.fit_transform(X.iloc[a]), prep.transform(X.iloc[b])
     work_y = np.log1p(np.asarray(y)) if competition.target_transform == "log1p" else np.asarray(y)
-    model = estimator(name, competition.task, config.seed, config.n_jobs, params)
+    model = estimator(
+        name,
+        competition.task,
+        config.seed,
+        config.n_jobs,
+        objective_params(name, competition) | params,
+    )
     if name == "lightgbm":
         from lightgbm import early_stopping, log_evaluation
 
@@ -91,7 +111,7 @@ def train_candidate(request: dict) -> dict:
         else data.y.reset_index(drop=True)
     )
     metric_classes = list(range(len(classes))) if encoder is not None else None
-    scores, train_scores, counts = [], [], []
+    scores, train_scores, fold_params = [], [], []
     oof = None
     valid_mask = np.zeros(len(y), dtype=bool)
     with threadpool_limits(limits=config.n_jobs):
@@ -104,9 +124,7 @@ def train_candidate(request: dict) -> dict:
                 c,
                 config,
             )
-            counts.append(
-                params.get("iterations" if candidate["model"] == "catboost" else "n_estimators")
-            )
+            fold_params.append(params)
             model = pipeline(candidate["model"], c, config, params)
             model.fit(data.X.iloc[fit_indices], y.iloc[fit_indices])
             prediction = predictions(model, data.X.iloc[valid_indices], c, for_metric=True)
@@ -118,11 +136,7 @@ def train_candidate(request: dict) -> dict:
                 oof = np.full(shape, np.nan)
             oof[valid_indices] = prediction
             valid_mask[valid_indices] = True
-        final_params = dict(candidate["params"])
-        if any(value is not None for value in counts):
-            final_params["iterations" if candidate["model"] == "catboost" else "n_estimators"] = (
-                int(np.median([v for v in counts if v is not None]))
-            )
+        final_params = aggregate_params(candidate["model"], candidate["params"], fold_params)
         final = pipeline(candidate["model"], c, config, final_params)
         final.fit(data.X, y)
     output.mkdir(parents=True, exist_ok=True)
@@ -139,9 +153,23 @@ def train_candidate(request: dict) -> dict:
     )
     oof_path = output / "oof.npz"
     np.savez_compressed(oof_path, prediction=oof, y=y.to_numpy(), valid_mask=valid_mask)
+    np.savez_compressed(
+        output / "splits.npz",
+        **{
+            f"{i}_{name}": rows
+            for i, split in enumerate(data.splits)
+            for name, rows in zip(("train", "validation"), split)
+        },
+    )
+    diagnostics_path = output / "error_analysis.json"
+    diagnostic = error_report(data.X, y, oof, valid_mask, c.task)
+    diagnostic["source"] = f"{candidate.get('validation_role', 'primary')}_out_of_fold_predictions"
+    write_json(diagnostics_path, diagnostic)
     importance_path = None
-    fitted_pipeline = final.regressor_ if c.target_transform == "log1p" else final
-    fitted = fitted_pipeline.named_steps["model"]
+    fitted_pipeline = final.regressor_ if hasattr(final, "regressor_") else final
+    fitted = (
+        fitted_pipeline.named_steps["model"] if hasattr(fitted_pipeline, "named_steps") else final
+    )
     importance = getattr(fitted, "feature_importances_", None)
     if importance is None and hasattr(fitted, "coef_"):
         importance = (
@@ -171,7 +199,32 @@ def train_candidate(request: dict) -> dict:
         checkpoint=str(model_path),
         oof_path=str(oof_path),
         importance_path=importance_path,
+        diagnostics_path=str(diagnostics_path),
+        training_contract=training_contract(candidate["model"], c, final_params),
+        validation_role=candidate.get("validation_role", "primary"),
+        validation_seed=config.seed,
+        parent_id=candidate.get("parent_id"),
     ).model_dump()
+
+
+def aggregate_params(name, base, folds):
+    if name == "ensemble":
+        return base | {
+            "members": [
+                {
+                    "model": member["model"],
+                    "params": aggregate_params(
+                        member["model"],
+                        member["params"],
+                        [p["members"][i]["params"] for p in folds],
+                    ),
+                }
+                for i, member in enumerate(base["members"])
+            ]
+        }
+    key = "iterations" if name == "catboost" else "n_estimators"
+    counts = [p[key] for p in folds if key in p]
+    return base | ({key: int(np.median(counts))} if counts else {})
 
 
 def run_isolated(candidate, competition, config, output: Path, timeout: float) -> Experiment:
@@ -227,6 +280,9 @@ def run_isolated(candidate, competition, config, output: Path, timeout: float) -
         status=status,
         error=message,
         duration=time.monotonic() - started,
+        validation_role=candidate.validation_role,
+        validation_seed=config.seed,
+        parent_id=candidate.parent_id,
     )
 
 

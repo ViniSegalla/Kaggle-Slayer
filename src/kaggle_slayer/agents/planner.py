@@ -61,7 +61,7 @@ class CompetitionPlanner(Agent):
                 model=model,
                 rationale="Measure a distinct model family on fixed folds",
             )
-            for model in models[: state.config.max_experiments - int(state.config.ensemble)]
+            for model in models[: state.config.max_experiments - self.ensemble_slots(state)]
         ]
         strategy = (
             advice.rationale
@@ -79,7 +79,7 @@ class CompetitionPlanner(Agent):
             source="llm" if advice else "deterministic",
         )
         if advice:
-            state.warnings.extend(advice.cautions)
+            state.metadata["planning_advice"] = advice.cautions
         self.log(
             state,
             "schedule_baselines",
@@ -89,11 +89,30 @@ class CompetitionPlanner(Agent):
             "modeling_agent.train",
         )
 
-    def study(self, state):
+    def ensemble_slots(self, state):
+        return int(
+            state.config.ensemble and state.config.max_experiments > len(set(state.config.models))
+        )
+
+    def confirmation_slots(self, state):
+        if state.competition.validation in {"group", "time"}:
+            return 0  # Never replace structural validation with random splits.
+        return min(
+            state.config.confirmation_top_k,
+            max(
+                0,
+                state.config.max_experiments
+                - len(set(state.config.models))
+                - self.ensemble_slots(state)
+                - 1,
+            ),
+        )
+
+    def study(self, state, family=None):
         path = self.store.run_dir(state.run_id) / "optimization.sqlite"
         optuna.logging.set_verbosity(optuna.logging.WARNING)
         return optuna.create_study(
-            study_name="optimization",
+            study_name=f"optimization-{family}" if family else "optimization",
             storage=f"sqlite:///{path.as_posix()}",
             load_if_exists=True,
             direction=state.plan.direction,
@@ -102,19 +121,38 @@ class CompetitionPlanner(Agent):
 
     def feedback_plan(self, state) -> bool:
         remaining = (
-            state.config.max_experiments - len(state.experiments) - int(state.config.ensemble)
+            state.config.max_experiments
+            - len(state.experiments)
+            - self.ensemble_slots(state)
+            - self.confirmation_slots(state)
         )
         if remaining <= 0 or state.iteration >= state.config.max_iterations:
             return False
         ranking = rank_experiments(state.experiments, state.competition.metric)
         if not ranking:
             return False
-        best = ranking[0]
-        study = self.study(state)
+        families = []
+        for experiment in ranking:
+            if experiment.model != "ensemble" and experiment.model not in {
+                e.model for e in families
+            }:
+                families.append(experiment)
+        families = families[: state.config.tuning_families]
+        if not families:
+            return False
+        attempted = {e.model for e in state.experiments if e.id.startswith("tune-")}
         queue = []
         # Resume an already asked but uncheckpointed trial instead of abandoning it.
-        pending = [trial for trial in study.get_trials() if trial.state == TrialState.RUNNING]
         for _ in range(min(remaining, state.config.optuna_trials)):
+            best = next((e for e in families if e.model not in attempted), families[0])
+            attempted.add(best.model)
+            study = self.study(state, best.model)
+            queued = {c.trial_number for c in queue if c.model == best.model}
+            pending = [
+                t
+                for t in study.get_trials()
+                if t.state == TrialState.RUNNING and t.number not in queued
+            ]
             trial = optuna.trial.Trial(study, pending.pop(0)._trial_id) if pending else study.ask()
             if best.model == "linear":
                 key = "C" if state.competition.task == "classification" else "alpha"
@@ -141,17 +179,25 @@ class CompetitionPlanner(Agent):
                 if best.model == "lightgbm":
                     params["num_leaves"] = trial.suggest_int("num_leaves", 7, 31)
                     params["reg_lambda"] = trial.suggest_float("reg_lambda", 0.01, 10, log=True)
+                    params["min_child_samples"] = trial.suggest_int("min_child_samples", 10, 60)
                 else:
                     params["depth" if best.model == "catboost" else "max_depth"] = (
                         trial.suggest_int("depth", 3, 7)
                     )
+                    if best.model == "catboost":
+                        params["l2_leaf_reg"] = trial.suggest_float("l2_leaf_reg", 1, 20, log=True)
+                    else:
+                        params["reg_lambda"] = trial.suggest_float("reg_lambda", 0.1, 20, log=True)
+                        params["subsample"] = trial.suggest_float("subsample", 0.7, 1)
+                        params["colsample_bytree"] = trial.suggest_float("colsample_bytree", 0.7, 1)
             queue.append(
                 Candidate(
-                    id=f"tune-{trial.number}",
+                    id=f"tune-{best.model}-{trial.number}",
                     model=best.model,
                     params=params,
                     parent_id=best.id,
                     trial_number=trial.number,
+                    study_family=best.model,
                     rationale=state.feedback.get("recommendation", "Tune the best CV family"),
                 )
             )
@@ -160,7 +206,7 @@ class CompetitionPlanner(Agent):
         self.log(
             state,
             "revise_experiment_queue",
-            "Evaluator evidence selects the tuning family; public leaderboard is diagnostic only.",
+            "Explore the leading distinct families before exploiting the strongest CV family; use separate Optuna studies.",
             "optuna.ask",
             {"feedback": state.feedback, "queue": [x.model_dump() for x in queue]},
             "modeling_agent.train",
@@ -169,7 +215,7 @@ class CompetitionPlanner(Agent):
 
     def record_trial(self, state, candidate, experiment):
         if candidate.trial_number is not None:
-            study = self.study(state)
+            study = self.study(state, candidate.study_family)
             trial = next(t for t in study.get_trials() if t.number == candidate.trial_number)
             if trial.state == TrialState.RUNNING:
                 if experiment.status == "completed":
@@ -178,7 +224,7 @@ class CompetitionPlanner(Agent):
                     study.tell(candidate.trial_number, state=TrialState.FAIL)
 
     def ensemble_candidate(self, state):
-        if not state.config.ensemble or len(state.experiments) >= state.config.max_experiments:
+        if not self.ensemble_slots(state) or len(state.experiments) >= state.config.max_experiments:
             return None
         if any(e.id == "ensemble-soft" for e in state.experiments):
             return None
@@ -188,7 +234,8 @@ class CompetitionPlanner(Agent):
                 members.append(
                     {
                         "model": experiment.model,
-                        "params": experiment.effective_params or experiment.params,
+                        # Stopping iterations must be relearned inside each new fold.
+                        "params": experiment.params,
                     }
                 )
             if len(members) == 2:
@@ -210,6 +257,32 @@ class CompetitionPlanner(Agent):
             "modeling_agent.train",
         )
         return candidate
+
+    def confirmation_candidates(self, state):
+        ranking = rank_experiments(state.experiments, state.competition.metric)
+        selected = next((e for e in ranking if e.id == state.best_id), None)
+        if selected is None:
+            return []
+        seen = {selected.model}
+        finalists = [selected]
+        for e in ranking:
+            if e.model not in seen and e.id not in state.feedback.get(
+                "ensemble_below_improvement_threshold", []
+            ):
+                finalists.append(e)
+                seen.add(e.model)
+        return [
+            Candidate(
+                id=f"confirm-{e.id}",
+                model=e.model,
+                params=e.params,
+                parent_id=e.id,
+                validation_role="confirmation",
+                validation_seed=state.config.seed + 1009,
+                rationale="Freeze finalist settings and compare on a second split seed; diagnostics only, not a fresh holdout.",
+            )
+            for e in finalists[: self.confirmation_slots(state)]
+        ]
 
     def leaderboard_followup(self, state):
         feedback = state.feedback.get("leaderboard", {})

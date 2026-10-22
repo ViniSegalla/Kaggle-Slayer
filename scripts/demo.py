@@ -37,6 +37,8 @@ def main():
         n_jobs=2,
         max_seconds=300,
         ensemble=args.ensemble,
+        models=["linear", "random_forest", "lightgbm"],
+        confirmation_top_k=0,
     )
     engine = Engine(Store(config.artifact_root), progress=print)
     state = engine.execute(engine.create(c, config))

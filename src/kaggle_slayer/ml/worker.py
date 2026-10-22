@@ -23,6 +23,9 @@ def main():
             params=candidate["params"],
             status="failed",
             error=f"{type(exc).__name__}: {exc}",
+            validation_role=candidate.get("validation_role", "primary"),
+            validation_seed=request["config"]["seed"],
+            parent_id=candidate.get("parent_id"),
         ).model_dump()
     write_json(Path(sys.argv[2]), result)
 

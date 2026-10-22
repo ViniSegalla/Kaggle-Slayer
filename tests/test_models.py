@@ -63,7 +63,7 @@ def test_voting_ensemble_is_measured_on_folds(tmp_path, task):
                 "params": {
                     "members": [
                         {"model": "linear", "params": {}},
-                        {"model": "random_forest", "params": {"n_estimators": 15}},
+                        {"model": "catboost", "params": {"iterations": 15}},
                     ]
                 },
             },

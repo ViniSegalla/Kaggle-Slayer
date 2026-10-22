@@ -170,11 +170,11 @@ def inspect_dataset(directory: Path, competition: Competition, config: RunConfig
         raise ValueError("Feature count outside configured limits")
     X, test_X = train[features].copy(), test[features].copy()
     estimated_width = sum(
-        1
+        2
         if pd.api.types.is_numeric_dtype(X[column])
         else min(max(X[column].nunique(), test_X[column].nunique()) + 1, 64)
         for column in features
-    ) + (3 if c.feature_profile == "titanic" else 0)
+    ) + (6 if c.feature_profile == "titanic" else 0)
     if estimated_width * max(len(X), len(test_X)) > config.max_dense_cells:
         raise ValueError(
             "Encoded dataset exceeds max_dense_cells memory guard; reduce data/features or use a larger explicit limit"
@@ -228,7 +228,9 @@ def inspect_dataset(directory: Path, competition: Competition, config: RunConfig
                 f"Potential exact target leakage in feature {column}; review and exclude it explicitly"
             )
         if not pd.api.types.is_numeric_dtype(X[column]) and X[column].nunique() > len(X) * 0.8:
-            warnings.append(f"High-cardinality feature {column}; rare categories will be grouped")
+            warnings.append(
+                f"High-cardinality feature {column}; audit model-specific categorical handling and generalization"
+            )
     paths = [train_path, test_path] + ([sample_path] if sample_path else [])
     report = {
         "train_rows": len(train),

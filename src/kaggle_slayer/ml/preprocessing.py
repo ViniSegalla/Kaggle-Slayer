@@ -17,6 +17,7 @@ class Features(BaseEstimator, TransformerMixin):
         self.numeric_columns_ = set(X.select_dtypes(include="number").columns)
         if self.profile == "titanic":
             self.numeric_columns_.update({"FamilySize", "IsAlone", "FarePerPerson"})
+        self.feature_names_in_ = np.asarray(self.transform(X).columns, dtype=object)
         return self
 
     def transform(self, X):
@@ -40,14 +41,43 @@ class Features(BaseEstimator, TransformerMixin):
         return frame
 
     def get_feature_names_out(self, input_features=None):
-        return input_features
+        return self.feature_names_in_
 
 
-def preprocessor(profile: str) -> Pipeline:
+class NativeCategories(BaseEstimator, TransformerMixin):
+    """Preserve categorical identity for CatBoost, including unseen and missing values."""
+
+    def fit(self, X, y=None):
+        self.feature_names_in_ = np.asarray(X.columns, dtype=object)
+        self.categorical_columns_ = list(X.select_dtypes(exclude="number").columns)
+        return self
+
+    def transform(self, X):
+        frame = X.copy()
+        for column in self.categorical_columns_:
+            # Prefix observed values so a literal missing marker remains distinct.
+            frame[column] = frame[column].map(
+                lambda value: "value:" + str(value) if pd.notna(value) else "missing:"
+            )
+        return frame
+
+    def get_feature_names_out(self, input_features=None):
+        return self.feature_names_in_
+
+
+def preprocessor(profile: str, model: str = "linear") -> Pipeline:
+    if model == "catboost":
+        return Pipeline([("features", Features(profile)), ("columns", NativeCategories())])
+    linear = model == "linear"
     numeric = Pipeline(
         [
-            ("impute", SimpleImputer(strategy="median", keep_empty_features=True)),
-            ("scale", StandardScaler()),
+            (
+                "impute",
+                SimpleImputer(
+                    strategy="median", keep_empty_features=True, add_indicator=not linear
+                ),
+            ),
+            ("scale", StandardScaler() if linear else "passthrough"),
         ]
     )
     categorical = Pipeline(

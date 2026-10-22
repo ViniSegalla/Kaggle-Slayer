@@ -107,7 +107,7 @@ The authenticated check must succeed before an official run can download data. L
 ## Run a competition
 
 ```bash
-# Five baseline families and up to five tuning trials; no upload by default.
+# Five baselines, broader tuning, an ensemble and finalist checks; no upload by default.
 uv run python -m kaggle_slayer run --competition titanic
 
 # Explicitly authorize one upload after training and validation.
@@ -119,11 +119,17 @@ uv run python -m kaggle_slayer run --competition titanic --data-dir data/titanic
 # Switch task and metric using the included profile.
 uv run python -m kaggle_slayer run --competition house-prices-advanced-regression-techniques --no-submit
 
-# Reserve one experiment for a measured voting/averaging ensemble.
+# Optional smaller three-family run; ensembles are already enabled by default.
 uv run python -m kaggle_slayer run --competition titanic --config configs/ensemble.yaml --no-submit
 ```
 
-Use `uv run python -m kaggle_slayer run --help` for flags. `--profile path.yaml` supplies competition schema/metric overrides; `--config path.yaml` supplies run budgets and model choices. CLI values take precedence. Defaults: five folds, ten experiments, three tuning rounds with up to two trials per round, two CPU threads, a 30-minute scheduling budget and five-minute experiment timeout. The five baseline families leave up to five tuning slots. Failed attempts consume budget, and time limits may stop a run early. An explicit `--max-experiments 5` uses all five slots for baselines, leaving no tuning slots. Existing saved runs retain their original configuration on resume.
+Use `uv run python -m kaggle_slayer run --help` for flags. `--profile path.yaml` supplies competition schema/metric overrides; `--config path.yaml` supplies run budgets and model choices. CLI values take precedence. Defaults: five folds, **12 total experiments**, two CPU threads, a 30-minute scheduling budget and five-minute experiment timeout. Normally this funds five baselines, four tuning trials across the leading three families, one equal-weight ensemble and two finalist confirmations on a second split seed. The planner explores leading families before concentrating remaining trials on the current winner. Failed attempts consume budget; time limits may stop a run early. An explicit `--max-experiments 5` uses all slots for baselines. Saved runs retain their recorded budgets; new behavior is best compared in a fresh run.
+
+CatBoost uses native categorical features; other trees use unscaled, fold-imputed features with numeric missingness indicators, while linear models use scaling. Regression losses follow MAE or squared error where supported; each experiment records its actual training contract and any surrogate/transformed-target mismatch. Ensembles keep independent preprocessing per member and must beat the best single model by more than the configured relative improvement threshold (default 0.1%).
+
+Finalist confirmations freeze hyperparameters and use a second split seed. They are diagnostics, excluded from primary ranking, and do not change selection or trigger more tuning. They reuse labels and **are not an untouched holdout**. Group/time validation is preserved and skips random-seed confirmation. The dashboard exposes stability and aggregate out-of-fold error slices; LLM planning cautions appear in decision history and metadata rather than execution warnings. See [experiment protocol](docs/experiments.md).
+
+An executed cached-data Home Data benchmark improved local MAE from **16,334.15 to 15,539.69** on identical primary folds and data fingerprints. The selected ensemble also beat the single-model finalist on a second split seed. It was **not submitted**, and the train/CV gap remains flagged. See [measured evidence and reproduction](evidence/search-improvements.md); local gains do not guarantee public-score gains.
 
 Another competition can use a profile such as:
 
@@ -214,4 +220,4 @@ The Dockerfile uses uv and the OpenMP runtime needed by LightGBM. Build with `do
 
 Scope is CPU-based, in-memory tabular CSV classification/regression with one target. Image/NLP models, arbitrary joins, multi-output problems, notebook-only submissions, distributed training and automatic rule acceptance are unsupported. Dense encoding limits may restrict large data. Leakage warnings do not prove absence of subtle leakage; grouped/time validation remains a competition-specific choice. Repeated CV selection can overfit validation. LLM endpoints and authenticated Kaggle operations require configuration. Performance and leaderboard percentile are never guaranteed.
 
-Future improvements: optimized ensemble weights, richer profile discovery, native categorical pipelines, stronger shift/leakage diagnostics, exact sampler-RNG replay and hosted dashboard authentication. Continue with the [demo walkthrough](docs/demo.md), [experiment protocol](docs/experiments.md) and [reproducibility guide](docs/reproducibility.md).
+Future improvements: nested evaluation of selection policies, richer profile discovery, stronger shift/leakage diagnostics, exact sampler-RNG replay and hosted dashboard authentication. Continue with the [demo walkthrough](docs/demo.md), [experiment protocol](docs/experiments.md) and [reproducibility guide](docs/reproducibility.md).

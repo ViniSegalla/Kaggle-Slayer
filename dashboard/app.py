@@ -81,7 +81,11 @@ def console():
     state = by_id[selected]
     c = state["competition"]
     experiments = state["experiments"]
-    completed = [e for e in experiments if e["status"] == "completed"]
+    completed = [
+        e
+        for e in experiments
+        if e["status"] == "completed" and e.get("validation_role", "primary") == "primary"
+    ]
     best = next((e for e in experiments if e["id"] == state["best_id"]), None)
     events = [json.loads(row["payload"]) for row in store.rows("decisions", selected)]
     tabs = st.tabs(
@@ -176,9 +180,23 @@ def console():
         st.subheader("Experiment registry")
         if experiments:
             frame = pd.DataFrame(experiments)
+            if "validation_role" not in frame:
+                frame["validation_role"] = "primary"
             frame["best"] = frame.id == state["best_id"]
             st.dataframe(
-                frame[["id", "model", "status", "score", "train_score", "std", "duration", "best"]],
+                frame[
+                    [
+                        "id",
+                        "model",
+                        "validation_role",
+                        "status",
+                        "score",
+                        "train_score",
+                        "std",
+                        "duration",
+                        "best",
+                    ]
+                ],
                 hide_index=True,
                 use_container_width=True,
             )
@@ -226,6 +244,16 @@ def console():
 
     with tabs[3]:
         st.subheader("Local validation & Kaggle feedback")
+        if state["feedback"].get("stability"):
+            with st.expander("Finalist stability on a second split seed"):
+                st.json(state["feedback"]["stability"])
+        analysis = state["feedback"].get("error_analysis", {})
+        if analysis.get("slices"):
+            with st.expander("Out-of-fold error analysis"):
+                st.caption(analysis["note"])
+                st.dataframe(
+                    pd.DataFrame(analysis["slices"]), hide_index=True, use_container_width=True
+                )
         feedback = state["feedback"].get("leaderboard", {})
         cards = st.columns(4)
         cards[0].metric("Local CV", f"{best['score']:.5f}" if best else "—")
