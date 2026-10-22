@@ -33,6 +33,11 @@ Exhaustion reports `llm_schema_repair_exhausted`. Provider errors stop without t
 retries and use specific reasons such as `llm_rate_limit` or `llm_invalid_request`.
 CLI results include the safe `llm_diagnostic` (including field errors when available).
 An incomplete run exits with code 2 without printing a misleading `Error: 2` message.
+Prompts use role-specific examples: the coordinator delegates inspection to
+`data_validation`, which invokes `inspect_dataset` as a tool. Permission errors return
+the requesting role's permitted tool names and correction guidance without expanding
+its authority. Invalid delegate recipients receive a concrete tool/delegation contract
+explanation; no invalid request is automatically translated into an executable action.
 
 Action IDs are stable within each task. The runtime assigns a persisted opaque alias
 when independent agents choose the same ID, and rewrites local dependencies, evidence

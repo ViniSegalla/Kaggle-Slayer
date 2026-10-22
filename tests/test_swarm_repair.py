@@ -15,6 +15,94 @@ from kaggle_slayer.llm.provider import ActionLLM
 from kaggle_slayer.orchestration.swarm import SwarmRuntime
 
 
+def test_wrong_delegate_recipient_gets_safe_concrete_tool_correction():
+    from pydantic import ValidationError
+
+    from kaggle_slayer.agents.swarm import role_prompt
+    from kaggle_slayer.llm.diagnostics import action_validation_issues
+    from kaggle_slayer.schemas.actions import AgentResponse
+
+    with pytest.raises(ValidationError) as caught:
+        AgentResponse.model_validate(
+            {
+                "version": "swarm-v1",
+                "actions": [
+                    {
+                        "kind": "delegate",
+                        "action_id": "inspect",
+                        "recipient": "private-injected-value",
+                        "task": "Inspect",
+                        "summary": "Inspect",
+                    }
+                ],
+            }
+        )
+    issues = action_validation_issues(caught.value)
+    assert "kind=tool, recipient=runtime" in issues[0]
+    assert "private-injected-value" not in str(issues)
+    prompt = role_prompt("data_validation")
+    assert '"kind":"tool"' in prompt and '"tool":"inspect_dataset"' in prompt
+    assert "Your role cannot delegate" in prompt
+    coordinator = role_prompt("coordinator")
+    assert '"kind":"delegate","action_id":"data_task"' in coordinator
+    assert '"tool":"inspect_dataset"' not in coordinator
+
+
+def test_coordinator_permission_error_explains_delegation(tmp_path):
+    engine, state = setup(tmp_path)
+    runtime = SwarmRuntime(engine, state, ScriptedTeam())
+    try:
+        runtime.engine.live.emit = Mock()
+        runtime.invalid("coordinator", "role_permission", "inspect")
+        observation = runtime.context(runtime.session.tasks["coordinator"])["observations"][-1]
+        assert observation["permitted_tools"] == []
+        assert "recipient=data_validation" in observation["instruction"]
+        assert runtime.session.invalid_actions == 1
+        message = runtime.engine.live.emit.call_args.args[2]
+        assert "rejected | role_permission" in message and "recipient=data_validation" in message
+    finally:
+        runtime.pool.shutdown()
+
+
+def test_permission_feedback_corrects_coordinator_and_reaches_training(tmp_path):
+    class PermissionRepairTeam(ScriptedTeam):
+        rejected = False
+        corrected = False
+
+        def decide(self, role, context, **limits):
+            if role == "coordinator" and not self.rejected:
+                self.rejected = True
+                return {
+                    "version": "swarm-v1",
+                    "actions": [
+                        {
+                            "kind": "tool",
+                            "action_id": "wrong_inspection",
+                            "recipient": "runtime",
+                            "tool": "inspect_dataset",
+                            "arguments": {},
+                            "summary": "Inspect",
+                        }
+                    ],
+                }, {"provider": "fake", "status": "success", "code": "ok"}
+            if role == "coordinator" and not self.corrected:
+                observation = context["observations"][-1]
+                assert observation["code"] == "role_permission"
+                assert observation["permitted_tools"] == []
+                assert "recipient=data_validation" in observation["instruction"]
+                self.corrected = True
+            return super().decide(role, context, **limits)
+
+    provider = PermissionRepairTeam(refine=False)
+    engine, state = setup(tmp_path, provider=provider)
+    result = engine.execute(state)
+    assert provider.corrected and result.status == "completed", result.swarm
+    assert result.swarm["invalid_actions"] == 1
+    assert len(result.experiments) == 1 and result.experiments[0].score is not None
+    assert result.metadata["swarm_submission_validated"]
+    assert not engine.client.submit.called
+
+
 class RepairTeam(ScriptedTeam):
     def __init__(self):
         super().__init__(refine=False)

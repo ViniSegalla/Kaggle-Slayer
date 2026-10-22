@@ -1,0 +1,19 @@
+{
+  "provider_execution": "scripted fake providers and HTTP mock transports; no live LLM or Kaggle calls",
+  "swarm_regression_tests": 50,
+  "swarm_regression_seconds": 127.44,
+  "final_logging_focused_tests": 11,
+  "final_logging_focused_seconds": 26.65,
+  "failures": 0,
+  "lint": "passed",
+  "format": "passed",
+  "junit": "artifacts/swarm-role-guidance-tests.xml",
+  "coverage": [
+    "invalid delegate recipient receives safe concrete tool-contract correction",
+    "coordinator receives a delegation example instead of a specialist tool example",
+    "permission feedback preserves role enforcement and invalid-action accounting",
+    "forbidden coordinator inspection corrects to delegation and reaches real training and validated predictions",
+    "rejected action diagnostics are visible in CLI progress",
+    "classification/regression, identity recovery, resource and submission regression coverage"
+  ]
+}

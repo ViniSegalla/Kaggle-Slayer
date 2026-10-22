@@ -529,7 +529,22 @@ class SwarmRuntime:
 
     def invalid(self, task, code, action_id=None):
         self.session.invalid_actions += 1
-        self.observe(task, code, action_id=action_id)
+        guidance = {}
+        if code == "role_permission":
+            role = self.session.tasks[task].role
+            guidance = {
+                "permitted_tools": [
+                    name for name, cap in CAPABILITIES.items() if role in cap.roles
+                ],
+                "instruction": "Use only your permitted tools. The coordinator must delegate dataset inspection to recipient=data_validation with kind=delegate; it cannot call inspect_dataset directly.",
+            }
+        self.observe(task, code, action_id=action_id, **guidance)
+        self.engine.live.emit(
+            self.state.run_id,
+            self.session.tasks[task].role,
+            f"{task} | {action_id or 'action'} | rejected | {code}"
+            + (" | " + guidance["instruction"] if guidance else ""),
+        )
         if self.session.invalid_actions >= self.state.config.max_invalid_actions:
             raise StopRun("invalid_action_limit")
 

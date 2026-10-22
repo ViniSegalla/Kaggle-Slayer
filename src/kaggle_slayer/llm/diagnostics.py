@@ -88,6 +88,12 @@ def action_validation_issues(error: ValidationError) -> list[str]:
                 parts.append("field")
         code = issue["type"] if re.fullmatch(r"[a-z_]+", issue["type"]) else "invalid"
         issues.append(f"{'.'.join(parts) or 'response'}: {code}")
+        if code == "literal_error" and parts[-2:] == ["delegate", "recipient"]:
+            issues[-1] += (
+                "; delegate recipients are agent roles: data_validation, pipeline_modeling, "
+                "evaluation, submission (subject to role permissions). To invoke a tool, "
+                "use kind=tool, recipient=runtime, tool=<listed tool>, arguments=<typed object>"
+            )
     return issues
 
 
