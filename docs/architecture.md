@@ -114,6 +114,32 @@ In deterministic mode, the Planner consumes the Reviewer's public-feedback discr
 
 `max_experiments`, `max_iterations`, `max_seconds`, `experiment_timeout`, `n_jobs`, `max_rows`, `max_features` and `max_dense_cells` bound work. Agentic execution also caps LLM requests, tokens, turns and concurrency. Numerical workers receive thread caps and run in independent processes: sequentially in the deterministic engine, or concurrently within the total CPU allocation in the agentic scheduler. Timeouts terminate workers, including model training threads. No GPU or distributed workers are used. Wall budgets persist across resumes; agentic LLM latency counts against the deadline. External calls, reporting and cleanup have bounded execution and may extend total wall time. The memory guard estimates dense encoded cells; it is not an OS-enforced RSS limit.
 
+## Logging and artifacts
+
+CLI runs report the active agent, experiment, remaining budget, fold scores and refit
+progress. A heartbeat appears every ten seconds during worker startup or long training.
+`resume` and `submit` use the same live reporting; `refresh` reports reviewer activity.
+
+Each run writes to `artifacts/runs/<run-id>/`:
+
+| Artifact | Purpose |
+|---|---|
+| `progress.log` | Timestamped CLI activity |
+| `decisions.jsonl`, `state.json`, `summary.json` | Agent decision summaries, saved state and final result |
+| `experiments/<experiment-id>/` | Model checkpoint, CV results, worker logs, structured progress and available OOF/importance outputs |
+| `evaluation.json`, comparison and EDA HTML | Measured rankings, diagnostics and dataset inspection |
+| `submissions/submission.csv` and validation report | Serialized predictions and output checks |
+
+`artifacts/metadata.sqlite` serves history, recovery and the dashboard. Snapshots retain
+configuration, seeds, package versions and dataset fingerprints. Agent decision summaries
+and tool results are logged; raw LLM responses, credentials and raw worker stdout are not
+streamed to the console. Detailed library output stays in each worker's `worker.log`.
+
+Ordinary generated runs remain ignored by Git. The
+[recorded Home Data package](../demo/home-data-for-ml-course-8ed561cbed5e/README.md)
+has a scoped exception for its six checkpoints and shareable evidence. Its guide explains
+hash verification and the seven local-only label outputs excluded from a checkout.
+
 ## Security and privacy
 
 Secrets are environment values or official Kaggle configuration, never state fields. Agentic contexts use aggregate evidence and opaque references, excluding raw rows, column/class names, credentials and local paths. The legacy optional planner request uses schema names and target aggregates; use a deterministic provider to disable that request, or a local endpoint when appropriate. LLM output is Pydantic-validated, model names are allowlisted, and proposals cannot override upload authorization or scientific/resource safeguards. Kaggle read retries are bounded and do not retry permission/quota failures. Writes are single-attempt. Archive paths and extracted sizes are checked.

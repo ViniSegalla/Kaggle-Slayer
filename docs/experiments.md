@@ -1,5 +1,34 @@
 # Experiment protocol
 
+## Configure another competition
+
+Complete the [LLM setup](../README.md#llm-configuration) and [Kaggle authentication and rules](../README.md#kaggle-authentication-and-rules) first. For a competition without a built-in profile, save a YAML file at `configs/competitions/my-competition.yaml`:
+
+```yaml
+competition: my-competition
+target: outcome
+id_column: record_id
+task: classification
+metric: roc_auc
+prediction_kind: probability
+train_file: train.csv
+test_file: test.csv
+sample_file: sample_submission.csv
+validation: stratified
+```
+
+Replace `my-competition` with the Kaggle URL slug and adapt the column names, filenames, task, metric and prediction format to its data and rules. This example assumes a binary target and a submission template with one probability column. Then run from the repository root:
+
+```bash
+uv run kaggle-slayer run --competition my-competition --profile configs/competitions/my-competition.yaml --no-submit
+```
+
+The profile's `competition` value must match `--competition`. Profiles stored at `configs/competitions/<slug>.yaml` are also discovered automatically; the explicit `--profile` form works with other paths. Data filenames are relative to the downloaded dataset directory or the directory supplied with `--data-dir`.
+
+`--profile` configures competition schema, metric and validation. `--config` instead selects run budgets, model choices and execution mode; omitting it uses `configs/agentic.yaml`. A custom run config must set `execution_mode: agentic` or be paired with `--execution-mode agentic` for live agents.
+
+Without explicit overrides, the runner infers a single train-only target and template identifier when unambiguous. Task inference uses type/cardinality; explicitly configure integer-valued regression. Metrics require a known profile, recognized API metadata or YAML. Ambiguous schemas and unresolved metrics stop the run with a diagnostic. Choose group or time validation explicitly when rows are related or ordered; set `group_column` or `time_column` accordingly.
+
 ## Validation
 
 Classification uses shuffled stratified CV by default; regression uses shuffled K-fold. Group and strictly ordered time splits are explicit profile choices. Group/time columns and IDs are excluded from features. Every classification training/validation fold must contain all classes. Time validation rejects tied timestamps to avoid ambiguous boundaries; use grouped periods when needed. No test labels or public leaderboard values enter fitting, trial scoring or selection.

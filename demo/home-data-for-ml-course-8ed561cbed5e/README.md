@@ -2,7 +2,7 @@
 
 Run **home-data-for-ml-course-8ed561cbed5e** is the featured audit demo, recorded on October 22, 2026. The user reported a new personal best; the saved Kaggle response records **public MAE 14,252.33305**, submission **57535510**, status **COMPLETE**.
 
-The [offline report](index.html) contains results and evidence links; [metrics.json](metrics.json) provides exact values.
+The standalone report contains results and evidence links; [metrics.json](metrics.json) provides exact values. Use the serving command below to view the report locally. GitHub displays [index.html](index.html) as source.
 
 ## Verify and display
 

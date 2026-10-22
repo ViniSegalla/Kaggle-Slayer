@@ -2,47 +2,28 @@
 
 ### Autonomous Multi-Agent ML Competition Team
 
-KaggleSlayer turns tabular competition CSVs into measured experiments, trained checkpoints and a validated submission file. Five specialized agents collaborate through typed state, use cross-validation to guide improvements, and record decisions in SQLite and JSONL. A Streamlit console exposes the actual activity and results.
+KaggleSlayer uses an LLM coordinator and four specialist agents to turn tabular competition data into measured experiments, trained checkpoints and a validated Kaggle submission. Agents choose and revise experiments using cross-validation results; decisions and tool activity are saved for inspection in a Streamlit dashboard.
 
-The goal is competitive performance with minimal competition-specific code. **Top 20% is an aspiration, never a promised result.** The CLI defaults to the agentic configuration, using an LLM coordinator and specialist sessions to choose executable actions, observe measured results, and revise the pipeline. Configure the LLM provider/model/key before running. Upload permission belongs to trusted runtime policy.
+Start with the [recorded demo](#recorded-competition-demo) to inspect a completed run, [set up the project](#setup) to run your own competition, or read [CONTRIBUTING.md](CONTRIBUTING.md) to develop and test.
 
 ## Recorded competition demo
 
-The [Home Data personal-best audit package](demo/home-data-for-ml-course-8ed561cbed5e/README.md) preserves completed live agentic run **`8ed561cbed5e`** in a permanent `demo/` directory, with its original logs, trained checkpoints, experiment results, validated predictions and Kaggle receipts. Its LightGBM + CatBoost ensemble measured **15,257.82778 CV MAE** and **14,252.33305 Kaggle public MAE**, submission **57535510**, status **COMPLETE**.
+The [Home Data audit package](demo/home-data-for-ml-course-8ed561cbed5e/README.md) preserves live agentic run **`8ed561cbed5e`**, including all six trained checkpoints, decisions, predictions and official Kaggle receipts.
 
-After installing dependencies below, verify the evidence and display this run without retraining, LLM requests or another upload:
+| Competition | Selected model | Five-fold CV MAE | Kaggle public MAE | Submission |
+|---|---|---:|---:|---|
+| Home Data for ML Course | LightGBM + CatBoost ensemble | 15,257.82778 | **14,252.33305** | **57535510 · COMPLETE** |
+
+The saved account standing is **304 / 3,876 teams (top 7.84%)**, scoped to `current_account_best`. This account-level standing is separate from the submission-specific score. The ensemble improved CV MAE by 1.88% over the strongest single model; the recorded train/CV gap warning remains available for review.
+
+After [installing dependencies](#setup), verify and display the saved run:
 
 ```bash
 uv run python demo/home-data-for-ml-course-8ed561cbed5e/audit.py verify
 uv run python demo/home-data-for-ml-course-8ed561cbed5e/audit.py dashboard --port 8502
 ```
 
-Open [the recorded-run dashboard](http://localhost:8502), or read the [offline audit report](demo/home-data-for-ml-course-8ed561cbed5e/index.html). The one-run dashboard rebuilds its local SQLite index from the archived evidence and selects this run automatically. Original run files have SHA-256 checksums and remain unchanged. All six model experiments completed. The saved account standing is **304 / 3,876 teams (top 7.84%)**, scoped to `current_account_best`; account rank and this submission's public score remain separate records.
-
-## LLM-directed agentic mode
-
-```bash
-# Configure the existing KS_LLM_PROVIDER, KS_LLM_MODEL and KS_LLM_API_KEY first.
-uv run kaggle-slayer run --competition titanic
-# Offline demonstration: fake LLM responses, real model training and validated predictions.
-uv run python -m examples.scripted_swarm --output artifacts/swarm-example
-```
-
-The coordinator delegates to data/validation, pipeline/modeling, evaluation, and submission specialists as needed. Agents select supported preprocessing, feature operations, model parameters, trials, ensembles and stopping through validated action/tool contracts. Independent LLM tasks and experiments can run concurrently; a single scheduler reserves resources and commits evidence. Provider failures checkpoint an explicit incomplete outcome.
-
-See [agentic usage and recovery](docs/agentic-usage.md), [versioned schemas/prompts](docs/contracts/swarm-v1), and [offline execution evidence](evidence/swarm-offline.md).
-
-## Features
-
-- Official Kaggle metadata, authenticated downloads, explicitly authorized single-attempt uploads and submission feedback.
-- Binary/multiclass tabular classification and single-target regression, with YAML overrides for ambiguous requirements.
-- Six model families available to the agentic team: linear models, Random Forest, histogram gradient boosting, LightGBM, CatBoost and XGBoost.
-- Fold-fit preprocessing, stratified/K-fold/group/time validation and inner-fold early stopping.
-- CV-tested voting/averaging inside the experiment budget; agentic mode chooses whether to request ensembles and finalist confirmations.
-- Metric-direction handling, overfitting warnings, OOF evidence, model checkpoints, feature importance and strict submission checks.
-- Durable decisions, configuration/environment snapshots, data fingerprints, worker timeouts and interrupted-run recovery.
-- Dashboard with history, agent/tool timeline, experiment comparisons, actual feedback and artifact downloads.
-- Offline tests, synthetic demos, a real public Titanic holdout demo and uv-based CI.
+Open [the recorded-run dashboard](http://localhost:8502). Viewing this run needs no LLM or Kaggle credentials and does not retrain or upload. The [demo walkthrough](docs/demo.md) shows the expected verification output and evidence to inspect. To view the HTML report, follow the [standalone report instructions](docs/demo.md#standalone-report).
 
 ## Architecture
 
@@ -58,56 +39,34 @@ flowchart LR
     Evaluator --> Tools
     Submission --> Tools
     Tools --> Store[(SQLite / JSONL / artifacts)]
-    Coordinator --> Finish[Finish barrier: measured winner + validated CSV]
-    Finish --> Policy{Trusted upload policy}
-    Policy -->|authorized| Kaggle[Official Kaggle API]
-    Policy -->|no upload| Summary[Saved summary]
+    Coordinator --> Finish[Measured winner + validated CSV]
+    Finish --> Policy{Upload authorized?}
+    Policy -->|yes| Kaggle[Official Kaggle API]
+    Policy -->|no| Summary[Saved summary]
     Kaggle --> Feedback[Score / account standing]
     Feedback --> Summary
     Summary --> Store
-    Store --> Dashboard[Streamlit console]
+    Store --> Dashboard[Streamlit dashboard]
 ```
 
-| Agent | Specialization |
-|---|---|
-| Coordinator | Delegates tasks, consumes observations, revises the experiment plan and requests completion within the configured budgets. |
-| Data / Validation | Inspects CSVs, resolves schema, audits quality/leakage and prepares validation splits. |
-| Pipeline / Modeling | Selects supported preprocessing, features, model parameters and experiments; numerical workers persist metrics and checkpoints. |
-| Evaluation | Requests measured rankings, error diagnostics and finalist confirmations, then reports evidence to the coordinator. |
-| Submission | Generates and validates predictions for the measured winner. Upload authorization and execution belong to trusted runtime policy. |
+The coordinator delegates inspection and validation, pipeline/modeling, evaluation, and submission preparation. Independent calls and experiments can run concurrently; one scheduler owns state and budgets. Python tools compute metrics and enforce validation and upload permission. See [agent roles](docs/agents.md) and [execution contracts](docs/architecture.md).
 
-This diagram and table describe the agentic workflow. See [architecture](docs/architecture.md), [agent contracts](docs/agents.md) and [technical decisions](docs/decisions.md).
+The team supports classification and single-target regression with linear models, Random Forest, histogram gradient boosting, LightGBM, CatBoost and XGBoost. Agents choose whether to tune, ensemble, confirm or stop within the budget. Provider failure saves an incomplete outcome for inspection or recovery.
 
-Actual upload and Kaggle feedback retrieval occur after the agentic loop finishes. Scores and account standing are recorded; planning a new run from that feedback remains future work.
+## Setup
 
-## Stack and installation
-
-Python 3.11–3.13, Pydantic, pandas/NumPy, scikit-learn, LightGBM, CatBoost, XGBoost, Optuna, joblib, the official Kaggle API, httpx, SQLite, Streamlit and Plotly. **uv manages Python, environments, dependencies and execution throughout.**
-
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/), open this directory and run:
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then run from the repository root:
 
 ```bash
 uv python install 3.11
-uv python pin 3.11
 uv sync --extra dev
-uv run kaggle-slayer doctor
 ```
 
-CatBoost and XGBoost are included in the standard installation; no boosting extra is needed. Run `uv sync --extra dev` after updating an existing checkout. The old `boosting` extra is retained as an empty compatibility alias.
+Python 3.11–3.13 is supported; the repository pins 3.11. CatBoost and XGBoost are included in the standard installation. `uv run` synchronizes the environment and may update `uv.lock` if project metadata has changed. See [reproducibility](docs/reproducibility.md) for environment details.
 
-Copy `.env.example` to `.env` using your editor. The template selects OpenRouter. Replace the model and API-key placeholders with your own configuration before starting a live agentic run. Existing working `.env` files can be kept as they are.
+### LLM configuration
 
-Secrets, datasets, virtual environments and generated runs are ignored by Git. `uv.lock` records core and development dependencies. `uv run` synchronizes the environment and may update the lockfile if project metadata has changed. See [reproducibility](docs/reproducibility.md) for restricted Windows environments and lockfile policy.
-
-## Live execution logging
-
-CLI runs show the active agent, experiment/model, budget position, validation role, fold activity, measured fold scores, refit, model selection and confirmation status. During worker startup or long training, a heartbeat appears every ten seconds with elapsed experiment time and the latest stage. No extra verbosity flag is needed.
-
-Each line has a UTC timestamp and is saved under `artifacts/runs/<run-id>/progress.log`. Structured worker events are saved in each experiment's `progress.jsonl`, while detailed library output stays in `worker.log`. Agent decisions remain in SQLite and `decisions.jsonl`. Raw LLM responses, credentials and raw worker stdout are not streamed to the console. `resume` and `submit` use the same live reporting; `refresh` reports reviewer activity.
-
-## LLM configuration
-
-Configure your provider in `.env`:
+For a new live run, copy `.env.example` to `.env` and replace the provider placeholders:
 
 ```dotenv
 KS_LLM_PROVIDER=openrouter
@@ -115,25 +74,23 @@ KS_LLM_API_KEY=your-openrouter-api-key
 KS_LLM_MODEL=your-selected-model-id
 ```
 
-Supported live providers are `openrouter`, `groq`, `openai-compatible` and `local`. A local compatible server also needs `KS_LLM_BASE_URL` and an installed model. Agents use the configured provider throughout execution; provider failure checkpoints an incomplete run.
+Supported providers are `openrouter`, `groq`, `openai-compatible` and `local`. A local compatible server also needs `KS_LLM_BASE_URL` and an installed model. Select an output allowance supported by your endpoint; the template sets `KS_LLM_MAX_TOKENS=32768`. See [agentic configuration](docs/agentic-usage.md) and [provider troubleshooting](docs/llm-troubleshooting.md).
 
-The template sets `KS_LLM_MAX_TOKENS=32768`. Select an output allowance supported by your endpoint and within the aggregate run budget. Agent contexts contain aggregate evidence and opaque references; credentials, local paths and raw CSV rows are excluded. See [agentic configuration and recovery](docs/agentic-usage.md) and [provider diagnostics](docs/llm-troubleshooting.md).
+### Kaggle authentication and rules
 
-## Kaggle authentication and rules
+Configure Kaggle credentials using `KAGGLE_API_TOKEN`, `KAGGLE_USERNAME` plus `KAGGLE_KEY` in `.env`, or `~/.kaggle/kaggle.json` (`%USERPROFILE%\.kaggle\kaggle.json` on Windows). `KAGGLE_CONFIG_DIR` can select another credential directory. Get credentials from [Kaggle settings](https://www.kaggle.com/settings), and accept the competition rules on its website. Credentials and downloaded datasets remain private local files.
 
-Use [Kaggle account settings](https://www.kaggle.com/settings) to configure credentials. Supported official configuration includes `KAGGLE_API_TOKEN`, `KAGGLE_USERNAME` plus `KAGGLE_KEY`, or `~/.kaggle/kaggle.json` (`%USERPROFILE%\.kaggle\kaggle.json` on Windows). `KAGGLE_CONFIG_DIR` can point to a separate credential directory. Never commit credentials.
-
-Open the competition website and manually accept its rules if required. Some competitions restrict eligibility or require notebook execution; this runner does not bypass those restrictions. The server enforces account quotas. KaggleSlayer permits at most one attempted upload per run and never retries an uncertain upload.
+Check access using your competition slug:
 
 ```bash
-uv run kaggle-slayer doctor --competition titanic --require-kaggle
+uv run kaggle-slayer doctor --competition competition-name --require-kaggle
 ```
 
-The authenticated check must succeed before an official run can download data. Local CSV execution remains available with `--data-dir`.
+The recorded demo and [scripted offline checks](docs/demo.md#offline-integration-checks) need neither provider nor Kaggle credentials.
 
 ## Run a competition
 
-Replace `competition-name` with the competition slug from its Kaggle URL.
+Replace `competition-name` with the slug from its Kaggle URL.
 
 ```bash
 # Train and validate without submitting.
@@ -143,48 +100,13 @@ uv run kaggle-slayer run --competition competition-name --no-submit
 uv run kaggle-slayer run --competition competition-name --submit
 ```
 
-Use `--help` to see all run flags. `--profile path.yaml` supplies competition schema/metric overrides; `--config path.yaml` supplies run budgets and model choices. CLI values take precedence. `--max-rows` overrides the default one-million-row CSV limit; file-size and memory limits still apply.
+The CLI uses `configs/agentic.yaml` by default, allowing up to eight experiments within a 30-minute run budget. Agents can stop earlier. Uploads require explicit authorization and allow one attempted upload per run; uncertain uploads are never retried automatically.
 
-| Setting | Agentic default |
-|---|---|
-| Run profile | `configs/agentic.yaml` |
-| Experiment budget | 8 |
-| Per-experiment timeout | 180 seconds |
-| Validation / CPU / total time | 5 folds / 2 threads / 30 minutes |
-| Model roster | Six allowed families, including histogram gradient boosting |
-| Scheduling | LLM-selected actions; tuning, ensembles and confirmations are optional |
-| LLM requests / turns | 80 each |
-| Aggregate charged tokens | 1,000,000 |
-| Concurrent agent calls | 2 |
+For another dataset, follow [Configure another competition](docs/experiments.md#configure-another-competition). `--profile` supplies competition schema and metric settings; `--config` supplies execution mode, budgets and allowed models. A custom config must declare `execution_mode: agentic` or use `--execution-mode agentic` to retain agentic execution. See [configuration and recovery](docs/agentic-usage.md) for defaults and limits.
 
-The experiment budget is a ceiling. Agents choose which supported families to train and whether to request tuning, ensembling or finalist confirmation. Failed training attempts consume budget; time limits may stop a run early. Saved runs retain their recorded configuration.
+## Saved runs and dashboard
 
-For a custom `--config`, include `execution_mode: agentic` in the file or pass `--execution-mode agentic`. Edit `models` in that selected profile to change the allowed roster.
-
-Default preprocessing gives CatBoost native categorical features; other trees use unscaled, fold-imputed features with numeric missingness indicators, while linear models use scaling. Agentic pipelines can choose supported imputation, scaling and feature operations through their tool contracts. Regression losses follow MAE or squared error where supported; each experiment records its actual training contract and any surrogate/transformed-target mismatch. Ensembles keep independent preprocessing per member and must beat the best single model by more than the configured relative improvement threshold (default 0.1%).
-
-Finalist confirmations freeze hyperparameters and use a second split seed. They are diagnostics, excluded from primary ranking, and do not change selection or trigger more tuning. They reuse labels and **are not an untouched holdout**. Group/time validation is preserved and skips random-seed confirmation. The dashboard exposes stability and aggregate out-of-fold error slices; LLM planning cautions appear in decision history and metadata rather than execution warnings. See [experiment protocol](docs/experiments.md).
-
-Another competition can use a profile such as:
-
-```yaml
-competition: my-competition
-target: outcome
-id_column: record_id
-task: classification
-metric: roc_auc
-prediction_kind: probability
-train_file: train.csv
-test_file: test.csv
-sample_file: sample_submission.csv
-validation: stratified
-```
-
-The runner infers a single train-only target and template identifier when unambiguous. Task inference uses type/cardinality; explicitly override integer-valued regression. Metrics require a known profile, recognized API metadata or YAML. Unresolved relationships/formats produce errors. See [experiment details](docs/experiments.md) for metrics, positive-class conventions and validation choices.
-
-## Inspect, resume and submit a saved result
-
-Replace `RUN_ID` with the ID from an actual run:
+Replace `RUN_ID` with the ID printed by an actual run:
 
 ```bash
 uv run kaggle-slayer runs
@@ -194,36 +116,19 @@ uv run kaggle-slayer submit RUN_ID
 uv run kaggle-slayer refresh RUN_ID
 ```
 
-`submit RUN_ID` explicitly authorizes one upload of a completed run's validated CSV. It verifies file integrity and refuses fixture/public-demo data or a second attempt. Resume verifies dataset fingerprints and reuses completed experiments; submission permission must be supplied again with `resume --submit`. A completed resume is a no-op; use `submit` to upload a completed no-submit run. `refresh` only reads feedback.
+`submit` authorizes one upload of a completed run's validated predictions. `refresh` reads official feedback. Resume reuses completed work and retains saved limits; see [when to resume or start a new run](docs/agentic-usage.md#resume-or-start-a-new-run).
 
-## Dashboard
+To inspect your own runs:
 
 ```bash
 uv run streamlit run dashboard/app.py
 ```
 
-Open [localhost:8501](http://localhost:8501). Overview, Agent Activity, Experiments, Competition Performance and Artifacts read the actual SQLite store. Select a run, inspect decisions, compare models, view EDA and download predictions. Enable automatic refresh during training. `KS_ARTIFACT_ROOT` or the sidebar selects another artifact directory. This is a trusted local console, without hosted authentication.
+Open [localhost:8501](http://localhost:8501), select a run, and inspect agent activity, experiments, comparisons and artifacts. Use the separate recorded-demo command above to view the archived run.
 
-## Demonstrations and measured results
+Runs save under `artifacts/runs/<run-id>/`. The CLI reports live progress; `progress.log`, `decisions.jsonl` and SQLite retain the activity and decision summaries. Checkpoints, validation reports and the submission CSV are saved with the run. See [logging and artifacts](docs/architecture.md#logging-and-artifacts) and the [evidence index](evidence/README.md).
 
-For offline integration checks, scripted agent responses exercise real model training and prediction validation without provider credentials:
-
-```bash
-uv run python -m examples.scripted_swarm --output artifacts/swarm-example
-uv run python -m examples.scripted_swarm --task regression --output artifacts/swarm-regression
-```
-
-These examples use synthetic data and fake LLM responses. See [offline baselines and development workflows](docs/offline-baselines.md) for additional test scenarios.
-
-The [official Home Data audit package](demo/home-data-for-ml-course-8ed561cbed5e/README.md) is the submission demonstration. It includes live agentic decisions, all six checkpoints, validated predictions and official Kaggle receipts.
-
-| Competition | Selected model | Five-fold CV MAE | Kaggle public MAE | Submission |
-|---|---|---:|---:|---|
-| Home Data for ML Course | LightGBM + CatBoost ensemble | 15,257.82778 | **14,252.33305** | **57535510 · COMPLETE** |
-
-The saved account standing is **304 / 3,876 teams (top 7.84%)**, scoped to `current_account_best`. The exact submission score and account-level standing are recorded separately. The evaluator's large train/CV gap warning is preserved in the audit package.
-
-## Tests and code quality
+## Tests
 
 ```bash
 uv run pytest
@@ -231,31 +136,23 @@ uv run ruff check src tests dashboard scripts examples
 uv run ruff format --check src tests dashboard scripts examples
 ```
 
-Tests cover configuration, state/recovery, fold-fit transforms, split integrity, metrics/direction, submission formats, mocked Kaggle operations, upload safety, provider fallback, all default model families and Streamlit rendering. Default tests never need live Kaggle credentials. CatBoost and XGBoost training tests are required and do not skip. [Test evidence](evidence/README.md) reports historical results; supplied GitHub Actions have not been executed remotely in this build.
+Tests use mocked providers, Kaggle operations and local fixtures. [Historical verification reports](evidence/README.md#engineering-verification) describe their recorded executions. See [CONTRIBUTING.md](CONTRIBUTING.md) for development and dependency maintenance.
 
-## Artifacts and example output
+## Limitations
 
-Each run writes `artifacts/runs/<run-id>/`: state, decisions, summary, evaluation, comparison/EDA HTML, split indices, checkpoints, OOF arrays, importance CSVs and `submissions/submission.csv`. `artifacts/metadata.sqlite` serves the dashboard and history. Every decision includes agent, timestamp, context, action, rationale, tool/result, artifacts and next action. Snapshots include seeds, package versions and dataset hashes.
+This runner targets CPU-based, in-memory tabular CSV competitions with one target. Image/NLP models, arbitrary joins, multi-output tasks, notebook-only submissions and distributed training are unsupported. Schema or metric ambiguity requires a competition profile. Validation choices affect results, and repeated CV selection can overfit; top-20% performance is a goal, never a guarantee.
 
-A run prints its actual ID, execution status, measured metric, selected checkpoint and CSV path. Runs without an upload report `leaderboard.status=not_submitted`; submitted runs record actual feedback when available. The [evidence index](evidence/README.md) links to the best-run audit package and retained engineering verification reports. Raw competition datasets remain excluded. The primary audit demo includes a narrowly scoped Git exception for its six trained checkpoints; per-row OOF labels and the target-value chart remain local-only.
+Recorded seeds, fingerprints, splits and dependencies support auditing, but live LLM choices and numerical results can vary. Kaggle feedback is recorded after the agentic loop ends; automatically planning a new run from that feedback remains future work.
 
-Ordinary run checkpoints are generated as `artifacts/runs/<run-id>/experiments/<experiment-id>/model.joblib`. The primary audit demo preserves them under `demo/home-data-for-ml-course-8ed561cbed5e/runs/home-data-for-ml-course-8ed561cbed5e/experiments/`, including the selected `ens_lgbm_cat/model.joblib`. Its manifest records **77 original file hashes**; `audit.py verify` checks the **70 shareable files**, and `verify --full` additionally checks the **seven local-only label outputs**. The earlier source archive under ignored `dist/` predates these audit packages.
+## Documentation
 
-The README, source/configuration, technical documentation, demonstration commands, logs, plots and a live agentic audit package with checkpoints are present. Remaining work includes establishing a submission-specific competitive standing and implementing agentic replanning after Kaggle feedback.
-
-## Development
-
-```bash
-uv add pandas
-uv add --optional dev pytest
-uv sync --extra dev
-uv lock --upgrade
-```
-
-## Limitations and next steps
-
-Scope is CPU-based, in-memory tabular CSV classification/regression with one target. Image/NLP models, arbitrary joins, multi-output problems, notebook-only submissions, distributed training and automatic rule acceptance are unsupported. Dense encoding limits may restrict large data. Leakage warnings do not prove absence of subtle leakage; grouped/time validation remains a competition-specific choice. Repeated CV selection can overfit validation. LLM endpoints and authenticated Kaggle operations require configuration. Performance and leaderboard percentile are never guaranteed.
-
-Reproduction preserves recorded seeds, data fingerprints, split indices and dependency versions, but does not promise identical live LLM choices or byte-for-byte replay. Platform and library differences can change numerical results. Additional development-workflow limitations are documented in the [offline baseline guide](docs/offline-baselines.md).
-
-Future improvements: agentic planning after leaderboard feedback, nested evaluation of selection policies, pinned public-demo inputs, richer profile discovery, stronger shift/leakage diagnostics, recovery replay and hosted dashboard authentication. Continue with the [demo walkthrough](docs/demo.md), [experiment protocol](docs/experiments.md) and [reproducibility guide](docs/reproducibility.md).
+| Guide | Purpose |
+|---|---|
+| [Demo walkthrough](docs/demo.md) | Verify the saved result, inspect evidence, or run offline integration checks |
+| [Agentic usage](docs/agentic-usage.md) | Provider setup, budgets, cancellation and recovery |
+| [Experiment protocol](docs/experiments.md) | Competition profiles, preprocessing, CV, tuning and selection |
+| [Architecture](docs/architecture.md) and [agents](docs/agents.md) | Components, role permissions, persistence and execution contracts |
+| [Reproducibility](docs/reproducibility.md) | Environment setup, data fingerprints and platform considerations |
+| [Troubleshooting](docs/llm-troubleshooting.md) | Provider errors and agentic diagnostics |
+| [Offline baselines](docs/offline-baselines.md) | Explicit deterministic compatibility workflows |
+| [Technical decisions](docs/decisions.md) | Design choices and tradeoffs |

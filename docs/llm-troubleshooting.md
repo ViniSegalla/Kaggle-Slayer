@@ -1,106 +1,120 @@
-# LLM diagnostics and OpenRouter troubleshooting
+# LLM diagnostics and troubleshooting
 
-Configure `KS_LLM_PROVIDER`, `KS_LLM_MODEL` and the endpoint's credentials in `.env`, then run `uv run kaggle-slayer llm-check` before a full competition run. This explicitly makes one chat-completion request with synthetic schema/quality information, the configured model, network timeout and output-token budget. `KS_LLM_MAX_TOKENS` has a code default of 700; `.env.example` sets 32768, the maximum allowed value. Choose an allowance supported by your endpoint. The check never trains, submits to Kaggle, changes model/provider, or retries. It may consume credits/free-tier quota. The `deterministic` provider makes no request; deterministic execution mode can still request optional legacy advice when a live provider is configured.
+## Agentic runs
 
-Success reports `status=success`, `code=ok`, `request_attempts=1` and HTTP status 200. Failure reports `status=failed`, exits nonzero, and includes a controlled explanation/action. A deterministic-mode run retains its fixed policy when initial advice fails; agentic mode checkpoints an incomplete outcome. The diagnostic is persisted in `metadata.llm_diagnostic`, SQLite/JSONL agent activity and the state snapshot; the existing warning also becomes specific.
+The CLI uses `configs/agentic.yaml` when `--config` is omitted. With a custom config,
+set `execution_mode: agentic` or pass `--execution-mode agentic`. Configure
+`KS_LLM_PROVIDER`, `KS_LLM_MODEL` and the endpoint's credentials in `.env` before running.
+Agentic execution requires live LLM actions throughout the session. A provider failure
+leaves an incomplete checkpoint; there is no deterministic fallback.
 
-| Code | Meaning / action |
-|---|---|
-| `configuration`, `missing_api_key`, `invalid_endpoint` | Check `KS_LLM_PROVIDER`, `KS_LLM_MODEL`, `KS_LLM_API_KEY` and the API base URL. These checks do not make a network request. |
-| `authentication` | HTTP 401: check whether the configured API key is valid/enabled. |
-| `credits` | HTTP/API 402: check balance, key limits and spending capacity. |
-| `permission_or_budget` | HTTP/API 403: check model permissions, account/key budget restrictions and provider data policies. |
-| `rate_limit` | HTTP/API 429: wait for quota to reset; the client does not retry. |
-| `unsupported_format` | The provider rejected the JSON-format request. Choose an endpoint that supports `response_format=json_object` and check routing settings. |
-| `invalid_model`, `not_found`, `no_available_provider` | Check the exact model ID, API base, availability and routing/data policies. A model suffix such as `:free` must actually exist at the provider. |
-| `timeout`, `provider_timeout` | Client network timeout or provider-reported timeout. Check latency/connectivity and `KS_LLM_TIMEOUT`. This is a network-operation timeout, not a monetary or total-run limit. |
-| `connection` | Network, proxy, TLS or connection failure. Check endpoint and connectivity; raw exception URLs are not logged. |
-| `provider_unavailable`, `provider_error` | The API or upstream provider failed, including errors embedded in an HTTP 200 body. Inspect the provider's own activity page if necessary. |
-| `invalid_response_json`, `invalid_response` | The endpoint/proxy returned non-JSON or an incompatible completion envelope. |
-| `empty_response`, `refusal` | No usable text completion or model refusal. Refusal text is excluded from diagnostics. |
-| `output_truncated` | The model exhausted its output budget. Reasoning may consume that budget; increase `KS_LLM_MAX_TOKENS` within 128–32768 or use a model that can provide the small JSON within the limit. |
-| `invalid_advice_json`, `schema_mismatch` | Model output was not JSON or failed the required schema. Markdown fences/prose and unexpected properties are rejected. |
+Start diagnosis with the run's saved state:
 
-The expected advice is an object with `rationale` (string, at most 2,000 characters), `priorities` (up to six strings naming allowed models) and optional `cautions` (up to six strings). Only approved model names affect the experiment roster. For schema failures the diagnostic reports field names and Pydantic error types, never offending values, arbitrary extra-property names or the raw completion.
-
-## Initial planner prompt
-
-The system message is versioned in `src/kaggle_slayer/llm/prompts.py` as
-`initial-planning-v3-compact`. It identifies the stage as pre-training, explains that
-validation scores do not exist yet, and requests concise observations and
-testable hypotheses grounded in supplied summaries. It asks for no more than
-two actionable cautions and a rationale of at most 60 words. The existing
-parser's limits (2,000 characters and six cautions) remain compatible with
-earlier valid responses; the prompt is guidance, not a guarantee of compliance.
-
-The user message contains task, metric/direction, target transform, feature
-counts and selected dtype/missingness/cardinality records, duplicate count,
-aggregate target distribution, effective validation protocol, configured
-compute limits, allowed models and compact preprocessing/loss contracts. Class
-balance uses numeric counts without sending class label names. Regression
-target statistics are aggregates, not raw rows. Feature names and aggregate
-target statistics can still be sensitive. Raw records, category values,
-fingerprints, credentials, local paths and submission authorization are not
-part of the context.
-
-At most eight feature records, three truncated data warnings and three largest
-class counts are sent. Feature names are capped at 64 characters, warnings at
-120 characters. Feature examples cover missingness and cardinality extremes;
-aggregate maxima summarize the complete schema. Repeated per-model metric,
-transform and explanatory notes, fold sizes, seed and tuning-budget internals
-are omitted because the LLM cannot change them. The context uses compact JSON.
-Truncation
-is explicit, and absent legacy metadata remains unknown rather than becoming a
-fabricated zero. The same builder creates `llm-check`'s synthetic context.
-
-The LLM can only influence initial ordering among allowed model families.
-Python still forces the enabled linear baseline first, appends allowed models
-the LLM omitted, and enforces validation, budgets, tuning and submission
-permissions. Context text is untrusted data rather than executable instructions.
-No second request, automatic retry, model switch or post-training LLM review was
-added. `KS_LLM_MAX_TOKENS` and fallback behavior are unchanged.
-
-The compact prompt reduces input overhead; it does not set a separate reasoning
-budget or disable model reasoning. One successful synthetic `llm-check` does not
-prove that every competition request will fit. Compare `prompt_tokens`,
-`completion_tokens`, `reasoning_tokens` and latency for the actual request.
-No automatic retries or silent increases to token limits are performed.
-
-Diagnostics also record the requested output cap and any nonnegative integer prompt/completion/reasoning-token counts returned by the API. No reasoning text is stored. These counts explain truncation; they are not a complete cost ledger. For example, set `KS_LLM_MAX_TOKENS=4096` in `.env` when a reasoning model cannot finish within 700 tokens. Increasing the cap may increase usage/cost and is never done automatically by the provider client. See OpenRouter's [reasoning-token budget explanation](https://openrouter.ai/docs/guides/best-practices/reasoning-tokens).
-
-Example **illustrative failure**, not an actual measured run:
-
-```json
-{
-  "provider": "openrouter",
-  "model": "configured/model-id",
-  "status": "failed",
-  "code": "authentication",
-  "message": "The API rejected the credentials.",
-  "action": "Check KS_LLM_API_KEY and whether the key is enabled.",
-  "http_status": 401,
-  "api_error_code": 401,
-  "validation_issues": [],
-  "request_attempts": 1,
-  "duration_seconds": 0.5
-}
+```bash
+uv run kaggle-slayer inspect RUN_ID
 ```
 
-Diagnostics deliberately do not persist raw provider messages, provider metadata, headers, full URLs, prompt bodies, refusal text, or exception strings. Provider text is used only to select controlled categories (for example unsupported `response_format`). Known API-key values and common key patterns are also redacted from successful advice before it can become a logged modeling plan. This balances useful diagnosis with credential and dataset privacy. More detailed provider errors remain on the provider's own activity page.
+Inspect `swarm.termination_reason`, `swarm.usage` and `swarm.actions`. The run/resume
+command also prints `llm_diagnostic` when a provider error explains the current stop.
+Historical failed requests remain in usage history, so an earlier error is not
+necessarily the cause of the latest termination. An incomplete run exits with code 2.
 
-OpenRouter documents both [HTTP errors and errors inside successful HTTP responses](https://openrouter.ai/docs/api/reference/errors-and-debugging). JSON/structured-output support depends on the endpoint/provider; see its [structured-output documentation](https://openrouter.ai/docs/guides/features/structured-outputs). KaggleSlayer keeps basic JSON mode and local Pydantic validation; it does not silently retry with weaker formats.
+| Symptom | Action |
+|---|---|
+| `llm_authentication`, `llm_credits`, `llm_rate_limit`, or a provider/network error | Correct credentials, quota or connectivity, then resume if saved budgets remain. See the endpoint codes below. |
+| `llm_output_truncated` | Increase per-response `KS_LLM_MAX_TOKENS` within the endpoint's supported limits. It accepts 128–32768; the code default is 700 and `.env.example` sets 32768. |
+| `llm_schema_repair_exhausted` | Inspect schema-repair observations and endpoint compatibility. The runtime allows at most two consecutive schema correction turns per task; each consumes normal run budgets. |
+| Native function calls are rejected | `KS_LLM_NATIVE_TOOLS=true` requires native function-call support. The default `false` uses a validated JSON action envelope. |
+| Request, token, turn or wall-time budget exhausted | Start a new run with revised limits. Resume retains consumed budgets and saved constraints. |
 
-Earlier runs that only stored the generic warning cannot reveal the original HTTP status or model output retrospectively. Keep those historical records intact. The check diagnoses the current configuration, while future runs record safe diagnostic details automatically.
+The runtime does not retry transport failures or switch providers/models automatically.
+Schema correction turns are distinct from transport retries. Arbitrary prose, Markdown
+and code are rejected; only validated role-specific actions can execute. Increasing
+`KS_LLM_MAX_TOKENS` changes the per-response allowance, not the saved aggregate run limits.
+See [agentic usage and recovery](agentic-usage.md) for action contracts, privacy boundaries
+and the resume-versus-new-run table.
 
-Offline tests use HTTPX mock transports, synthetic contexts and fake keys. The test suite forces deterministic planning by default so a developer's real `.env` cannot turn workflow tests into paid API calls. Live provider checks are manual and explicit.
-# Agentic sessions
+## Endpoint diagnostic: `llm-check`
 
-The CLI selects `configs/agentic.yaml` and the action loop when `--config` is omitted.
-With a custom config, set `execution_mode: agentic` or pass `--execution-mode agentic`.
-The existing `llm-check` probes the legacy advice protocol; it is an endpoint diagnostic,
-not a full swarm integration test. In agentic mode, inspect `swarm.usage`, `swarm.actions`
-and `swarm.termination_reason`. Provider failure ends with an incomplete checkpoint;
-there is no deterministic fallback. Increase per-response `KS_LLM_MAX_TOKENS` separately
-from aggregate run request/token/turn budgets. `KS_LLM_NATIVE_TOOLS=true` requires native
-function-call support; otherwise use the default validated JSON protocol. No automatic
-transport retries or provider/model switching occurs. See [agentic usage](agentic-usage.md).
+```bash
+uv run kaggle-slayer llm-check
+```
+
+This command sends one synthetic request through the **legacy initial-advice schema**.
+It checks the configured model, credentials, JSON response support, network timeout and
+output-token allowance. It never trains or uploads, retries, or switches model/provider.
+It may consume credits/free-tier quota. The `deterministic` provider makes no request.
+A successful check is an endpoint diagnostic, **not a full agentic integration test**:
+it does not exercise role-specific actions, native function calls or the scheduler.
+
+Success reports `status=success`, `code=ok`, `request_attempts=1` and HTTP status 200.
+Failure reports `status=failed`, exits nonzero, and includes a controlled explanation
+and corrective action. Configuration errors can fail before any network request.
+
+| Diagnostic code | Meaning / action |
+|---|---|
+| `configuration`, `missing_api_key`, `invalid_endpoint` | Check provider, model, key and API base URL. |
+| `authentication` | HTTP 401: check whether the API key is valid/enabled. |
+| `credits` | HTTP/API 402: check balance and key spending limits. |
+| `permission_or_budget` | HTTP/API 403: check model permissions, account/key restrictions and provider data policies. |
+| `rate_limit` | HTTP/API 429: wait for quota to reset. |
+| `unsupported_format` | The endpoint rejected the requested response format. For JSON mode, check support for `response_format=json_object` and routing settings. |
+| `invalid_model`, `not_found`, `no_available_provider` | Check the exact model ID, API base, availability and routing/data policies. |
+| `timeout`, `provider_timeout` | Check connectivity/latency and `KS_LLM_TIMEOUT`, a network-operation timeout rather than a total-run limit. Agentic requests also obey the remaining wall-time budget. |
+| `connection` | Check endpoint, proxy, TLS and connectivity. |
+| `provider_unavailable`, `provider_error` | The API/upstream failed, possibly in an HTTP 200 body. Check the provider's activity page. |
+| `invalid_response_json`, `invalid_response` | The endpoint/proxy returned non-JSON or an incompatible completion envelope. |
+| `empty_response`, `refusal` | No usable completion or a model refusal. Refusal text is excluded from diagnostics. |
+| `output_truncated` | Output exhausted its allowance; reasoning may consume that budget. Increase `KS_LLM_MAX_TOKENS` within supported limits. |
+| `invalid_advice_json`, `schema_mismatch` | Output was not JSON or failed the requested schema. These shared code names also appear for agentic action-schema failures. |
+
+The diagnostic records the requested output cap and token counts when supplied by the
+provider. Reasoning text is never saved. Compare actual usage and latency: one synthetic
+success does not prove every competition request will fit. The OpenRouter references
+describe [reasoning tokens](https://openrouter.ai/docs/guides/best-practices/reasoning-tokens),
+[API errors](https://openrouter.ai/docs/api/reference/errors-and-debugging) and
+[structured outputs](https://openrouter.ai/docs/guides/features/structured-outputs).
+
+## Legacy deterministic advice protocol
+
+This section applies to deterministic-mode planning and `llm-check`. It does not
+describe the agentic scheduler. See [offline baselines](offline-baselines.md) for
+deterministic-mode setup.
+
+With a live provider configured, the deterministic planner can request optional initial
+advice. Its fixed Python policy continues if advice fails. Successful advice influences
+only the ordering of allowed model families: Python forces an enabled linear baseline
+first, appends omitted families and enforces validation, budgets, tuning and submission
+permissions. There is no post-training LLM review or automatic second request.
+
+The advice object contains `rationale` (at most 2,000 characters), `priorities` (up to
+six allowed model names) and optional `cautions` (up to six strings). Unexpected
+properties, Markdown fences and surrounding prose fail validation. The
+`initial-planning-v3-compact` prompt in `src/kaggle_slayer/llm/prompts.py` requests a
+rationale of at most 60 words and at most two actionable cautions; those prompt targets
+are stricter than the parser's compatibility limits.
+
+Its compact context includes task/metric, schema and quality summaries, aggregate target
+statistics, validation, compute limits and allowed models. At most eight feature records,
+three truncated warnings and three largest class counts are sent. Feature names are
+capped at 64 characters and warnings at 120. Feature names and target aggregates can
+still be sensitive. Raw rows, category values, class label names, credentials and local
+paths are excluded. The same builder produces `llm-check`'s synthetic context.
+
+The deterministic planner persists diagnostics in `metadata.llm_diagnostic`, agent
+activity and the state snapshot. Agentic diagnostics instead appear in `swarm.usage`.
+Older records containing only a generic warning cannot recover the original HTTP status
+or model output retrospectively.
+
+## Diagnostic privacy and offline tests
+
+Diagnostics exclude raw provider messages/metadata, headers, full URLs, prompt bodies,
+refusal text and exception strings. Schema failures report controlled field paths and
+error types rather than offending values. Known key values and common key patterns are
+redacted before successful advice/actions can be logged. Detailed provider errors remain
+on the provider's own activity page; no private reasoning is requested or saved.
+
+Offline tests use mock transports, synthetic contexts and fake keys. Workflow tests
+default to deterministic planning so a developer's `.env` cannot cause paid API calls.
+The [scripted agentic examples](agentic-usage.md#offline-reproduction) exercise the action
+protocol with a fake provider and real training workers; live checks remain explicit.

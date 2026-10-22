@@ -23,11 +23,12 @@ changed classification C or regression alpha from 2.0 to 0.25. `reaudit-evaluate
 computed the winner; `results-generate_predictions` and `results-validate_predictions`
 produced/verified the final artifact. Scores are tool outputs, not model text.
 
-Local full traces and artifacts are available in
-[`artifacts/swarm-example/example_trace.json`](../artifacts/swarm-example/example_trace.json)
-and [`artifacts/swarm-regression/example_trace.json`](../artifacts/swarm-regression/example_trace.json).
-The compact trace is versioned; generated models/OOF/CSV files remain in ignored local
-artifact directories. Reproduce with:
+The [compact trace](swarm-offline-trace.json) is committed and available in a fresh
+clone. The first two commands below generate full traces at
+`artifacts/swarm-example/example_trace.json` and
+`artifacts/swarm-regression/example_trace.json`, respectively, together with local
+models, OOF arrays and CSV outputs. These ignored files become available after
+reproduction. Reproduce with:
 
 ```bash
 uv run python -m examples.scripted_swarm --output artifacts/swarm-example

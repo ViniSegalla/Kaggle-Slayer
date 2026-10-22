@@ -22,6 +22,23 @@ uv run kaggle-slayer inspect RUN_ID
 uv run kaggle-slayer resume RUN_ID
 ```
 
+## Default run limits
+
+The CLI's `configs/agentic.yaml` profile supplies these limits. Model families are
+available capabilities; the LLM chooses which experiments to run within the budgets.
+
+| Setting | Default |
+|---|---|
+| Experiments / timeout per experiment | 8 / 180 seconds |
+| Validation / training threads | 5 folds / 2 threads |
+| Total wall time | 1,800 seconds across execution and resumes |
+| Available families | Linear, random forest, histogram gradient boosting, LightGBM, XGBoost, CatBoost |
+| LLM requests / agent turns | 80 / 80 |
+| Aggregate charged tokens | 1,000,000 |
+| Agent concurrency | 2 |
+
+## Action protocol and budgets
+
 All roles use the configured endpoint/model. `KS_LLM_NATIVE_TOOLS=true` selects native
 function calls to `agent_response`; the default is a strict JSON action envelope for
 compatible endpoints. Arbitrary prose/Markdown/code is rejected. `KS_LLM_MAX_TOKENS`
@@ -141,6 +158,8 @@ Tool output and other agents' summaries are untrusted observations, not instruct
 Unsupported tools/actions return controlled errors. Repeated actions, invalid responses,
 cancellation and exhausted budgets have explicit persisted termination reasons.
 
+## Recovery and submission
+
 To cancel a running session, interrupt the CLI or create
 `artifacts/runs/RUN_ID/cancel.request`. Workers are killed at cancellation/deadline;
 remove the request before an explicit resume. An in-flight HTTP request cannot be
@@ -152,6 +171,23 @@ matching reserved requests/fingerprints are adopted without retraining. If no us
 result exists, the attempt is recorded failed/uncertain and still consumes its slot.
 Uncertain local effects are surfaced instead of silently replayed. After a hard crash,
 verify the runner and its worker have stopped before removing the existing run lock.
+
+### Resume or start a new run
+
+Resume keeps the original constraints and all consumed experiment, request, token, turn
+and elapsed-time budgets. Editing a YAML profile does not change an existing checkpoint.
+Endpoint settings are read again from the environment; fix those before resuming.
+
+| Situation | Next step |
+|---|---|
+| Transient provider failure, expired credentials, quota issue or insufficient per-response output allowance | Correct the endpoint settings or wait for availability, then `uv run kaggle-slayer resume RUN_ID` if the saved run still has budget. |
+| Cancelled or interrupted local execution | Stop any remaining runner/worker and remove `cancel.request` if present, then resume. Completed work is recovered where receipts allow; uncertain effects are not blindly repeated. |
+| Exhausted run budgets, or a need to change limits, data, competition profile or execution mode | Start a new `run` with the corrected inputs/settings. Saved constraints are immutable. |
+| Completed `--no-submit` run with a validated submission | Use `uv run kaggle-slayer submit RUN_ID` to authorize its upload. A completed run does not need resume. |
+| Upload interrupted, outcome ambiguous, or score pending | Use `uv run kaggle-slayer refresh RUN_ID` and inspect Kaggle submission history. Do not repeat the upload. |
+
+Resume defaults to no upload permission. Use `resume RUN_ID --submit` only when renewing
+permission for an incomplete run to make its first upload attempt.
 
 Only trusted terminal policy can upload, after explicit `--submit`, serialized validation,
 artifact hashes and provenance checks. Fixtures/demos are rejected. Upload intent is

@@ -7,7 +7,24 @@ work needed, request independent concurrent work, revisit a specialist after new
 and finish. Specialists return typed proposals/actions and evidence-backed summaries.
 The scheduler alone writes shared state and reserves budgets; numerical workers return
 measured artifacts. See [agentic contracts and usage](agentic-usage.md) and the versioned
-prompts in `agents/swarm.py` / `docs/contracts/swarm-v1`.
+prompts in [agents/swarm.py](../src/kaggle_slayer/agents/swarm.py) and
+[the generated contracts](contracts/swarm-v1).
+
+## Agentic roles
+
+| Role | Responsibility | Tools and boundaries |
+|---|---|---|
+| Coordinator | Delegates tasks, revisits measured evidence and requests completion | Delegation, dependency waits and finish actions; no numerical tools or upload authority |
+| Data / Validation | Inspects data and proposes validation splits | `inspect_dataset`, `configure_validation`; aggregate evidence and fixed comparison lineages |
+| Pipeline / Modeling | Chooses supported preprocessing, parameters and follow-up experiments | `configure_pipeline`, `run_experiment`, `tune_experiment`, `ensemble`, `confirm`; bounded numerical workers execute training |
+| Evaluation | Interprets eligible rankings, error diagnostics and stability | `evaluate`, `confirm`; trusted tools determine the eligible winner from measurements |
+| Submission | Generates and validates predictions for that winner | `generate_predictions`, `validate_predictions`, read-only `retrieve_feedback` after finalization; cannot upload or change selection |
+
+Upload execution belongs to trusted terminal policy after the agentic loop, with explicit
+CLI authorization and validated artifacts. See [the architecture](architecture.md) for
+scheduling, resource ownership and recovery.
+
+## Deterministic compatibility roles
 
 The following table documents the retained **deterministic compatibility mode**.
 
@@ -21,6 +38,8 @@ The following table documents the retained **deterministic compatibility mode**.
 
 The deterministic mode is a real policy-driven team: each role uses different tools, consumes earlier outputs, and changes later actions. It does not pretend to be five independent language models. With an LLM configured, the planner receives structured strategy and priorities; the rest of the team still enforces measurable ML and submission contracts.
 
+## Decision history
+
 Every major action emits a `Decision` with `agent`, UTC timestamp, input context, selected action, concise rationale, invoked tool, summarized result, artifact paths, next action and severity. SQLite and JSONL record public decision summaries and tool traces, not hidden chain-of-thought. Queue entries link tuning trials to their parent experiment. Out-of-fold predictions retain the exact validation evidence used by the evaluator.
 
-Errors are observable events. Per-model errors do not stop other scheduled models; all-model failure stops the run with its checkpoint intact. Invalid configuration/data stops before training. The planner's next iteration is bounded by both experiment and iteration counts. A completed run can be inspected repeatedly without retraining or uploading again.
+Errors are observable events. In deterministic mode, per-model failures do not stop other scheduled models; all-model failure stops the run with its checkpoint intact. Agentic sessions receive controlled tool failures and choose supported corrections within their remaining budgets; provider failure saves an incomplete outcome. A completed run can be inspected repeatedly without retraining or uploading again.
