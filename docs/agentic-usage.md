@@ -42,6 +42,9 @@ delegation goal requires a corrected response with a fresh ID; it never replaces
 old work. Updated summaries alone deduplicate. Existing checkpoint action/artifact IDs
 are preserved. Older checkpoints reclassify recorded schema failures out of their
 invalid-action counter once, without increasing any configured resource limit.
+References to pending/reserved work deduplicate without consuming the executed-action
+repeat allowance; LLM request, token, turn and wall limits still apply. The dispatcher
+activates newly unblocked actions before requesting another coordinator decision.
 
 Competition profiles provide metric, target/schema overrides, prediction format and
 structural validation columns. A metric is required from configuration or official

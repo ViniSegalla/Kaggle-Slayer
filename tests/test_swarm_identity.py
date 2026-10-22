@@ -225,3 +225,73 @@ def test_duplicate_batch_ids_are_repaired_without_accepting_any_action(tmp_path)
     assert result.swarm["termination_reason"] == "coordinator_incomplete"
     assert set(result.swarm["actions"]) == {"stop"}
     assert result.swarm["schema_repairs"] == 1 and result.swarm["invalid_actions"] == 0
+
+
+def test_pending_delegation_references_do_not_count_as_executed_repeats(tmp_path):
+    from kaggle_slayer.schemas.actions import DelegateAction
+
+    engine, state = setup(tmp_path)
+    runtime = SwarmRuntime(engine, state, ScriptedTeam())
+    try:
+        task = runtime.session.tasks["coordinator"]
+        action = DelegateAction(
+            kind="delegate",
+            action_id="model",
+            recipient="pipeline_modeling",
+            task="Configure",
+            summary="Delegate",
+        )
+        runtime.accept(task, action)
+        for _ in range(5):
+            runtime.accept(task, action)
+        runtime.drain_ready()
+        for _ in range(5):
+            runtime.accept(task, action)
+        assert runtime.session.actions["model"].status == "reserved"
+        assert "duplicate-model" not in runtime.session.signatures
+    finally:
+        runtime.pool.shutdown()
+
+
+def test_dispatch_drains_newly_unblocked_delegations_before_next_llm_turn(tmp_path):
+    from kaggle_slayer.schemas.actions import ActionRecord, DelegateAction, FinishAction
+
+    engine, state = setup(tmp_path)
+    runtime = SwarmRuntime(engine, state, ScriptedTeam())
+    try:
+        runtime.session.tasks["validation"] = Task(
+            id="validation", role="data_validation", goal="Validate", parent="coordinator"
+        )
+        runtime.session.actions["validation"] = ActionRecord(
+            task_id="coordinator",
+            status="reserved",
+            action=DelegateAction(
+                kind="delegate",
+                action_id="validation",
+                recipient="data_validation",
+                task="Validate",
+                summary="Validate",
+            ),
+        )
+        runtime.accept(
+            runtime.session.tasks["coordinator"],
+            DelegateAction(
+                kind="delegate",
+                action_id="model",
+                recipient="pipeline_modeling",
+                task="Configure",
+                depends_on=["validation"],
+                summary="Model after validation",
+            ),
+        )
+        runtime.accept(
+            runtime.session.tasks["validation"],
+            FinishAction(kind="finish", action_id="validation_done", summary="Done"),
+        )
+        runtime.drain_ready()
+        assert runtime.session.tasks["validation"].status == "completed"
+        assert runtime.session.tasks["model"].status == "ready"
+        assert runtime.session.actions["model"].status == "reserved"
+        assert runtime.session.requests == 0
+    finally:
+        runtime.pool.shutdown()

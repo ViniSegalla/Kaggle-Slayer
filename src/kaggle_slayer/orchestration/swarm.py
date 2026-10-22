@@ -548,6 +548,9 @@ class SwarmRuntime:
                 action
             ):
                 self.observe(task.id, "deduplicated", action_id=action.action_id, result=old.result)
+                if old.status in {"pending", "reserved"}:
+                    # Referring to outstanding work is not another execution attempt.
+                    return
                 signature = "duplicate-" + action.action_id
                 session.signatures[signature] = session.signatures.get(signature, 0) + 1
                 if session.signatures[signature] >= self.state.config.max_action_repeats:
@@ -615,6 +618,12 @@ class SwarmRuntime:
             "warning" if status == "failed" else "info",
         )
         self.checkpoint(journal=True)
+
+    def drain_ready(self):
+        # A later action can complete a dependency of an earlier pending action.
+        # Activate that work before asking the coordinator for another decision.
+        while not self.session.termination_reason and self.execute_ready():
+            self.guard()
 
     def execute_ready(self):
         training = {}
@@ -924,7 +933,7 @@ class SwarmRuntime:
                 if repairs:
                     self.call_agents(repairs[: self.state.config.agent_concurrency])
                     continue
-                self.execute_ready()
+                self.drain_ready()
                 if self.session.termination_reason:
                     break
                 ready = [
@@ -945,7 +954,7 @@ class SwarmRuntime:
                     self.call_agents([coordinator])
                 # Coordinator receives feedback after every specialist/tool round,
                 # even when other specialists have independent work pending.
-                self.execute_ready()
+                self.drain_ready()
                 if any(task.repair_pending for task in self.session.tasks.values()):
                     continue
                 if not self.session.termination_reason and ready:
