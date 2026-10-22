@@ -78,7 +78,11 @@ def test_run_yaml_and_ensemble_budget(tmp_path):
     assert RunConfig(ensemble=True, max_experiments=3).max_experiments == 3
 
 
-def test_run_cli_max_rows_override(monkeypatch):
+@pytest.mark.parametrize(
+    "flag,key,value",
+    [("--max-rows", "max_rows", 4_000_000), ("--max-dense-cells", "max_dense_cells", 40_000_000)],
+)
+def test_run_cli_dataset_limits_override(monkeypatch, flag, key, value):
     from types import SimpleNamespace
     from unittest.mock import Mock
 
@@ -105,14 +109,14 @@ def test_run_cli_max_rows_override(monkeypatch):
             "run",
             "--competition",
             "store-sales-time-series-forecasting",
-            "--max-rows",
-            "4000000",
+            flag,
+            str(value),
             "--no-submit",
         ],
     )
 
     assert result.exit_code == 0, result.output
-    assert load.call_args.kwargs["max_rows"] == 4_000_000
+    assert load.call_args.kwargs[key] == value
 
 
 @pytest.mark.parametrize("value", [0, 127, 32769])

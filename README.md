@@ -137,6 +137,9 @@ uv run python -m kaggle_slayer run --competition titanic --submit
 # Raise the row guard for a large competition dataset; the default is 1,000,000.
 uv run python -m kaggle_slayer run --competition store-sales-time-series-forecasting --max-rows 4000000 --submit
 
+# The airline dataset fits the default encoded-cell memory guard.
+uv run python -m kaggle_slayer run --competition playground-series-s6e10 --submit
+
 # Use official files already downloaded locally.
 uv run python -m kaggle_slayer run --competition titanic --data-dir data/titanic --no-submit
 
@@ -146,6 +149,8 @@ uv run python -m kaggle_slayer run --competition house-prices-advanced-regressio
 # Optional smaller three-family run; ensembles are already enabled by default.
 uv run python -m kaggle_slayer run --competition titanic --config configs/ensemble.yaml --no-submit
 ```
+
+`--max-dense-cells` overrides the default 40-million encoded-cell memory guard. This estimates preprocessing size rather than enforcing an OS memory limit. Dataset row, memory and unresolved-metric failures stop agentic runs with a specific error and corrective option, instead of spending more LLM requests on unchanged constraints. Set a new limit or profile when starting a new run; saved constraints remain immutable.
 
 Use `uv run python -m kaggle_slayer run --help` for flags. `--profile path.yaml` supplies competition schema/metric overrides; `--config path.yaml` supplies run budgets and model choices. CLI values take precedence. `--max-rows` overrides the default one-million-row CSV limit for large datasets; file-size and memory limits still apply. Defaults: five folds, **12 total experiments**, two CPU threads, a 30-minute scheduling budget and five-minute experiment timeout. Normally this funds five baselines, four tuning trials across the leading three families, one equal-weight ensemble and two finalist confirmations on a second split seed. The planner explores leading families before concentrating remaining trials on the current winner. Failed attempts consume budget; time limits may stop a run early. An explicit `--max-experiments 5` uses all slots for baselines. Saved runs retain their recorded budgets; new behavior is best compared in a fresh run.
 

@@ -14,6 +14,14 @@ from kaggle_slayer.schemas import Competition, RunConfig
 from kaggle_slayer.storage.store import write_json
 
 
+class DatasetError(ValueError):
+    """Dataset failure with a controlled category for isolated workers."""
+
+    def __init__(self, code, message):
+        self.code = code
+        super().__init__(message)
+
+
 @dataclass
 class Dataset:
     train: pd.DataFrame
@@ -39,7 +47,9 @@ def read_csv(path: Path, max_rows: int) -> pd.DataFrame:
         raise ValueError("CSV must contain unique header columns")
     frame = pd.read_csv(path, nrows=max_rows + 1)
     if len(frame) > max_rows:
-        raise ValueError(f"{path.name} exceeds configured max_rows={max_rows}")
+        raise DatasetError(
+            "dataset_row_limit", f"{path.name} exceeds configured max_rows={max_rows}"
+        )
     if frame.empty or frame.columns.duplicated().any():
         raise ValueError("CSV must contain rows and unique columns")
     return frame
@@ -124,8 +134,9 @@ def inspect_dataset(directory: Path, competition: Competition, config: RunConfig
         raise ValueError("Target values must be finite")
     if c.task is None:
         if config.execution_mode == "agentic" and not c.metric:
-            raise ValueError(
-                "Unresolved task/metric: supply an authoritative metric in the profile"
+            raise DatasetError(
+                "metric_requirement_unresolved",
+                "Unresolved task/metric: supply an authoritative metric in the profile",
             )
         c.task = (
             (
@@ -150,8 +161,9 @@ def inspect_dataset(directory: Path, competition: Competition, config: RunConfig
     if c.target_transform == "log1p" and (c.task != "regression" or (y < 0).any()):
         raise ValueError("log1p target transform requires nonnegative regression targets")
     if c.metric is None:
-        raise ValueError(
-            "Competition metric cannot be reliably inferred. Set metric in YAML; supported: accuracy, f1, roc_auc, log_loss, rmse, rmsle, log_rmse, mae, r2"
+        raise DatasetError(
+            "metric_requirement_unresolved",
+            "Competition metric cannot be reliably inferred. Set metric in YAML; supported: accuracy, f1, roc_auc, log_loss, rmse, rmsle, log_rmse, mae, r2",
         )
     classification_metrics = {"accuracy", "f1", "roc_auc", "log_loss"}
     if (c.task == "classification") != (c.metric in classification_metrics):
@@ -188,8 +200,11 @@ def inspect_dataset(directory: Path, competition: Competition, config: RunConfig
         for column in features
     ) + (6 if c.feature_profile == "titanic" else 0)
     if estimated_width * max(len(X), len(test_X)) > config.max_dense_cells:
-        raise ValueError(
-            "Encoded dataset exceeds max_dense_cells memory guard; reduce data/features or use a larger explicit limit"
+        raise DatasetError(
+            "dataset_dense_limit",
+            f"Encoded dataset requires an estimated {estimated_width * max(len(X), len(test_X))} "
+            f"cells, exceeding max_dense_cells={config.max_dense_cells} memory guard; "
+            "reduce data/features or set --max-dense-cells explicitly for a new run",
         )
     if c.validation == "time":
         if c.time_column not in train:

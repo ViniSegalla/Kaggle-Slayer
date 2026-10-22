@@ -8,6 +8,45 @@ import time
 
 from kaggle_slayer.storage.store import write_json
 
+OPERATION_ERRORS = {
+    "metric_requirement_unresolved": (
+        "Competition metric could not be resolved from the profile or official metadata.",
+        "Set a supported metric in a competition YAML profile with --profile and start a new run.",
+    ),
+    "dataset_row_limit": (
+        "CSV exceeds the configured max_rows guard.",
+        "Reduce the dataset or set --max-rows explicitly for a new run.",
+    ),
+    "dataset_dense_limit": (
+        "Encoded dataset exceeds the configured max_dense_cells memory guard.",
+        "Reduce data/features or set --max-dense-cells explicitly for a new run.",
+    ),
+    "dataset_validation_failed": (
+        "Dataset validation failed.",
+        "Inspect the local operation worker.log and review the competition profile and CSV files.",
+    ),
+    "kaggle_operation_failed": (
+        "The Kaggle operation failed.",
+        "Check network access, credentials and competition rules with doctor --require-kaggle.",
+    ),
+    "bounded_operation_failed": (
+        "The isolated runtime operation failed.",
+        "Inspect the local operation worker.log for the failing code location.",
+    ),
+}
+
+
+class RuntimeOperationError(RuntimeError):
+    """Only controlled descriptions cross the worker/provider boundary."""
+
+    def __init__(self, code):
+        self.code = code if code in OPERATION_ERRORS else "bounded_operation_failed"
+        self.message, self.action = OPERATION_ERRORS[self.code]
+        super().__init__(f"{self.code}: {self.message} {self.action}")
+
+    def diagnostic(self):
+        return {"error": self.code, "message": self.message, "action": self.action}
+
 
 def run_bounded(operation, state, directory, timeout, cancelled=lambda: False):
     if operation not in {"prepare", "feedback", "upload"}:
@@ -52,5 +91,5 @@ def run_bounded(operation, state, directory, timeout, cancelled=lambda: False):
                     process.wait()
     value = json.loads(result.read_text(encoding="utf-8"))
     if value.get("error"):
-        raise RuntimeError(value["error"])
+        raise RuntimeOperationError(value["error"])
     return value

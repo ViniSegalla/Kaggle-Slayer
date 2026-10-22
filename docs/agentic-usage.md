@@ -85,6 +85,13 @@ metadata; it determines an omitted task. A uniquely absent test column can estab
 the target. Ambiguous requirements produce a tool error and require a corrected new
 run. User constraints remain immutable across resume, except renewed upload permission.
 The data agent proposes validation before training; inspection splits are provisional.
+Official metric aliases include `Roc Auc Score` / `roc_auc_score` for ROC-AUC.
+An unresolved metric, row-limit violation or encoded-memory guard violation terminates
+with a controlled diagnostic and the corrective `--profile`, `--max-rows` or
+`--max-dense-cells` option. These fixed constraints require a new run; the coordinator
+does not spend additional turns retrying the same preparation failure. Other isolated
+operation failures retain controlled categories and stack locations in the local
+operation's `worker.log`; raw exception values are excluded from provider context.
 
 The LLM chooses which specialists to call, which permitted pipelines to configure,
 experiment order and parameters, additional trials, ensembles, diagnostics, prediction

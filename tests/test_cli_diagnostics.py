@@ -63,3 +63,24 @@ def test_cli_deadline_report_does_not_blame_historical_credits(command, monkeypa
     assert output["termination_reason"] == "wall_time_exhausted"
     assert output["llm_diagnostic"] is None
     assert state.swarm["usage"][0] == CREDITS
+
+
+@pytest.mark.parametrize("command", ["run", "resume"])
+def test_cli_reports_specific_dataset_failure(command, monkeypatch):
+    from kaggle_slayer.tools.runtime_worker import RuntimeOperationError
+
+    state = result("dataset_dense_limit", [])
+    state.error = str(RuntimeOperationError("dataset_dense_limit"))
+    store = Mock(load=Mock(return_value=state))
+    monkeypatch.setattr("kaggle_slayer.cli.Store", Mock(return_value=store))
+    engine = Mock(create=Mock(return_value=state), execute=Mock(return_value=state))
+    monkeypatch.setattr("kaggle_slayer.cli.Engine", Mock(return_value=engine))
+    monkeypatch.setattr("kaggle_slayer.cli.load_config", Mock(return_value=(None, state.config)))
+    args = ["run", "--competition", "offline"] if command == "run" else ["resume", state.run_id]
+    response = CliRunner().invoke(app, args)
+    assert response.exit_code == 2
+    output = json.loads(response.stdout[response.stdout.index("{") :])
+    assert output["termination_reason"] == "dataset_dense_limit"
+    assert output["error"] == state.error
+    assert "--max-dense-cells" in output["error"]
+    assert output["llm_diagnostic"] is None

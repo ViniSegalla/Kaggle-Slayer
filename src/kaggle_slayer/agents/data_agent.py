@@ -45,11 +45,16 @@ class DataAgent(Agent):
                 str(raw.get("evaluationMetric", raw.get("evaluation_metric", "")))
                 .lower()
                 .replace(" ", "")
+                .replace("_", "")
+                .replace("-", "")
             )
             mapping = {
                 "accuracy": "accuracy",
                 "categorizationaccuracy": "accuracy",
                 "auc": "roc_auc",
+                "rocauc": "roc_auc",
+                "rocaucscore": "roc_auc",
+                "areaundertheroccurve": "roc_auc",
                 "logloss": "log_loss",
                 "rmse": "rmse",
                 "rootmeansquarederror": "rmse",

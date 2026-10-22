@@ -78,7 +78,7 @@ class RunConfig(Schema):
     artifact_root: str = "artifacts"
     max_rows: int = Field(default=1000000, ge=20)
     max_features: int = Field(default=10000, ge=10)
-    max_dense_cells: int = Field(default=25000000, ge=1000)
+    max_dense_cells: int = Field(default=40000000, ge=1000)
     ensemble: bool = True
     tuning_families: int = Field(default=3, ge=1, le=6)
     confirmation_top_k: int = Field(default=2, ge=0, le=3)

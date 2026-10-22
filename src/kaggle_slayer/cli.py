@@ -132,6 +132,9 @@ def run(
     folds: int | None = None,
     n_jobs: int | None = None,
     max_rows: int | None = None,
+    max_dense_cells: Annotated[
+        int | None, typer.Option(help="Explicit encoded-cell memory guard (default: 40000000)")
+    ] = None,
     artifact_root: Path | None = None,
     submit: Annotated[
         bool, typer.Option("--submit/--no-submit", help="Authorize one Kaggle upload")
@@ -151,6 +154,7 @@ def run(
             folds=folds,
             n_jobs=n_jobs,
             max_rows=max_rows,
+            max_dense_cells=max_dense_cells,
             artifact_root=str(artifact_root) if artifact_root else None,
             submit=submit,
         )
@@ -171,6 +175,7 @@ def run(
                 "feedback": result.feedback,
                 "submission": result.submission_path,
                 "warnings": result.warnings,
+                "error": getattr(result, "error", None),
                 "llm_diagnostic": llm_failure(result),
             }
         )
@@ -198,6 +203,7 @@ def resume(run_id: str, artifact_root: Path | None = None, submit: bool = False)
                 "submission": result.submission_path,
                 "execution_mode": result.config.execution_mode,
                 "termination_reason": (result.swarm or {}).get("termination_reason"),
+                "error": getattr(result, "error", None),
                 "llm_diagnostic": llm_failure(result),
             }
         )

@@ -52,17 +52,44 @@ def test_current_sdk_competition_response_wrapper():
     assert KaggleClient(api).metadata("titanic")["evaluationMetric"] == "Accuracy"
 
 
-def test_actual_metric_name_inference(fixture_data):
+@pytest.mark.parametrize(
+    "metadata,expected",
+    [
+        ({"evaluationMetric": "Categorization Accuracy"}, "accuracy"),
+        ({"evaluationMetric": "Roc Auc Score"}, "roc_auc"),
+        ({"evaluationMetric": "ROC-AUC"}, "roc_auc"),
+        ({"evaluation_metric": "roc_auc_score"}, "roc_auc"),
+        ({"evaluationMetric": "Area Under The ROC Curve"}, "roc_auc"),
+    ],
+)
+def test_actual_metric_name_inference(fixture_data, metadata, expected):
     from kaggle_slayer.agents.data_agent import DataAgent
 
     directory, c, config = fixture_data
     c.metric, config.data_dir = None, None
     state = RunState(run_id="metadata-inference", competition=c, config=config)
     client = Mock()
-    client.metadata.return_value = {"evaluationMetric": "Categorization Accuracy"}
+    client.metadata.return_value = metadata
     client.download.return_value = directory
     DataAgent(Store(config.artifact_root)).prepare(state, client)
-    assert state.competition.metric == "accuracy"
+    assert state.competition.metric == expected
+
+
+def test_unknown_official_metric_requires_explicit_profile(fixture_data):
+    from kaggle_slayer.agents.data_agent import DataAgent
+    from kaggle_slayer.tools.data_tools import DatasetError
+
+    directory, c, config = fixture_data
+    c.metric, config.data_dir = None, None
+    config.execution_mode = "agentic"
+    state = RunState(run_id="unknown-metric", competition=c, config=config)
+    client = Mock()
+    client.metadata.return_value = {"evaluationMetric": "Unrecognized Metric"}
+    client.download.return_value = directory
+    with pytest.raises(DatasetError) as caught:
+        DataAgent(Store(config.artifact_root)).prepare(state, client)
+    assert caught.value.code == "metric_requirement_unresolved"
+    assert state.competition.metric is None
 
 
 def test_download_extracts_csv_and_rejects_escape(tmp_path):

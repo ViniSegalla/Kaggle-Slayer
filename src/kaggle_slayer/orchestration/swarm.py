@@ -25,6 +25,7 @@ from kaggle_slayer.schemas.actions import (
 from kaggle_slayer.schemas.models import Decision, Experiment, RunState
 from kaggle_slayer.storage.store import write_json
 from kaggle_slayer.tools.data_tools import inspect_dataset
+from kaggle_slayer.tools.runtime_worker import OPERATION_ERRORS, RuntimeOperationError
 from kaggle_slayer.tools.swarm_tools import (
     CAPABILITIES,
     Dispatcher,
@@ -137,6 +138,11 @@ class SwarmRuntime:
             + (
                 f" | measured score={result['score']:.6g}"
                 if result.get("score") is not None
+                else ""
+            )
+            + (
+                " | " + str(RuntimeOperationError(result["error"]))
+                if result.get("error") in OPERATION_ERRORS
                 else ""
             ),
         )
@@ -912,6 +918,18 @@ class SwarmRuntime:
                         self.complete(ref, result)
             except ToolError as exc:
                 self.complete(ref, {"error": str(exc)}, "failed")
+                if str(exc) == "metric_requirement_unresolved":
+                    self.state.error = str(RuntimeOperationError(str(exc)))
+                    raise StopRun(str(exc)) from exc
+            except RuntimeOperationError as exc:
+                self.complete(ref, exc.diagnostic(), "failed")
+                if exc.code in {
+                    "metric_requirement_unresolved",
+                    "dataset_row_limit",
+                    "dataset_dense_limit",
+                }:
+                    self.state.error = str(exc)
+                    raise StopRun(exc.code) from exc
             except CheckpointError:
                 raise
             except (ValueError, OSError, RuntimeError) as exc:
@@ -1161,6 +1179,7 @@ class SwarmRuntime:
                 "protocol": VERSION,
                 "status": s.status,
                 "termination_reason": self.session.termination_reason,
+                "error": s.error,
                 "best_id": s.best_id,
                 "submission_path": s.submission_path,
                 "feedback": s.feedback,

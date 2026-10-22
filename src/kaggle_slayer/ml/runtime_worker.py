@@ -2,13 +2,16 @@
 
 import json
 import sys
+import traceback
 from pathlib import Path
 
 from kaggle_slayer.agents.data_agent import DataAgent
 from kaggle_slayer.agents.leaderboard_agent import LeaderboardAgent
 from kaggle_slayer.schemas import RunState
 from kaggle_slayer.storage.store import write_json
-from kaggle_slayer.tools.kaggle_client import KaggleClient
+from kaggle_slayer.tools.data_tools import DatasetError
+from kaggle_slayer.tools.kaggle_client import KaggleClient, KaggleError
+from kaggle_slayer.tools.runtime_worker import RuntimeOperationError
 
 
 class LocalArtifacts:
@@ -61,8 +64,21 @@ def main():
             }
         else:
             raise ValueError("operation")
-    except Exception:
-        result = {"error": "bounded_operation_failed"}
+    except Exception as exc:
+        code = (
+            exc.code
+            if isinstance(exc, DatasetError)
+            else "kaggle_operation_failed"
+            if isinstance(exc, KaggleError)
+            else "dataset_validation_failed"
+            if request["operation"] == "prepare" and isinstance(exc, ValueError)
+            else "bounded_operation_failed"
+        )
+        diagnostic = RuntimeOperationError(code)
+        # Stack locations are local diagnostics; exception values may contain secrets or rows.
+        traceback.print_tb(exc.__traceback__)
+        print(str(diagnostic), file=sys.stderr)
+        result = diagnostic.diagnostic()
     write_json(Path(sys.argv[2]), result)
 
 
