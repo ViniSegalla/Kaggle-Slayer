@@ -15,6 +15,7 @@ class EvaluationAgent(Agent):
     name = "evaluator"
 
     def evaluate(self, state):
+        self.activity(state, "Comparing primary CV results and auditing train/validation gaps")
         metric = state.competition.metric
         ranking = rank_experiments(state.experiments, metric)
         if not ranking:
@@ -146,6 +147,7 @@ class EvaluationAgent(Agent):
         )
 
     def create_submission(self, state, data):
+        self.activity(state, "Generating predictions and validating the submission template")
         best = next(e for e in state.experiments if e.id == state.best_id)
         values = load_predictions(best.checkpoint, data, state.competition)
         c = state.competition

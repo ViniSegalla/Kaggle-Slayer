@@ -15,6 +15,10 @@ class ModelingAgent(Agent):
             {
                 "candidate": candidate.model_dump(),
                 "timeout": min(remaining_seconds, state.config.experiment_timeout),
+                "experiment_index": len(state.experiments) + 1,
+                "max_experiments": state.config.max_experiments,
+                "folds": state.config.folds,
+                "metric": state.competition.metric,
             },
             "evaluator.assess",
         )
@@ -26,6 +30,7 @@ class ModelingAgent(Agent):
             else state.config,
             output,
             min(remaining_seconds, state.config.experiment_timeout),
+            progress=lambda message: self.activity(state, message),
         )
         state.experiments.append(result)
         self.log(

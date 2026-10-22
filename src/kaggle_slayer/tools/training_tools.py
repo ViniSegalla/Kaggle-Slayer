@@ -17,13 +17,14 @@ from kaggle_slayer.ml.diagnostics import error_report
 from kaggle_slayer.ml.models import estimator, pipeline
 from kaggle_slayer.ml.objectives import objective_params, training_contract
 from kaggle_slayer.ml.preprocessing import preprocessor
+from kaggle_slayer.orchestration.progress import WorkerEvents, worker_event
 from kaggle_slayer.schemas import Competition, Experiment, RunConfig
 from kaggle_slayer.storage.store import write_json
 from kaggle_slayer.tools.data_tools import inspect_dataset
 from kaggle_slayer.tools.evaluation_tools import score
 
 
-def early_stopping_params(name, params, X, y, competition, config):
+def early_stopping_params(name, params, X, y, competition, config, event=None):
     """Use only an inner portion of the outer training fold for stopping decisions."""
     if name == "ensemble":
         return params | {
@@ -31,7 +32,7 @@ def early_stopping_params(name, params, X, y, competition, config):
                 {
                     "model": m["model"],
                     "params": early_stopping_params(
-                        m["model"], m["params"], X, y, competition, config
+                        m["model"], m["params"], X, y, competition, config, event=event
                     ),
                 }
                 for m in params["members"]
@@ -47,6 +48,8 @@ def early_stopping_params(name, params, X, y, competition, config):
         y.value_counts().min() < 2 or int(np.ceil(len(y) * 0.15)) < y.nunique()
     ):
         return params
+    if event is not None:
+        event()
     a, b = train_test_split(
         np.arange(len(X)),
         test_size=0.15,
@@ -101,6 +104,7 @@ def train_candidate(request: dict) -> dict:
     config = RunConfig.model_validate(request["config"])
     candidate = request["candidate"]
     output = Path(request["output"])
+    worker_event(output, "inspect")
     data = inspect_dataset(Path(config.data_dir), c, config)
     classes = data.report["classes"]
     # Use contiguous integer labels inside every classifier, including XGBoost.
@@ -115,7 +119,8 @@ def train_candidate(request: dict) -> dict:
     oof = None
     valid_mask = np.zeros(len(y), dtype=bool)
     with threadpool_limits(limits=config.n_jobs):
-        for fit_indices, valid_indices in data.splits:
+        for fold, (fit_indices, valid_indices) in enumerate(data.splits, 1):
+            worker_event(output, "prepare_fold", fold=fold)
             params = early_stopping_params(
                 candidate["model"],
                 candidate["params"],
@@ -123,13 +128,16 @@ def train_candidate(request: dict) -> dict:
                 y.iloc[fit_indices],
                 c,
                 config,
+                event=lambda: worker_event(output, "early_stopping", fold=fold),
             )
             fold_params.append(params)
             model = pipeline(candidate["model"], c, config, params)
+            worker_event(output, "fit_fold", fold=fold)
             model.fit(data.X.iloc[fit_indices], y.iloc[fit_indices])
             prediction = predictions(model, data.X.iloc[valid_indices], c, for_metric=True)
             training = predictions(model, data.X.iloc[fit_indices], c, for_metric=True)
             scores.append(score(c.metric, y.iloc[valid_indices], prediction, metric_classes))
+            worker_event(output, "fold_complete", fold=fold, score=scores[-1])
             train_scores.append(score(c.metric, y.iloc[fit_indices], training, metric_classes))
             if oof is None:
                 shape = (len(y),) + np.asarray(prediction).shape[1:]
@@ -138,6 +146,7 @@ def train_candidate(request: dict) -> dict:
             valid_mask[valid_indices] = True
         final_params = aggregate_params(candidate["model"], candidate["params"], fold_params)
         final = pipeline(candidate["model"], c, config, final_params)
+        worker_event(output, "refit")
         final.fit(data.X, y)
     output.mkdir(parents=True, exist_ok=True)
     model_path = output / "model.joblib"
@@ -185,6 +194,7 @@ def train_candidate(request: dict) -> dict:
         pd.DataFrame({"feature": names, "importance": importance}).sort_values(
             "importance", ascending=False
         ).to_csv(importance_path, index=False)
+    worker_event(output, "saved")
     return Experiment(
         id=candidate["id"],
         model=candidate["model"],
@@ -227,9 +237,14 @@ def aggregate_params(name, base, folds):
     return base | ({key: int(np.median(counts))} if counts else {})
 
 
-def run_isolated(candidate, competition, config, output: Path, timeout: float) -> Experiment:
+def run_isolated(
+    candidate, competition, config, output: Path, timeout: float, progress=None
+) -> Experiment:
     output.mkdir(parents=True, exist_ok=True)
     request_path, result_path = output / "request.json", output / "result.json"
+    # Unrecorded work may be retried after interruption; never replay stale output.
+    result_path.unlink(missing_ok=True)
+    (output / "progress.jsonl").unlink(missing_ok=True)
     write_json(
         request_path,
         {
@@ -250,23 +265,37 @@ def run_isolated(candidate, competition, config, output: Path, timeout: float) -
         environment[name] = str(config.n_jobs)
     with (output / "worker.log").open("w", encoding="utf-8") as log:
         try:
-            completed = subprocess.run(
-                [
-                    sys.executable,
-                    "-m",
-                    "kaggle_slayer.ml.worker",
-                    str(request_path),
-                    str(result_path),
-                ],
-                stdout=log,
-                stderr=subprocess.STDOUT,
-                env=environment,
-                timeout=max(timeout, 0.1),
-                check=False,
-            )
-            if completed.returncode or not result_path.exists():
+            command = [
+                sys.executable,
+                "-m",
+                "kaggle_slayer.ml.worker",
+                str(request_path),
+                str(result_path),
+            ]
+            if progress is None:
+                returncode = subprocess.run(
+                    command,
+                    stdout=log,
+                    stderr=subprocess.STDOUT,
+                    env=environment,
+                    timeout=max(timeout, 0.1),
+                    check=False,
+                ).returncode
+            else:
+                returncode = monitor_worker(
+                    command,
+                    log,
+                    environment,
+                    timeout,
+                    output,
+                    candidate,
+                    competition,
+                    config,
+                    progress,
+                )
+            if returncode or not result_path.exists():
                 raise RuntimeError(
-                    f"Model worker exited with code {completed.returncode}; inspect worker.log"
+                    f"Model worker exited with code {returncode}; inspect worker.log"
                 )
             return Experiment.model_validate_json(result_path.read_text(encoding="utf-8"))
         except subprocess.TimeoutExpired:
@@ -284,6 +313,42 @@ def run_isolated(candidate, competition, config, output: Path, timeout: float) -
         validation_seed=config.seed,
         parent_id=candidate.parent_id,
     )
+
+
+def monitor_worker(
+    command, log, environment, timeout, output, candidate, competition, config, progress
+):
+    events = WorkerEvents(output / "progress.jsonl", config.folds, competition.metric, candidate.id)
+    started = last_heartbeat = time.monotonic()
+    deadline = started + max(timeout, 0.1)
+    with subprocess.Popen(
+        command, stdout=log, stderr=subprocess.STDOUT, env=environment
+    ) as process:
+        try:
+            while True:
+                for message in events.read():
+                    progress(message)
+                elapsed = time.monotonic() - started
+                if time.monotonic() - last_heartbeat >= 10:
+                    progress(
+                        f"{candidate.id} | still running: {events.stage} | elapsed={elapsed:.0f}s"
+                    )
+                    last_heartbeat = time.monotonic()
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise subprocess.TimeoutExpired(command, timeout)
+                try:
+                    code = process.wait(timeout=min(0.5, remaining))
+                    for message in events.read():
+                        progress(message)
+                    return code
+                except subprocess.TimeoutExpired:
+                    if time.monotonic() >= deadline:
+                        raise
+        except BaseException:
+            process.kill()
+            process.wait()
+            raise
 
 
 def load_predictions(checkpoint: Path, data, competition):

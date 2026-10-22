@@ -1,11 +1,16 @@
+from kaggle_slayer.orchestration.progress import decision_summary
 from kaggle_slayer.schemas import Decision
 
 
 class Agent:
     name = "agent"
 
-    def __init__(self, store):
+    def __init__(self, store, progress=None):
         self.store = store
+        self.progress = progress or (lambda agent, message: None)
+
+    def activity(self, state, message):
+        self.progress(self.name, message)
 
     def log(
         self,
@@ -38,3 +43,4 @@ class Agent:
                 level=level,
             ),
         )
+        self.activity(state, decision_summary(action, result))

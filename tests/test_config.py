@@ -1,6 +1,8 @@
 import pytest
 from pydantic import ValidationError
+from typer.testing import CliRunner
 
+from kaggle_slayer.cli import app
 from kaggle_slayer.config import Settings, load_config
 from kaggle_slayer.schemas import Competition, RunConfig
 
@@ -74,6 +76,43 @@ def test_run_yaml_and_ensemble_budget(tmp_path):
     _, config = load_config("titanic", run_profile=path, max_experiments=7)
     assert config.ensemble and config.folds == 3 and config.max_experiments == 7
     assert RunConfig(ensemble=True, max_experiments=3).max_experiments == 3
+
+
+def test_run_cli_max_rows_override(monkeypatch):
+    from types import SimpleNamespace
+    from unittest.mock import Mock
+
+    competition = Competition(competition="store-sales-time-series-forecasting")
+    config = RunConfig()
+    load = Mock(return_value=(competition, config))
+    engine = Mock()
+    engine.create.return_value = SimpleNamespace(run_id="test-run")
+    engine.execute.return_value = SimpleNamespace(
+        run_id="test-run",
+        status="completed",
+        best_id="model",
+        feedback={},
+        submission_path=None,
+        warnings=[],
+    )
+    monkeypatch.setattr("kaggle_slayer.cli.load_config", load)
+    monkeypatch.setattr("kaggle_slayer.cli.Store", Mock())
+    monkeypatch.setattr("kaggle_slayer.cli.Engine", Mock(return_value=engine))
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "run",
+            "--competition",
+            "store-sales-time-series-forecasting",
+            "--max-rows",
+            "4000000",
+            "--no-submit",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert load.call_args.kwargs["max_rows"] == 4_000_000
 
 
 @pytest.mark.parametrize("value", [0, 127, 8193])

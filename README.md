@@ -68,6 +68,12 @@ CatBoost and XGBoost are included in the standard installation; no boosting extr
 
 Copy `.env.example` to `.env` using your editor. Secrets, datasets, virtual environments and generated runs are ignored by Git. `uv.lock` records core and development dependencies. See [reproducibility](docs/reproducibility.md) for restricted Windows environments and lockfile policy.
 
+## Live execution logging
+
+CLI runs show the active agent, experiment/model, budget position, validation role, fold activity, measured fold scores, refit, model selection and confirmation status. During worker startup or long training, a heartbeat appears every ten seconds with elapsed experiment time and the latest stage. No extra verbosity flag is needed.
+
+Each line has a UTC timestamp and is saved under `artifacts/runs/<run-id>/progress.log`. Structured worker events are saved in each experiment's `progress.jsonl`, while detailed library output stays in `worker.log`. Agent decisions remain in SQLite and `decisions.jsonl`. Raw LLM responses, credentials and raw worker stdout are not streamed to the console. `resume` and `submit` use the same live reporting; `refresh` reports reviewer activity.
+
 ## Free mode and optional LLM planning
 
 `KS_LLM_PROVIDER=deterministic` is the default and needs no key or network for local CSV workflows. Every agent still performs specialized work, including feedback-driven tuning.
@@ -113,6 +119,9 @@ uv run python -m kaggle_slayer run --competition titanic
 # Explicitly authorize one upload after training and validation.
 uv run python -m kaggle_slayer run --competition titanic --submit
 
+# Raise the row guard for a large competition dataset; the default is 1,000,000.
+uv run python -m kaggle_slayer run --competition store-sales-time-series-forecasting --max-rows 4000000 --submit
+
 # Use official files already downloaded locally.
 uv run python -m kaggle_slayer run --competition titanic --data-dir data/titanic --no-submit
 
@@ -123,7 +132,7 @@ uv run python -m kaggle_slayer run --competition house-prices-advanced-regressio
 uv run python -m kaggle_slayer run --competition titanic --config configs/ensemble.yaml --no-submit
 ```
 
-Use `uv run python -m kaggle_slayer run --help` for flags. `--profile path.yaml` supplies competition schema/metric overrides; `--config path.yaml` supplies run budgets and model choices. CLI values take precedence. Defaults: five folds, **12 total experiments**, two CPU threads, a 30-minute scheduling budget and five-minute experiment timeout. Normally this funds five baselines, four tuning trials across the leading three families, one equal-weight ensemble and two finalist confirmations on a second split seed. The planner explores leading families before concentrating remaining trials on the current winner. Failed attempts consume budget; time limits may stop a run early. An explicit `--max-experiments 5` uses all slots for baselines. Saved runs retain their recorded budgets; new behavior is best compared in a fresh run.
+Use `uv run python -m kaggle_slayer run --help` for flags. `--profile path.yaml` supplies competition schema/metric overrides; `--config path.yaml` supplies run budgets and model choices. CLI values take precedence. `--max-rows` overrides the default one-million-row CSV limit for large datasets; file-size and memory limits still apply. Defaults: five folds, **12 total experiments**, two CPU threads, a 30-minute scheduling budget and five-minute experiment timeout. Normally this funds five baselines, four tuning trials across the leading three families, one equal-weight ensemble and two finalist confirmations on a second split seed. The planner explores leading families before concentrating remaining trials on the current winner. Failed attempts consume budget; time limits may stop a run early. An explicit `--max-experiments 5` uses all slots for baselines. Saved runs retain their recorded budgets; new behavior is best compared in a fresh run.
 
 CatBoost uses native categorical features; other trees use unscaled, fold-imputed features with numeric missingness indicators, while linear models use scaling. Regression losses follow MAE or squared error where supported; each experiment records its actual training contract and any surrogate/transformed-target mismatch. Ensembles keep independent preprocessing per member and must beat the best single model by more than the configured relative improvement threshold (default 0.1%).
 

@@ -9,8 +9,10 @@ class DataAgent(Agent):
     name = "data_engineer"
 
     def prepare(self, state, client):
+        self.activity(state, "Preparing dataset, schema and validation splits")
         config, competition = state.config, state.competition
         if not config.data_dir:
+            self.activity(state, "Fetching Kaggle metadata and downloading competition files")
             try:
                 state.metadata["kaggle"] = client.metadata(competition.competition)
             except KaggleError as exc:

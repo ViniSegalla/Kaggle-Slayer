@@ -10,6 +10,7 @@ from kaggle_slayer.agents.evaluator import EvaluationAgent
 from kaggle_slayer.agents.leaderboard_agent import LeaderboardAgent, field
 from kaggle_slayer.agents.modeling_agent import ModelingAgent
 from kaggle_slayer.agents.planner import CompetitionPlanner
+from kaggle_slayer.orchestration.progress import RunProgress
 from kaggle_slayer.schemas import Decision, RunState
 from kaggle_slayer.schemas.models import Candidate, now
 from kaggle_slayer.storage.store import Store, write_json
@@ -21,6 +22,7 @@ class Engine:
         self.store = store
         self.client = client or KaggleClient()
         self.progress = progress or (lambda message: None)
+        self.live = RunProgress(store, self.progress)
         self.planner = CompetitionPlanner(store)
         self.data_agent = DataAgent(store)
         self.modeler = ModelingAgent(store)
@@ -40,6 +42,14 @@ class Engine:
 
     def execute(self, state):
         with self.store.lock(state.run_id):
+            for agent in (
+                self.planner,
+                self.data_agent,
+                self.modeler,
+                self.evaluator,
+                self.reviewer,
+            ):
+                agent.progress = lambda name, message: self.live.emit(state.run_id, name, message)
             return self._execute(state)
 
     def _execute(self, state):
@@ -53,12 +63,18 @@ class Engine:
         def checkpoint(phase=None):
             if phase:
                 state.phase = phase
-                self.progress(f"[{state.run_id}] {phase}")
+                self.live.emit(state.run_id, "orchestrator", f"Phase: {phase}")
             state.elapsed_seconds = previous_elapsed + time.monotonic() - started
             self.store.save(state)
 
         try:
             state.status, state.error = "running", None
+            self.live.emit(
+                state.run_id,
+                "orchestrator",
+                f"Starting/resuming | experiment budget={state.config.max_experiments} | "
+                f"recorded={len(state.experiments)} | remaining wall budget={max(0, remaining()):.0f}s",
+            )
             checkpoint()
             if state.phase == "initialized":
                 self.planner.initialize(state)
@@ -73,6 +89,11 @@ class Engine:
                     done = {experiment.id for experiment in state.experiments}
                     for candidate in state.plan.queue:
                         if candidate.id in done:
+                            self.live.emit(
+                                state.run_id,
+                                "orchestrator",
+                                f"Reusing recorded experiment {candidate.id}",
+                            )
                             continue
                         if (
                             remaining() <= 0
@@ -92,6 +113,12 @@ class Engine:
                     state.warnings.append(
                         "Run wall budget exhausted; using strongest completed checkpoint"
                     )
+                self.live.emit(
+                    state.run_id,
+                    "competition_planner",
+                    f"Primary search complete | experiments recorded={len(state.experiments)} | "
+                    f"tuning rounds={state.iteration}; checking ensemble and confirmation budgets",
+                )
                 ensemble = self.planner.ensemble_candidate(state)
                 if ensemble and remaining() > 3:
                     self.modeler.train(state, ensemble, remaining())
@@ -122,6 +149,11 @@ class Engine:
                 self.evaluator.create_submission(state, data)
                 checkpoint("submission_ready")
             if state.config.submit and state.config.max_submissions and not state.submissions:
+                self.live.emit(
+                    state.run_id,
+                    "orchestrator",
+                    "Submission authorized: validating integrity before one Kaggle upload",
+                )
                 provenance = state.metadata.get("provenance", {})
                 if provenance.get("kind") in {"synthetic_fixture", "public_dataset_demo"}:
                     raise ValueError(
@@ -164,6 +196,12 @@ class Engine:
                     attempt.update(status="outcome_unknown", error=str(exc))
                     state.warnings.append(str(exc))
                 checkpoint("reviewing")
+            if not state.config.submit:
+                self.live.emit(
+                    state.run_id,
+                    "orchestrator",
+                    "No upload authorized; keeping the validated submission locally",
+                )
             if state.submissions and state.submissions[-1]["status"] == "intent_recorded":
                 state.submissions[-1]["status"] = "outcome_unknown"
                 state.warnings.append(

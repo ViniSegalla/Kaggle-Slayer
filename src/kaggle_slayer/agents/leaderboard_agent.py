@@ -15,6 +15,7 @@ class LeaderboardAgent(Agent):
     name = "leaderboard_reviewer"
 
     def review(self, state, client, *, refresh=False):
+        self.activity(state, "Checking submission feedback and available account standing")
         if not state.submissions:
             state.feedback["leaderboard"] = {
                 "status": "not_submitted",

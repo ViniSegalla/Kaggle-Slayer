@@ -96,6 +96,7 @@ def run(
     max_seconds: int | None = None,
     folds: int | None = None,
     n_jobs: int | None = None,
+    max_rows: int | None = None,
     artifact_root: Path | None = None,
     submit: Annotated[
         bool, typer.Option("--submit/--no-submit", help="Authorize one Kaggle upload")
@@ -113,6 +114,7 @@ def run(
             max_seconds=max_seconds,
             folds=folds,
             n_jobs=n_jobs,
+            max_rows=max_rows,
             artifact_root=str(artifact_root) if artifact_root else None,
             submit=submit,
         )
@@ -201,8 +203,15 @@ def refresh(run_id: str, artifact_root: Path | None = None):
         store = Store(artifact_root or Settings().artifact_root)
         with store.lock(run_id):
             state = store.load(run_id)
-            LeaderboardAgent(store).review(state, KaggleClient(), refresh=True)
-            CompetitionPlanner(store).leaderboard_followup(state)
+            from kaggle_slayer.orchestration.progress import RunProgress
+
+            live = RunProgress(store, typer.echo)
+
+            def progress(agent, message):
+                live.emit(run_id, agent, message)
+
+            LeaderboardAgent(store, progress=progress).review(state, KaggleClient(), refresh=True)
+            CompetitionPlanner(store, progress=progress).leaderboard_followup(state)
             store.save(state)
             emit(state.feedback)
     except (ValueError, RuntimeError, OSError) as exc:

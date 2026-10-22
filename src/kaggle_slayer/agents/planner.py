@@ -23,6 +23,7 @@ class CompetitionPlanner(Agent):
         )
 
     def plan(self, state):
+        self.activity(state, "Preparing strategy and requesting LLM advice when configured")
         llm = PlannerLLM()
         advice, warning = llm.advise(
             {
