@@ -1,14 +1,16 @@
 # LLM-directed execution
 
-Use an explicit mode. `deterministic` remains the default and the compatibility mode for
-old saved runs. `agentic` requires valid LLM actions throughout the run; it checkpoints an
+The CLI loads `agentic.yaml` when `--config` is omitted. Explicit configs and mode flags
+take precedence; `--execution-mode deterministic` selects offline defaults when no config
+is supplied. Library defaults and old saved runs retain deterministic compatibility.
+`agentic` requires valid LLM actions throughout the run; it checkpoints an
 incomplete outcome on provider failure. It never runs the legacy search as a fallback.
 
 ```bash
 uv sync --locked --extra dev
 # Configure KS_LLM_PROVIDER / KS_LLM_MODEL / KS_LLM_API_KEY in .env first.
-uv run python -m kaggle_slayer run --competition titanic --config configs/agentic.yaml --data-dir data/titanic
-# Or keep default resource limits and select the mode explicitly.
+uv run python -m kaggle_slayer run --competition titanic --data-dir data/titanic
+# Or select the mode explicitly.
 uv run python -m kaggle_slayer run --competition titanic --execution-mode agentic --no-submit
 uv run python -m kaggle_slayer inspect RUN_ID
 uv run python -m kaggle_slayer resume RUN_ID
@@ -17,7 +19,9 @@ uv run python -m kaggle_slayer resume RUN_ID
 All roles use the configured endpoint/model. `KS_LLM_NATIVE_TOOLS=true` selects native
 function calls to `agent_response`; the default is a strict JSON action envelope for
 compatible endpoints. Arbitrary prose/Markdown/code is rejected. `KS_LLM_MAX_TOKENS`
-limits each completion (4096 can be useful for action batches); the run configuration
+accepts 128–32768 and limits each completion (4096 can be useful for action batches).
+The default remains 700; larger allowances must fit the selected model/provider's output
+and context limits. The run configuration
 also caps aggregate charged tokens, requests, turns, delegation depth, and concurrency.
 No private reasoning is requested or saved. Provider usage is recorded when reported;
 otherwise UTF-8 input bytes plus the output allowance are conservatively charged.

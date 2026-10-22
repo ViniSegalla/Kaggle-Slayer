@@ -1,6 +1,6 @@
 # LLM diagnostics and OpenRouter troubleshooting
 
-Run `uv run python -m kaggle_slayer llm-check` before a full competition run. This explicitly makes one chat-completion request with synthetic schema/quality information, the configured model, network timeout and output-token budget. `KS_LLM_MAX_TOKENS` defaults to 700 and is validated between 128 and 8192. The check never trains, submits to Kaggle, changes model/provider, or retries. It may consume credits/free-tier quota. Deterministic mode does not call a provider.
+Run `uv run python -m kaggle_slayer llm-check` before a full competition run. This explicitly makes one chat-completion request with synthetic schema/quality information, the configured model, network timeout and output-token budget. `KS_LLM_MAX_TOKENS` defaults to 700 and is validated between 128 and 32768. The check never trains, submits to Kaggle, changes model/provider, or retries. It may consume credits/free-tier quota. Deterministic mode does not call a provider.
 
 Success reports `status=success`, `code=ok`, `request_attempts=1` and HTTP status 200. Failure reports `status=failed`, exits nonzero, and includes a controlled explanation/action. A deterministic-mode run retains its fixed policy when initial advice fails; agentic mode checkpoints an incomplete outcome. The diagnostic is persisted in `metadata.llm_diagnostic`, SQLite/JSONL agent activity and the state snapshot; the existing warning also becomes specific.
 
@@ -18,7 +18,7 @@ Success reports `status=success`, `code=ok`, `request_attempts=1` and HTTP statu
 | `provider_unavailable`, `provider_error` | The API or upstream provider failed, including errors embedded in an HTTP 200 body. Inspect the provider's own activity page if necessary. |
 | `invalid_response_json`, `invalid_response` | The endpoint/proxy returned non-JSON or an incompatible completion envelope. |
 | `empty_response`, `refusal` | No usable text completion or model refusal. Refusal text is excluded from diagnostics. |
-| `output_truncated` | The model exhausted its output budget. Reasoning may consume that budget; increase `KS_LLM_MAX_TOKENS` within 128–8192 or use a model that can provide the small JSON within the limit. |
+| `output_truncated` | The model exhausted its output budget. Reasoning may consume that budget; increase `KS_LLM_MAX_TOKENS` within 128–32768 or use a model that can provide the small JSON within the limit. |
 | `invalid_advice_json`, `schema_mismatch` | Model output was not JSON or failed the required schema. Markdown fences/prose and unexpected properties are rejected. |
 
 The expected advice is an object with `rationale` (string, at most 2,000 characters), `priorities` (up to six strings naming allowed models) and optional `cautions` (up to six strings). Only approved model names affect the experiment roster. For schema failures the diagnostic reports field names and Pydantic error types, never offending values, arbitrary extra-property names or the raw completion.

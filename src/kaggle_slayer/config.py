@@ -8,6 +8,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from kaggle_slayer.schemas import Competition, RunConfig
 
+MAX_LLM_OUTPUT_TOKENS = 32768
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="KS_", env_file=".env", extra="ignore")
@@ -17,7 +19,7 @@ class Settings(BaseSettings):
     llm_api_key: str = ""
     llm_model: str = ""
     llm_timeout: int = 30
-    llm_max_tokens: int = Field(default=700, ge=128, le=8192)
+    llm_max_tokens: int = Field(default=700, ge=128, le=MAX_LLM_OUTPUT_TOKENS)
     llm_native_tools: bool = False
 
 
@@ -26,6 +28,20 @@ def read_yaml(path: Path) -> dict:
     if not isinstance(value, dict):
         raise ValueError(f"Expected YAML mapping in {path}")
     return value
+
+
+def cli_run_profile(execution_mode: str | None = None) -> Path:
+    """Resolve the CLI default in checkouts and installed wheels."""
+    name = "default.yaml" if execution_mode == "deterministic" else "agentic.yaml"
+    roots = [
+        Path.cwd() / "configs",
+        Path(__file__).resolve().parents[2] / "configs",
+        Path(__file__).resolve().parent / "resources/configs",
+    ]
+    path = next((root / name for root in roots if (root / name).is_file()), None)
+    if path is None:
+        raise ValueError(f"Default CLI configuration not found: {name}")
+    return path
 
 
 def load_config(

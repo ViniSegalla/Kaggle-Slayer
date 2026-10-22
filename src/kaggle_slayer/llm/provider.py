@@ -5,7 +5,7 @@ from typing import Protocol
 import httpx
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from kaggle_slayer.config import Settings
+from kaggle_slayer.config import MAX_LLM_OUTPUT_TOKENS, Settings
 from kaggle_slayer.llm.diagnostics import (
     LLMDiagnostic,
     action_validation_issues,
@@ -211,7 +211,7 @@ class PlannerLLM:
                 "failed",
                 "output_truncated",
                 f"The model exhausted the requested {max_tokens}-token output limit.",
-                "Increase KS_LLM_MAX_TOKENS (128–8192) or choose a model that can return the planning JSON within the limit; reasoning tokens may consume the output budget.",
+                f"Increase KS_LLM_MAX_TOKENS (128–{MAX_LLM_OUTPUT_TOKENS}) or choose a model that can return the planning JSON within the limit; reasoning tokens may consume the output budget.",
                 http_status=status,
             )
         message = choice.get("message")

@@ -4,13 +4,13 @@
 
 KaggleSlayer turns tabular competition CSVs into measured experiments, trained checkpoints and a validated submission file. Five specialized agents collaborate through typed state, use cross-validation to guide improvements, and record decisions in SQLite and JSONL. A Streamlit console exposes the actual activity and results.
 
-The goal is competitive performance with minimal competition-specific code. **Top 20% is an aspiration, never a promised result.** The default deterministic mode runs offline. Explicit agentic mode uses an LLM coordinator and specialist sessions to choose executable actions, observe measured results, and revise the pipeline. Upload permission belongs to trusted runtime policy.
+The goal is competitive performance with minimal competition-specific code. **Top 20% is an aspiration, never a promised result.** The CLI defaults to the agentic configuration, using an LLM coordinator and specialist sessions to choose executable actions, observe measured results, and revise the pipeline. Configure the LLM provider/model/key before running. Offline deterministic operation remains available with `--execution-mode deterministic`. Upload permission belongs to trusted runtime policy.
 
 ## LLM-directed agentic mode
 
 ```bash
 # Configure the existing KS_LLM_PROVIDER, KS_LLM_MODEL and KS_LLM_API_KEY first.
-uv run python -m kaggle_slayer run --competition titanic --config configs/agentic.yaml --no-submit
+uv run python -m kaggle_slayer run --competition titanic
 # Offline demonstration: fake LLM responses, real model training and validated predictions.
 uv run python -m examples.scripted_swarm --output artifacts/swarm-example
 ```
@@ -109,7 +109,7 @@ To test LLM planning without downloading data or training models:
 uv run python -m kaggle_slayer llm-check
 ```
 
-This sends **one** request with synthetic context using the configured provider/model and the same output budget as real planning. `KS_LLM_MAX_TOKENS` defaults to 700 and accepts 128–8192. For reasoning models that exhaust 700 tokens before producing JSON, a value such as 4096 leaves more room for the answer. This is a per-request output limit, not a monetary budget. The check may consume provider credits or free-tier quota. It never retries, changes models, or contacts Kaggle. A failed check exits with code 1; deterministic mode reports `disabled` and makes no request. The ordinary `doctor` command does not test LLM requests.
+This sends **one** request with synthetic context using the configured provider/model and the same output budget as real planning. `KS_LLM_MAX_TOKENS` defaults to 700 and accepts 128–32768. For reasoning models that exhaust 700 tokens before producing JSON, a value such as 4096 leaves more room for the answer. This is a per-request output limit, not a monetary budget. The check may consume provider credits or free-tier quota. It never retries, changes models, or contacts Kaggle. A failed check exits with code 1; deterministic mode reports `disabled` and makes no request. The ordinary `doctor` command does not test LLM requests.
 
 Failures now identify configuration problems, HTTP authentication/credit/rate-limit errors, unsupported JSON mode, timeouts, invalid JSON, truncated output or planning-schema mismatches. Safe diagnostics include provider/model, HTTP status, a category and corrective action. Model runs save these under `metadata.llm_diagnostic` and in an agent decision, visible in the dashboard. Credentials, response bodies, headers, exception text and failed model-output values are excluded. See [LLM troubleshooting](docs/llm-troubleshooting.md).
 

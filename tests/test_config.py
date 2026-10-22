@@ -115,7 +115,12 @@ def test_run_cli_max_rows_override(monkeypatch):
     assert load.call_args.kwargs["max_rows"] == 4_000_000
 
 
-@pytest.mark.parametrize("value", [0, 127, 8193])
+@pytest.mark.parametrize("value", [0, 127, 32769])
 def test_llm_output_budget_is_bounded(value):
     with pytest.raises(ValidationError):
         Settings(_env_file=None, llm_max_tokens=value)
+
+
+@pytest.mark.parametrize("value", [8193, 16384, 32768])
+def test_increased_llm_output_allowance(value):
+    assert Settings(_env_file=None, llm_max_tokens=value).llm_max_tokens == value

@@ -6,7 +6,7 @@ from typing import Annotated
 
 import typer
 
-from kaggle_slayer.config import Settings, load_config
+from kaggle_slayer.config import Settings, cli_run_profile, load_config
 from kaggle_slayer.orchestration.engine import Engine
 from kaggle_slayer.storage.store import Store
 from kaggle_slayer.tools.kaggle_client import KaggleClient, KaggleError, credentials_present
@@ -119,7 +119,8 @@ def run(
     competition: Annotated[str, typer.Option(help="Kaggle competition slug")],
     profile: Path | None = None,
     config_file: Annotated[
-        Path | None, typer.Option("--config", help="YAML run budgets and model roster")
+        Path | None,
+        typer.Option("--config", help="YAML run budgets and model roster (default: agentic.yaml)"),
     ] = None,
     execution_mode: Annotated[str | None, typer.Option(help="deterministic or agentic")] = None,
     data_dir: Annotated[
@@ -141,7 +142,7 @@ def run(
         c, config = load_config(
             competition,
             profile,
-            run_profile=config_file,
+            run_profile=config_file or cli_run_profile(execution_mode),
             execution_mode=execution_mode,
             data_dir=str(data_dir) if data_dir else None,
             max_experiments=max_experiments,

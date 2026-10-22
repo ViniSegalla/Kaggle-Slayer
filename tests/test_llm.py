@@ -25,6 +25,13 @@ PRIVATE = "private-provider-content-must-not-be-logged"
 VALID = {"rationale": "Compare fixed CV results", "priorities": ["linear", "lightgbm"]}
 
 
+def test_larger_output_budget_reaches_provider_request(api):
+    llm, advice, warning, requests = api(max_tokens=32768)
+    assert advice is not None and warning is None
+    assert json.loads(requests[0].content)["max_tokens"] == 32768
+    assert llm.settings.llm_max_tokens == 32768
+
+
 def completion(content=None, **extra):
     return {
         "choices": [
