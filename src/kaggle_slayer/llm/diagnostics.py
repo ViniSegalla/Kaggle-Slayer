@@ -59,6 +59,38 @@ def validation_issues(error: ValidationError) -> list[str]:
     return issues
 
 
+def action_validation_issues(error: ValidationError) -> list[str]:
+    """Allowlisted wire field paths only; never copy model values/unknown keys/tags."""
+    fields = {
+        "version",
+        "actions",
+        "kind",
+        "action_id",
+        "recipient",
+        "tool",
+        "arguments",
+        "depends_on",
+        "evidence",
+        "summary",
+        "task",
+        "outcome",
+    }
+    variants = {"tool", "delegate", "wait", "finish"}
+    issues = []
+    for issue in error.errors(include_input=False, include_url=False, include_context=False)[:6]:
+        parts = []
+        for part in issue["loc"]:
+            if type(part) is int:
+                parts.append(str(min(max(part, 0), 99)))
+            elif part in fields or part in variants:
+                parts.append(part)
+            else:
+                parts.append("field")
+        code = issue["type"] if re.fullmatch(r"[a-z_]+", issue["type"]) else "invalid"
+        issues.append(f"{'.'.join(parts) or 'response'}: {code}")
+    return issues
+
+
 def api_failure(status: int, error) -> tuple[str, str, str, int | None]:
     """Classify untrusted provider text locally; only controlled explanations leave here."""
     error = error if isinstance(error, dict) else {}

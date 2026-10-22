@@ -79,6 +79,7 @@ def console():
         ),
     )
     state = by_id[selected]
+    swarm = state.get("swarm") or {}
     c = state["competition"]
     experiments = state["experiments"]
     completed = [
@@ -96,6 +97,39 @@ def console():
         left, right = st.columns([2, 1])
         with left:
             st.subheader(c["competition"])
+            st.caption(f"Execution mode: {state['config'].get('execution_mode', 'deterministic')}")
+            if swarm:
+                st.write(f"Termination: {swarm.get('termination_reason') or 'running'}")
+                st.json(
+                    {
+                        "requests_used": swarm.get("requests"),
+                        "tokens_charged": swarm.get("tokens"),
+                        "turns_used": swarm.get("turns"),
+                        "experiments_reserved": swarm.get("experiment_attempts"),
+                        "limits": {
+                            k: state["config"].get(k)
+                            for k in (
+                                "max_llm_requests",
+                                "max_llm_tokens",
+                                "max_agent_turns",
+                                "agent_concurrency",
+                            )
+                        },
+                        "remaining": {
+                            "requests": state["config"].get("max_llm_requests", 0)
+                            - swarm.get("requests", 0),
+                            "tokens": state["config"].get("max_llm_tokens", 0)
+                            - swarm.get("tokens", 0),
+                            "turns": state["config"].get("max_agent_turns", 0)
+                            - swarm.get("turns", 0),
+                            "experiments": state["config"]["max_experiments"]
+                            - swarm.get("experiment_attempts", 0),
+                            "wall_seconds": max(
+                                0, state["config"]["max_seconds"] - state["elapsed_seconds"]
+                            ),
+                        },
+                    }
+                )
             st.caption(
                 f"{c['task'] or 'Task pending inspection'} · {c['metric'] or 'Metric pending'} · Seed {state['config']['seed']} · {state['created_at']}"
             )
@@ -139,6 +173,15 @@ def console():
 
     with tabs[1]:
         st.subheader("Agent collaboration & tool traces")
+        if swarm:
+            st.json(
+                {
+                    "session_id": swarm.get("session_id"),
+                    "tasks": swarm.get("tasks"),
+                    "actions": swarm.get("actions"),
+                    "provider_usage": swarm.get("usage"),
+                }
+            )
         st.caption(
             f"Current agent: {events[-1]['agent'] if events else 'pending'} · phase: {state['phase']}"
         )
@@ -209,7 +252,7 @@ def console():
                         error_y="std",
                         color="model",
                         template="plotly_dark",
-                        title=f"Cross-validation · {c['metric']} ({state['plan']['direction']})",
+                        title=f"Cross-validation · {c['metric']}",
                     ),
                     use_container_width=True,
                 )
@@ -280,7 +323,7 @@ def console():
             progress["step"] = range(1, len(progress) + 1)
             progress["best_so_far"] = (
                 progress.score.cummin()
-                if state["plan"]["direction"] == "minimize"
+                if c["metric"] in {"rmse", "rmsle", "log_rmse", "mae", "log_loss"}
                 else progress.score.cummax()
             )
             st.plotly_chart(

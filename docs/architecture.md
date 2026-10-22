@@ -1,6 +1,49 @@
 # Architecture and execution contracts
 
-KaggleSlayer is a local, single-runner ML service implemented as a typed, checkpointed state machine. Independent agents have different tools and exchange bounded, structured reports through `RunState`. They never execute generated source code. An LLM can reorder approved experiment families and explain strategy; measured evaluation determines which family receives optimization trials.
+KaggleSlayer has two explicit execution modes. `deterministic` retains the existing state machine for compatibility. `agentic` uses an LLM coordinator and specialist action/observation sessions. Both execute trusted Python tools and numerical workers; model text never trains a model or establishes a score.
+
+## Agentic scheduler
+
+`orchestration/swarm.py` is the sole owner of shared state, SQLite writes and reservations.
+`agents/swarm.py` provides distinct versioned prompts. `schemas/actions.py` defines
+delegation, tool, dependency-wait and finish messages. `tools/swarm_tools.py` binds typed
+arguments, per-role permissions, bounds and opaque references to reusable numerical tools.
+The provider-neutral `ActionProvider` interface supports compatible JSON envelopes and
+native function calling through the existing configured endpoint/model.
+
+The coordinator chooses tasks and dependencies, sees observations after each round, and
+can revisit specialists. Ready specialist calls run concurrently with immutable scoped
+JSON contexts. Ready experiments run in independent processes after the owner reserves
+slots; their CPU allocations sum to no more than `n_jobs`. Workers return results to the
+owner. No specialist can write state, reserve counters, select a winner or authorize an
+upload. There is no agentic baseline/tuning/ensemble/confirmation queue policy.
+
+Each accepted action has a stable ID and persisted status. The scheduler validates role,
+schema, dependencies, lineage, parameter bounds, artifact hashes and resources. Local
+receipts bridge commits; reserved workers with completed matching result files are
+adopted on recovery. Missing results consume failed/uncertain attempts. Upload intent
+is separately persisted before the single external attempt. Ambiguous effects cannot
+be promised exactly once and are never silently replayed.
+
+LLM latency counts against the resume-aware wall deadline. Input/output token allowances
+and request/turn slots are charged before concurrent dispatch. Network operations and
+numerical training/prediction use bounded execution; cancellation terminates subprocesses.
+LLM HTTP transports run in killable child processes with hard total deadlines and no shared-state write capability. Provider
+failure and exhausted budgets yield explicit incomplete checkpoints. Old snapshots lacking
+mode/session fields remain deterministic; changing their mode is rejected.
+
+Only aggregate evidence and opaque IDs are sent remotely. Validation changes create
+separate comparison lineages. Terminal confirmation cannot feed tuning. Final predictions
+come from the measured eligible winner's full-data checkpoint and serialized validation.
+Feedback cannot enter selection, and all uploads still require explicit human authority.
+See [usage, limits and recovery details](agentic-usage.md) and
+[generated v1 contracts](contracts/swarm-v1/actions.schema.json).
+
+## Deterministic compatibility architecture
+
+The following describes the retained legacy engine, including its fixed search policy
+and optional initial model-ordering advice. These scheduling defaults do not apply to
+agentic sessions.
 
 ```mermaid
 flowchart TD

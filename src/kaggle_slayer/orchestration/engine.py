@@ -18,7 +18,7 @@ from kaggle_slayer.tools.kaggle_client import KaggleClient, KaggleError
 
 
 class Engine:
-    def __init__(self, store: Store, client=None, progress=None):
+    def __init__(self, store: Store, client=None, progress=None, llm=None):
         self.store = store
         self.client = client or KaggleClient()
         self.progress = progress or (lambda message: None)
@@ -28,10 +28,20 @@ class Engine:
         self.modeler = ModelingAgent(store)
         self.evaluator = EvaluationAgent(store)
         self.reviewer = LeaderboardAgent(store)
+        self.llm = llm
 
     def create(self, competition, config):
         run_id = f"{competition.competition}-{uuid4().hex[:12]}"
         state = RunState(run_id=run_id, competition=competition, config=config)
+        state.metadata["execution_mode"] = config.execution_mode
+        if config.execution_mode == "agentic":
+            from kaggle_slayer.orchestration.swarm import new_session
+
+            state.swarm = new_session(run_id)
+            state.metadata["user_constraints"] = {
+                "competition": competition.model_dump(),
+                "config": config.model_dump(),
+            }
         state.metadata["environment"] = {
             "python": platform.python_version(),
             "platform": platform.platform(),
@@ -53,8 +63,29 @@ class Engine:
             return self._execute(state)
 
     def _execute(self, state):
-        if state.status == "completed":
+        if state.config.execution_mode != state.metadata.get("execution_mode", "deterministic"):
+            raise ValueError("Saved execution mode is immutable; create a new run to change mode")
+        if state.status == "completed" and not (
+            state.config.execution_mode == "agentic"
+            and state.submissions
+            and state.submissions[-1]["status"] == "intent_recorded"
+        ):
             return state
+        if state.config.execution_mode == "agentic":
+            from kaggle_slayer.orchestration.swarm import SwarmRuntime, recover_receipt
+
+            if not state.swarm:
+                raise ValueError("Agentic session missing; create a new agentic run")
+            state = recover_receipt(self.store, state)
+            runtime = SwarmRuntime(self, state, self.llm)
+            if state.swarm.get("termination_reason") == "coordinator_finished":
+                self.finish_agentic(runtime)
+                runtime.pool.shutdown(wait=False)
+                return runtime.state
+            result = runtime.run()
+            if result.status == "completed":
+                self.finish_agentic(runtime)
+            return result
         started, previous_elapsed = time.monotonic(), state.elapsed_seconds
 
         def remaining():
@@ -148,54 +179,7 @@ class Engine:
                 self.evaluator.review_stability(state)
                 self.evaluator.create_submission(state, data)
                 checkpoint("submission_ready")
-            if state.config.submit and state.config.max_submissions and not state.submissions:
-                self.live.emit(
-                    state.run_id,
-                    "orchestrator",
-                    "Submission authorized: validating integrity before one Kaggle upload",
-                )
-                provenance = state.metadata.get("provenance", {})
-                if provenance.get("kind") in {"synthetic_fixture", "public_dataset_demo"}:
-                    raise ValueError(
-                        "Demo/fixture datasets cannot be submitted to Kaggle; use actual competition files in a new run"
-                    )
-                attempt = {
-                    # Submission bytes must match the evaluator's validated artifact.
-                    "status": "intent_recorded",
-                    "message": f"KaggleSlayer run {state.run_id}",
-                    "timestamp": now(),
-                    "public_score": None,
-                    "reference": None,
-                }
-                expected_hash = state.metadata.get("submission_sha256")
-                if (
-                    not expected_hash
-                    or hashlib.sha256(Path(state.submission_path).read_bytes()).hexdigest()
-                    != expected_hash
-                ):
-                    raise ValueError(
-                        "Submission integrity check failed; regenerate and validate predictions before uploading"
-                    )
-                # Persist intent before making a non-idempotent API call.
-                state.submissions.append(attempt)
-                checkpoint("submitting")
-                try:
-                    response = self.client.submit(
-                        state.competition.competition,
-                        Path(state.submission_path),
-                        attempt["message"],
-                        authorized=True,
-                    )
-                    reference = field(response, "ref", "id", "submissionId", "submission_id")
-                    attempt.update(
-                        status="submitted" if reference else "outcome_unknown",
-                        reference=reference,
-                        response=response,
-                    )
-                except KaggleError as exc:
-                    attempt.update(status="outcome_unknown", error=str(exc))
-                    state.warnings.append(str(exc))
-                checkpoint("reviewing")
+            self.upload_authorized(state, checkpoint)
             if not state.config.submit:
                 self.live.emit(
                     state.run_id,
@@ -244,3 +228,129 @@ class Engine:
             checkpoint()
             raise
         return state
+
+    def upload_authorized(self, state, checkpoint, remaining=None, cancelled=lambda: False):
+        if state.config.submit and state.config.max_submissions and not state.submissions:
+            if state.config.execution_mode == "agentic" and (
+                state.metadata.get("swarm_submission_validated")
+                != state.metadata.get("submission_sha256")
+                or not state.metadata.get("swarm_submission_validated")
+            ):
+                raise ValueError("Agentic predictions require recorded validation before upload")
+            self.live.emit(
+                state.run_id,
+                "orchestrator",
+                "Submission authorized: validating integrity before one Kaggle upload",
+            )
+            provenance = state.metadata.get("provenance", {})
+            if provenance.get("kind") in {"synthetic_fixture", "public_dataset_demo"}:
+                raise ValueError(
+                    "Demo/fixture datasets cannot be submitted to Kaggle; use actual competition files in a new run"
+                )
+            attempt = {
+                # Submission bytes must match the evaluator's validated artifact.
+                "status": "intent_recorded",
+                "message": f"KaggleSlayer run {state.run_id}",
+                "timestamp": now(),
+                "public_score": None,
+                "reference": None,
+            }
+            expected_hash = state.metadata.get("submission_sha256")
+            if (
+                not expected_hash
+                or hashlib.sha256(Path(state.submission_path).read_bytes()).hexdigest()
+                != expected_hash
+            ):
+                raise ValueError(
+                    "Submission integrity check failed; regenerate and validate predictions before uploading"
+                )
+            # Persist intent before making a non-idempotent API call.
+            state.submissions.append(attempt)
+            checkpoint("submitting")
+            try:
+                if remaining is not None:
+                    from kaggle_slayer.tools.runtime_worker import run_bounded
+
+                    response = run_bounded(
+                        "upload",
+                        state,
+                        self.store.run_dir(state.run_id) / "operations" / "upload",
+                        remaining(),
+                        cancelled,
+                    )["response"]
+                else:
+                    response = self.client.submit(
+                        state.competition.competition,
+                        Path(state.submission_path),
+                        attempt["message"],
+                        authorized=True,
+                    )
+                reference = field(response, "ref", "id", "submissionId", "submission_id")
+                attempt.update(
+                    status="submitted" if reference else "outcome_unknown",
+                    reference=reference,
+                    response=response,
+                )
+            except (KaggleError, RuntimeError) as exc:
+                attempt.update(status="outcome_unknown", error=str(exc))
+                state.warnings.append(str(exc))
+            checkpoint("reviewing")
+
+    def finish_agentic(self, runtime):
+        """Trusted terminal I/O; LLM actions cannot enter the upload path."""
+        state = runtime.state
+        state.status = "running"
+        try:
+            runtime.validate_constraints()
+
+            def cancelled():
+                return (runtime.directory / "cancel.request").exists()
+
+            if cancelled():
+                state.status, runtime.session.termination_reason = "interrupted", "cancelled"
+                return
+            if state.config.submit and not state.submissions and runtime.remaining() <= 0:
+                state.status = "incomplete"
+                runtime.session.termination_reason = "wall_time_exhausted_before_upload"
+                return
+            self.upload_authorized(
+                state,
+                lambda phase=None: runtime.checkpoint(journal=True),
+                remaining=runtime.remaining,
+                cancelled=cancelled,
+            )
+            if state.submissions and state.submissions[-1]["status"] == "intent_recorded":
+                state.submissions[-1]["status"] = "outcome_unknown"
+                state.warnings.append("Interrupted upload; automatic resubmission disabled")
+            if cancelled():
+                state.status, runtime.session.termination_reason = "interrupted", "cancelled"
+                return
+            if state.submissions and runtime.remaining() > 0:
+                from kaggle_slayer.tools.runtime_worker import run_bounded
+
+                try:
+                    feedback = run_bounded(
+                        "feedback",
+                        state,
+                        runtime.directory / "operations" / "final-feedback",
+                        runtime.remaining(),
+                        cancelled,
+                    )
+                    state.feedback, state.submissions, state.warnings = (
+                        feedback["feedback"],
+                        feedback["submissions"],
+                        feedback["warnings"],
+                    )
+                except RuntimeError:
+                    state.warnings.append("Feedback unavailable within the remaining run deadline")
+            elif not state.submissions:
+                self.reviewer.review(state, self.client)
+            state.status = "completed"
+        except (ValueError, RuntimeError):
+            state.status = "failed"
+            runtime.session.termination_reason = "terminal_policy_or_integrity_failure"
+            raise
+        finally:
+            state.phase = "finished" if state.status == "completed" else "checkpointed"
+            runtime.checkpoint(journal=True)
+            runtime.report()

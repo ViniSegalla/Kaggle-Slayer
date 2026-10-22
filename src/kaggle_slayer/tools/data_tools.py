@@ -123,11 +123,23 @@ def inspect_dataset(directory: Path, competition: Competition, config: RunConfig
     if pd.api.types.is_numeric_dtype(y) and not np.isfinite(y).all():
         raise ValueError("Target values must be finite")
     if c.task is None:
+        if config.execution_mode == "agentic" and not c.metric:
+            raise ValueError(
+                "Unresolved task/metric: supply an authoritative metric in the profile"
+            )
         c.task = (
-            "classification"
-            if not pd.api.types.is_numeric_dtype(y)
-            or (y.nunique() <= 20 and np.allclose(y, np.round(y)))
-            else "regression"
+            (
+                "classification"
+                if c.metric in {"accuracy", "f1", "roc_auc", "log_loss"}
+                else "regression"
+            )
+            if config.execution_mode == "agentic"
+            else (
+                "classification"
+                if not pd.api.types.is_numeric_dtype(y)
+                or (y.nunique() <= 20 and np.allclose(y, np.round(y)))
+                else "regression"
+            )
         )
     if c.task == "regression" and (
         not pd.api.types.is_numeric_dtype(y) or not np.isfinite(y).all()
@@ -238,6 +250,9 @@ def inspect_dataset(directory: Path, competition: Competition, config: RunConfig
         "features": features,
         "numeric_features": list(X.select_dtypes(include="number").columns),
         "categorical_features": list(X.select_dtypes(exclude="number").columns),
+        "categorical_cardinality": {
+            c: int(X[c].nunique(dropna=True)) for c in X.select_dtypes(exclude="number")
+        },
         "missing_fraction": X.isna().mean().to_dict(),
         "dtypes": X.dtypes.astype(str).to_dict(),
         "target_distribution": y.value_counts().to_dict()

@@ -1,0 +1,1766 @@
+{
+  "provider_execution": "scripted fake provider; actual numerical training/inference; no live LLM or Kaggle",
+  "protocol": "swarm-v1",
+  "runs": [
+    {
+      "task": "classification",
+      "run_id": "offline-swarm-dddc6ee43a15",
+      "status": "completed",
+      "termination_reason": "coordinator_finished",
+      "metric": "accuracy",
+      "best_id": "refine-tune_experiment",
+      "local_score": 0.7888888888888889,
+      "requests": 31,
+      "experiments": [
+        {
+          "id": "model-run_experiment",
+          "score": 0.7444444444444445,
+          "fold_scores": [
+            0.8,
+            0.6666666666666666,
+            0.7666666666666667
+          ],
+          "effective_params": {
+            "C": 2.0
+          },
+          "pipeline_config": {
+            "numeric_imputation": "mean",
+            "scaling": "standard",
+            "missing_indicators": true,
+            "max_categories": 64,
+            "min_frequency": 2,
+            "features": [
+              "missing_count",
+              "numeric_signed_log"
+            ]
+          },
+          "lineage": "3001844a77f641b312e4"
+        },
+        {
+          "id": "refine-tune_experiment",
+          "score": 0.7888888888888889,
+          "fold_scores": [
+            0.8333333333333334,
+            0.7,
+            0.8333333333333334
+          ],
+          "effective_params": {
+            "C": 0.25
+          },
+          "pipeline_config": {
+            "numeric_imputation": "mean",
+            "scaling": "standard",
+            "missing_indicators": true,
+            "max_categories": 64,
+            "min_frequency": 2,
+            "features": [
+              "missing_count",
+              "numeric_signed_log"
+            ]
+          },
+          "lineage": "3001844a77f641b312e4"
+        }
+      ],
+      "actions": [
+        {
+          "action_id": "data",
+          "task": "coordinator",
+          "action": {
+            "kind": "delegate",
+            "action_id": "data",
+            "recipient": "data_validation",
+            "task": "Execute scoped work.",
+            "depends_on": [],
+            "evidence": [],
+            "summary": "Delegate based on current observations."
+          },
+          "status": "completed",
+          "result": {
+            "task_id": "data",
+            "summary": "Requested work recorded.",
+            "evidence": [
+              "data-inspect_dataset",
+              "data-configure_validation"
+            ]
+          }
+        },
+        {
+          "action_id": "data-inspect_dataset",
+          "task": "data",
+          "action": {
+            "kind": "tool",
+            "action_id": "data-inspect_dataset",
+            "recipient": "runtime",
+            "tool": "inspect_dataset",
+            "arguments": {},
+            "depends_on": [],
+            "evidence": [],
+            "summary": "Request bounded numerical evidence."
+          },
+          "status": "completed",
+          "result": {
+            "train_rows": 90,
+            "test_rows": 30,
+            "feature_count": 7,
+            "target_summary": {
+              "class_counts": [
+                53,
+                37
+              ]
+            },
+            "duplicate_rows": 0,
+            "fingerprint": "499bdf1ed3c547e4741817b8a07e619033f9c84772135a9030d559449ea03ea2",
+            "features": [
+              {
+                "ref": "feature-0",
+                "kind": "numeric",
+                "missing_fraction": 0.0,
+                "cardinality": null
+              },
+              {
+                "ref": "feature-1",
+                "kind": "categorical",
+                "missing_fraction": 0.0,
+                "cardinality": 2
+              },
+              {
+                "ref": "feature-2",
+                "kind": "numeric",
+                "missing_fraction": 0.1111111111111111,
+                "cardinality": null
+              },
+              {
+                "ref": "feature-3",
+                "kind": "numeric",
+                "missing_fraction": 0.0,
+                "cardinality": null
+              },
+              {
+                "ref": "feature-4",
+                "kind": "numeric",
+                "missing_fraction": 0.0,
+                "cardinality": null
+              },
+              {
+                "ref": "feature-5",
+                "kind": "numeric",
+                "missing_fraction": 0.0,
+                "cardinality": null
+              },
+              {
+                "ref": "feature-6",
+                "kind": "categorical",
+                "missing_fraction": 0.0,
+                "cardinality": 3
+              }
+            ],
+            "features_truncated": false,
+            "structural_validation": {
+              "group_available": false,
+              "time_available": false
+            },
+            "warning_count": 0
+          }
+        },
+        {
+          "action_id": "data-configure_validation",
+          "task": "data",
+          "action": {
+            "kind": "tool",
+            "action_id": "data-configure_validation",
+            "recipient": "runtime",
+            "tool": "configure_validation",
+            "arguments": {
+              "method": "stratified"
+            },
+            "depends_on": [],
+            "evidence": [],
+            "summary": "Request bounded numerical evidence."
+          },
+          "status": "completed",
+          "result": {
+            "method": "stratified",
+            "lineage": "3001844a77f641b312e4",
+            "folds": 3,
+            "seed": 42
+          }
+        },
+        {
+          "action_id": "data-finish",
+          "task": "data",
+          "action": {
+            "kind": "finish",
+            "action_id": "data-finish",
+            "recipient": "runtime",
+            "depends_on": [],
+            "evidence": [
+              "data-inspect_dataset",
+              "data-configure_validation"
+            ],
+            "summary": "Requested work recorded.",
+            "outcome": "complete"
+          },
+          "status": "completed",
+          "result": {
+            "outcome": "complete"
+          }
+        },
+        {
+          "action_id": "model",
+          "task": "coordinator",
+          "action": {
+            "kind": "delegate",
+            "action_id": "model",
+            "recipient": "pipeline_modeling",
+            "task": "Execute scoped work.",
+            "depends_on": [],
+            "evidence": [
+              "data-configure_validation"
+            ],
+            "summary": "Delegate based on current observations."
+          },
+          "status": "completed",
+          "result": {
+            "task_id": "model",
+            "summary": "Requested work recorded.",
+            "evidence": [
+              "model-configure_pipeline",
+              "model-run_experiment"
+            ]
+          }
+        },
+        {
+          "action_id": "model-configure_pipeline",
+          "task": "model",
+          "action": {
+            "kind": "tool",
+            "action_id": "model-configure_pipeline",
+            "recipient": "runtime",
+            "tool": "configure_pipeline",
+            "arguments": {
+              "model": "linear",
+              "params": {
+                "C": 2.0
+              },
+              "pipeline": {
+                "numeric_imputation": "mean",
+                "scaling": "standard",
+                "features": [
+                  "missing_count",
+                  "numeric_signed_log"
+                ]
+              }
+            },
+            "depends_on": [],
+            "evidence": [],
+            "summary": "Request bounded numerical evidence."
+          },
+          "status": "completed",
+          "result": {
+            "pipeline_ref": "model-configure_pipeline",
+            "contract": {
+              "model": "linear",
+              "params": {
+                "C": 2.0
+              },
+              "pipeline": {
+                "numeric_imputation": "mean",
+                "scaling": "standard",
+                "missing_indicators": true,
+                "max_categories": 64,
+                "min_frequency": 2,
+                "features": [
+                  "missing_count",
+                  "numeric_signed_log"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "action_id": "model-run_experiment",
+          "task": "model",
+          "action": {
+            "kind": "tool",
+            "action_id": "model-run_experiment",
+            "recipient": "runtime",
+            "tool": "run_experiment",
+            "arguments": {
+              "pipeline_ref": "model-configure_pipeline"
+            },
+            "depends_on": [],
+            "evidence": [],
+            "summary": "Request bounded numerical evidence."
+          },
+          "status": "completed",
+          "result": {
+            "experiment_ref": "model-run_experiment",
+            "status": "completed",
+            "score": 0.7444444444444445,
+            "std": 0.0566557723732532,
+            "fold_scores": [
+              0.8,
+              0.6666666666666666,
+              0.7666666666666667
+            ],
+            "train_score": 0.8388888888888889,
+            "model": "linear",
+            "lineage": "3001844a77f641b312e4",
+            "validation_role": "primary",
+            "effective_pipeline": {
+              "pipeline_config": {
+                "numeric_imputation": "mean",
+                "scaling": "standard",
+                "missing_indicators": true,
+                "max_categories": 64,
+                "min_frequency": 2,
+                "features": [
+                  "missing_count",
+                  "numeric_signed_log"
+                ]
+              },
+              "effective_params": {
+                "C": 2.0
+              },
+              "validation": {
+                "method": "stratified",
+                "folds": 3,
+                "seed": 42
+              },
+              "metric": "accuracy",
+              "preprocessing": "scaled_one_hot_with_missing_indicators"
+            },
+            "artifact_ref": "model-run_experiment",
+            "error": null
+          }
+        },
+        {
+          "action_id": "model-finish",
+          "task": "model",
+          "action": {
+            "kind": "finish",
+            "action_id": "model-finish",
+            "recipient": "runtime",
+            "depends_on": [],
+            "evidence": [
+              "model-configure_pipeline",
+              "model-run_experiment"
+            ],
+            "summary": "Requested work recorded.",
+            "outcome": "complete"
+          },
+          "status": "completed",
+          "result": {
+            "outcome": "complete"
+          }
+        },
+        {
+          "action_id": "audit",
+          "task": "coordinator",
+          "action": {
+            "kind": "delegate",
+            "action_id": "audit",
+            "recipient": "evaluation",
+            "task": "Execute scoped work.",
+            "depends_on": [],
+            "evidence": [
+              "data-configure_validation",
+              "model-run_experiment"
+            ],
+            "summary": "Delegate based on current observations."
+          },
+          "status": "completed",
+          "result": {
+            "task_id": "audit",
+            "summary": "Requested work recorded.",
+            "evidence": [
+              "audit-evaluate"
+            ]
+          }
+        },
+        {
+          "action_id": "audit-evaluate",
+          "task": "audit",
+          "action": {
+            "kind": "tool",
+            "action_id": "audit-evaluate",
+            "recipient": "runtime",
+            "tool": "evaluate",
+            "arguments": {},
+            "depends_on": [],
+            "evidence": [],
+            "summary": "Request bounded numerical evidence."
+          },
+          "status": "completed",
+          "result": {
+            "best_ref": "model-run_experiment",
+            "metric": "accuracy",
+            "direction": "maximize",
+            "ranking": [
+              {
+                "ref": "model-run_experiment",
+                "score": 0.7444444444444445,
+                "std": 0.0566557723732532,
+                "train_score": 0.8388888888888889,
+                "fold_scores": [
+                  0.8,
+                  0.6666666666666666,
+                  0.7666666666666667
+                ]
+              }
+            ],
+            "gap": 0.09444444444444444,
+            "diagnostics": {
+              "overall_error": 0.25555555555555554,
+              "measure": "misclassification_rate",
+              "slice_count": 20,
+              "slices": [
+                {
+                  "ref": "slice-0",
+                  "feature_ref": "feature-2",
+                  "rows": 20,
+                  "error": 0.35
+                },
+                {
+                  "ref": "slice-1",
+                  "feature_ref": "feature-5",
+                  "rows": 23,
+                  "error": 0.34782608695652173
+                },
+                {
+                  "ref": "slice-2",
+                  "feature_ref": "feature-3",
+                  "rows": 30,
+                  "error": 0.3333333333333333
+                },
+                {
+                  "ref": "slice-3",
+                  "feature_ref": "feature-1",
+                  "rows": 43,
+                  "error": 0.27906976744186046
+                },
+                {
+                  "ref": "slice-4",
+                  "feature_ref": "feature-6",
+                  "rows": 36,
+                  "error": 0.2777777777777778
+                },
+                {
+                  "ref": "slice-5",
+                  "feature_ref": "feature-5",
+                  "rows": 22,
+                  "error": 0.2727272727272727
+                },
+                {
+                  "ref": "slice-6",
+                  "feature_ref": "feature-4",
+                  "rows": 56,
+                  "error": 0.26785714285714285
+                },
+                {
+                  "ref": "slice-7",
+                  "feature_ref": "feature-0",
+                  "rows": 54,
+                  "error": 0.25925925925925924
+                }
+              ]
+            }
+          }
+        },
+        {
+          "action_id": "audit-finish",
+          "task": "audit",
+          "action": {
+            "kind": "finish",
+            "action_id": "audit-finish",
+            "recipient": "runtime",
+            "depends_on": [],
+            "evidence": [
+              "audit-evaluate"
+            ],
+            "summary": "Requested work recorded.",
+            "outcome": "complete"
+          },
+          "status": "completed",
+          "result": {
+            "outcome": "complete"
+          }
+        },
+        {
+          "action_id": "refine",
+          "task": "coordinator",
+          "action": {
+            "kind": "delegate",
+            "action_id": "refine",
+            "recipient": "pipeline_modeling",
+            "task": "Refine measured winner.",
+            "depends_on": [],
+            "evidence": [
+              "data-configure_validation",
+              "audit-evaluate",
+              "model-run_experiment"
+            ],
+            "summary": "Delegate based on current observations."
+          },
+          "status": "completed",
+          "result": {
+            "task_id": "refine",
+            "summary": "Requested work recorded.",
+            "evidence": [
+              "refine-tune_experiment"
+            ]
+          }
+        },
+        {
+          "action_id": "refine-tune_experiment",
+          "task": "refine",
+          "action": {
+            "kind": "tool",
+            "action_id": "refine-tune_experiment",
+            "recipient": "runtime",
+            "tool": "tune_experiment",
+            "arguments": {
+              "parent_ref": "model-run_experiment",
+              "params": {
+                "C": 0.25
+              }
+            },
+            "depends_on": [],
+            "evidence": [],
+            "summary": "Request bounded numerical evidence."
+          },
+          "status": "completed",
+          "result": {
+            "experiment_ref": "refine-tune_experiment",
+            "status": "completed",
+            "score": 0.7888888888888889,
+            "std": 0.06285393610547094,
+            "fold_scores": [
+              0.8333333333333334,
+              0.7,
+              0.8333333333333334
+            ],
+            "train_score": 0.8333333333333334,
+            "model": "linear",
+            "lineage": "3001844a77f641b312e4",
+            "validation_role": "primary",
+            "effective_pipeline": {
+              "pipeline_config": {
+                "numeric_imputation": "mean",
+                "scaling": "standard",
+                "missing_indicators": true,
+                "max_categories": 64,
+                "min_frequency": 2,
+                "features": [
+                  "missing_count",
+                  "numeric_signed_log"
+                ]
+              },
+              "effective_params": {
+                "C": 0.25
+              },
+              "validation": {
+                "method": "stratified",
+                "folds": 3,
+                "seed": 42
+              },
+              "metric": "accuracy",
+              "preprocessing": "scaled_one_hot_with_missing_indicators"
+            },
+            "artifact_ref": "refine-tune_experiment",
+            "error": null
+          }
+        },
+        {
+          "action_id": "refine-finish",
+          "task": "refine",
+          "action": {
+            "kind": "finish",
+            "action_id": "refine-finish",
+            "recipient": "runtime",
+            "depends_on": [],
+            "evidence": [
+              "refine-tune_experiment"
+            ],
+            "summary": "Requested work recorded.",
+            "outcome": "complete"
+          },
+          "status": "completed",
+          "result": {
+            "outcome": "complete"
+          }
+        },
+        {
+          "action_id": "reaudit",
+          "task": "coordinator",
+          "action": {
+            "kind": "delegate",
+            "action_id": "reaudit",
+            "recipient": "evaluation",
+            "task": "Execute scoped work.",
+            "depends_on": [],
+            "evidence": [
+              "refine-tune_experiment",
+              "audit-evaluate",
+              "model-run_experiment"
+            ],
+            "summary": "Delegate based on current observations."
+          },
+          "status": "completed",
+          "result": {
+            "task_id": "reaudit",
+            "summary": "Requested work recorded.",
+            "evidence": [
+              "reaudit-evaluate"
+            ]
+          }
+        },
+        {
+          "action_id": "reaudit-evaluate",
+          "task": "reaudit",
+          "action": {
+            "kind": "tool",
+            "action_id": "reaudit-evaluate",
+            "recipient": "runtime",
+            "tool": "evaluate",
+            "arguments": {},
+            "depends_on": [],
+            "evidence": [],
+            "summary": "Request bounded numerical evidence."
+          },
+          "status": "completed",
+          "result": {
+            "best_ref": "refine-tune_experiment",
+            "metric": "accuracy",
+            "direction": "maximize",
+            "ranking": [
+              {
+                "ref": "refine-tune_experiment",
+                "score": 0.7888888888888889,
+                "std": 0.06285393610547094,
+                "train_score": 0.8333333333333334,
+                "fold_scores": [
+                  0.8333333333333334,
+                  0.7,
+                  0.8333333333333334
+                ]
+              },
+              {
+                "ref": "model-run_experiment",
+                "score": 0.7444444444444445,
+                "std": 0.0566557723732532,
+                "train_score": 0.8388888888888889,
+                "fold_scores": [
+                  0.8,
+                  0.6666666666666666,
+                  0.7666666666666667
+                ]
+              }
+            ],
+            "gap": 0.04444444444444451,
+            "diagnostics": {
+              "overall_error": 0.2111111111111111,
+              "measure": "misclassification_rate",
+              "slice_count": 20,
+              "slices": [
+                {
+                  "ref": "slice-0",
+                  "feature_ref": "feature-5",
+                  "rows": 23,
+                  "error": 0.30434782608695654
+                },
+                {
+                  "ref": "slice-1",
+                  "feature_ref": "feature-2",
+                  "rows": 10,
+                  "error": 0.3
+                },
+                {
+                  "ref": "slice-2",
+                  "feature_ref": "feature-3",
+                  "rows": 30,
+                  "error": 0.26666666666666666
+                },
+                {
+                  "ref": "slice-3",
+                  "feature_ref": "feature-1",
+                  "rows": 43,
+                  "error": 0.2558139534883721
+                },
+                {
+                  "ref": "slice-4",
+                  "feature_ref": "feature-2",
+                  "rows": 20,
+                  "error": 0.25
+                },
+                {
+                  "ref": "slice-5",
+                  "feature_ref": "feature-2",
+                  "rows": 20,
+                  "error": 0.25
+                },
+                {
+                  "ref": "slice-6",
+                  "feature_ref": "feature-4",
+                  "rows": 56,
+                  "error": 0.25
+                },
+                {
+                  "ref": "slice-7",
+                  "feature_ref": "feature-6",
+                  "rows": 36,
+                  "error": 0.25
+                }
+              ]
+            }
+          }
+        },
+        {
+          "action_id": "reaudit-finish",
+          "task": "reaudit",
+          "action": {
+            "kind": "finish",
+            "action_id": "reaudit-finish",
+            "recipient": "runtime",
+            "depends_on": [],
+            "evidence": [
+              "reaudit-evaluate"
+            ],
+            "summary": "Requested work recorded.",
+            "outcome": "complete"
+          },
+          "status": "completed",
+          "result": {
+            "outcome": "complete"
+          }
+        },
+        {
+          "action_id": "results",
+          "task": "coordinator",
+          "action": {
+            "kind": "delegate",
+            "action_id": "results",
+            "recipient": "submission",
+            "task": "Execute scoped work.",
+            "depends_on": [],
+            "evidence": [
+              "refine-tune_experiment",
+              "reaudit-evaluate",
+              "audit-evaluate",
+              "model-run_experiment"
+            ],
+            "summary": "Delegate based on current observations."
+          },
+          "status": "completed",
+          "result": {
+            "task_id": "results",
+            "summary": "Requested work recorded.",
+            "evidence": [
+              "results-generate_predictions",
+              "results-validate_predictions"
+            ]
+          }
+        },
+        {
+          "action_id": "results-generate_predictions",
+          "task": "results",
+          "action": {
+            "kind": "tool",
+            "action_id": "results-generate_predictions",
+            "recipient": "runtime",
+            "tool": "generate_predictions",
+            "arguments": {},
+            "depends_on": [],
+            "evidence": [],
+            "summary": "Request bounded numerical evidence."
+          },
+          "status": "completed",
+          "result": {
+            "prediction_ref": "results-generate_predictions",
+            "best_ref": "refine-tune_experiment",
+            "sha256": "0ea71ad0f3bbbab314593de3426e438db6770a515d4e7d110baa4b401838b7f8",
+            "rows": 30
+          }
+        },
+        {
+          "action_id": "results-validate_predictions",
+          "task": "results",
+          "action": {
+            "kind": "tool",
+            "action_id": "results-validate_predictions",
+            "recipient": "runtime",
+            "tool": "validate_predictions",
+            "arguments": {},
+            "depends_on": [],
+            "evidence": [],
+            "summary": "Request bounded numerical evidence."
+          },
+          "status": "completed",
+          "result": {
+            "valid": true,
+            "rows": 30,
+            "sha256": "0ea71ad0f3bbbab314593de3426e438db6770a515d4e7d110baa4b401838b7f8"
+          }
+        },
+        {
+          "action_id": "results-finish",
+          "task": "results",
+          "action": {
+            "kind": "finish",
+            "action_id": "results-finish",
+            "recipient": "runtime",
+            "depends_on": [],
+            "evidence": [
+              "results-generate_predictions",
+              "results-validate_predictions"
+            ],
+            "summary": "Requested work recorded.",
+            "outcome": "complete"
+          },
+          "status": "completed",
+          "result": {
+            "outcome": "complete"
+          }
+        },
+        {
+          "action_id": "coordinator-finish",
+          "task": "coordinator",
+          "action": {
+            "kind": "finish",
+            "action_id": "coordinator-finish",
+            "recipient": "runtime",
+            "depends_on": [],
+            "evidence": [
+              "results-validate_predictions"
+            ],
+            "summary": "Measured artifacts and validated predictions recorded.",
+            "outcome": "complete"
+          },
+          "status": "completed",
+          "result": {
+            "outcome": "complete"
+          }
+        }
+      ],
+      "artifacts": {
+        "model-run_experiment": {
+          "files": [
+            {
+              "path": "artifacts/swarm-example/runs/offline-swarm-dddc6ee43a15/experiments/model-run_experiment/model.joblib",
+              "sha256": "18fb129debff8302efcf37cbd4848ac53f2fbed7c310c337115deddd84a5784a"
+            },
+            {
+              "path": "artifacts/swarm-example/runs/offline-swarm-dddc6ee43a15/experiments/model-run_experiment/oof.npz",
+              "sha256": "8503da504962b87d554d5c2b07ffa407c291679519791c3ebeab47c2dfdc39c8"
+            },
+            {
+              "path": "artifacts/swarm-example/runs/offline-swarm-dddc6ee43a15/experiments/model-run_experiment/error_analysis.json",
+              "sha256": "c38b3060e38f095021aeab55a6bbe79e1bc8ee0afa3df61dfb9c9770875ce16a"
+            }
+          ]
+        },
+        "refine-tune_experiment": {
+          "files": [
+            {
+              "path": "artifacts/swarm-example/runs/offline-swarm-dddc6ee43a15/experiments/refine-tune_experiment/model.joblib",
+              "sha256": "572d74a7142413d99a531b6b39e43b8ab9ee1a82cb5a609076ab32cd7f0a1225"
+            },
+            {
+              "path": "artifacts/swarm-example/runs/offline-swarm-dddc6ee43a15/experiments/refine-tune_experiment/oof.npz",
+              "sha256": "8b4bdc690a18705a2003ea8acae2667df8ee4dc3d9722b32a433078c7e4df8fb"
+            },
+            {
+              "path": "artifacts/swarm-example/runs/offline-swarm-dddc6ee43a15/experiments/refine-tune_experiment/error_analysis.json",
+              "sha256": "7918974976bc162ad28ff9f1d152cada3cfc022fd6eaf12d9973ce1b80d41a62"
+            }
+          ]
+        },
+        "results-generate_predictions": {
+          "files": [
+            {
+              "path": "artifacts/swarm-example/runs/offline-swarm-dddc6ee43a15/submissions/submission.csv",
+              "sha256": "0ea71ad0f3bbbab314593de3426e438db6770a515d4e7d110baa4b401838b7f8"
+            }
+          ]
+        }
+      },
+      "submission_sha256": "0ea71ad0f3bbbab314593de3426e438db6770a515d4e7d110baa4b401838b7f8",
+      "submission_validated": true
+    },
+    {
+      "task": "regression",
+      "run_id": "offline-swarm-c064381d06b1",
+      "status": "completed",
+      "termination_reason": "coordinator_finished",
+      "metric": "rmse",
+      "best_id": "refine-tune_experiment",
+      "local_score": 18124.971680608378,
+      "requests": 31,
+      "experiments": [
+        {
+          "id": "model-run_experiment",
+          "score": 18535.265927973345,
+          "fold_scores": [
+            12655.018835116558,
+            24422.414673878102,
+            18528.36427492537
+          ],
+          "effective_params": {
+            "alpha": 2.0
+          },
+          "pipeline_config": {
+            "numeric_imputation": "mean",
+            "scaling": "standard",
+            "missing_indicators": true,
+            "max_categories": 64,
+            "min_frequency": 2,
+            "features": [
+              "missing_count",
+              "numeric_signed_log"
+            ]
+          },
+          "lineage": "d4a1f687aeb561d778b4"
+        },
+        {
+          "id": "refine-tune_experiment",
+          "score": 18124.971680608378,
+          "fold_scores": [
+            13390.384992433146,
+            23099.735557895445,
+            17884.794491496552
+          ],
+          "effective_params": {
+            "alpha": 0.25
+          },
+          "pipeline_config": {
+            "numeric_imputation": "mean",
+            "scaling": "standard",
+            "missing_indicators": true,
+            "max_categories": 64,
+            "min_frequency": 2,
+            "features": [
+              "missing_count",
+              "numeric_signed_log"
+            ]
+          },
+          "lineage": "d4a1f687aeb561d778b4"
+        }
+      ],
+      "actions": [
+        {
+          "action_id": "data",
+          "task": "coordinator",
+          "action": {
+            "kind": "delegate",
+            "action_id": "data",
+            "recipient": "data_validation",
+            "task": "Execute scoped work.",
+            "depends_on": [],
+            "evidence": [],
+            "summary": "Delegate based on current observations."
+          },
+          "status": "completed",
+          "result": {
+            "task_id": "data",
+            "summary": "Requested work recorded.",
+            "evidence": [
+              "data-inspect_dataset",
+              "data-configure_validation"
+            ]
+          }
+        },
+        {
+          "action_id": "data-inspect_dataset",
+          "task": "data",
+          "action": {
+            "kind": "tool",
+            "action_id": "data-inspect_dataset",
+            "recipient": "runtime",
+            "tool": "inspect_dataset",
+            "arguments": {},
+            "depends_on": [],
+            "evidence": [],
+            "summary": "Request bounded numerical evidence."
+          },
+          "status": "completed",
+          "result": {
+            "train_rows": 90,
+            "test_rows": 30,
+            "feature_count": 5,
+            "target_summary": {
+              "count": 90.0,
+              "mean": 100128.17062329661,
+              "std": 46779.439104792415,
+              "min": 29302.09395461176,
+              "50%": 95880.80979570671,
+              "max": 269598.7924386593
+            },
+            "duplicate_rows": 0,
+            "fingerprint": "697849b8928510a52d36e033ffaca36067227922427fed811672a388b67219c5",
+            "features": [
+              {
+                "ref": "feature-0",
+                "kind": "numeric",
+                "missing_fraction": 0.0,
+                "cardinality": null
+              },
+              {
+                "ref": "feature-1",
+                "kind": "numeric",
+                "missing_fraction": 0.0,
+                "cardinality": null
+              },
+              {
+                "ref": "feature-2",
+                "kind": "categorical",
+                "missing_fraction": 0.0,
+                "cardinality": 3
+              },
+              {
+                "ref": "feature-3",
+                "kind": "numeric",
+                "missing_fraction": 0.0,
+                "cardinality": null
+              },
+              {
+                "ref": "feature-4",
+                "kind": "numeric",
+                "missing_fraction": 0.0,
+                "cardinality": null
+              }
+            ],
+            "features_truncated": false,
+            "structural_validation": {
+              "group_available": false,
+              "time_available": false
+            },
+            "warning_count": 0
+          }
+        },
+        {
+          "action_id": "data-configure_validation",
+          "task": "data",
+          "action": {
+            "kind": "tool",
+            "action_id": "data-configure_validation",
+            "recipient": "runtime",
+            "tool": "configure_validation",
+            "arguments": {
+              "method": "kfold"
+            },
+            "depends_on": [],
+            "evidence": [],
+            "summary": "Request bounded numerical evidence."
+          },
+          "status": "completed",
+          "result": {
+            "method": "kfold",
+            "lineage": "d4a1f687aeb561d778b4",
+            "folds": 3,
+            "seed": 42
+          }
+        },
+        {
+          "action_id": "data-finish",
+          "task": "data",
+          "action": {
+            "kind": "finish",
+            "action_id": "data-finish",
+            "recipient": "runtime",
+            "depends_on": [],
+            "evidence": [
+              "data-inspect_dataset",
+              "data-configure_validation"
+            ],
+            "summary": "Requested work recorded.",
+            "outcome": "complete"
+          },
+          "status": "completed",
+          "result": {
+            "outcome": "complete"
+          }
+        },
+        {
+          "action_id": "model",
+          "task": "coordinator",
+          "action": {
+            "kind": "delegate",
+            "action_id": "model",
+            "recipient": "pipeline_modeling",
+            "task": "Execute scoped work.",
+            "depends_on": [],
+            "evidence": [
+              "data-configure_validation"
+            ],
+            "summary": "Delegate based on current observations."
+          },
+          "status": "completed",
+          "result": {
+            "task_id": "model",
+            "summary": "Requested work recorded.",
+            "evidence": [
+              "model-configure_pipeline",
+              "model-run_experiment"
+            ]
+          }
+        },
+        {
+          "action_id": "model-configure_pipeline",
+          "task": "model",
+          "action": {
+            "kind": "tool",
+            "action_id": "model-configure_pipeline",
+            "recipient": "runtime",
+            "tool": "configure_pipeline",
+            "arguments": {
+              "model": "linear",
+              "params": {
+                "alpha": 2.0
+              },
+              "pipeline": {
+                "numeric_imputation": "mean",
+                "scaling": "standard",
+                "features": [
+                  "missing_count",
+                  "numeric_signed_log"
+                ]
+              }
+            },
+            "depends_on": [],
+            "evidence": [],
+            "summary": "Request bounded numerical evidence."
+          },
+          "status": "completed",
+          "result": {
+            "pipeline_ref": "model-configure_pipeline",
+            "contract": {
+              "model": "linear",
+              "params": {
+                "alpha": 2.0
+              },
+              "pipeline": {
+                "numeric_imputation": "mean",
+                "scaling": "standard",
+                "missing_indicators": true,
+                "max_categories": 64,
+                "min_frequency": 2,
+                "features": [
+                  "missing_count",
+                  "numeric_signed_log"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "action_id": "model-run_experiment",
+          "task": "model",
+          "action": {
+            "kind": "tool",
+            "action_id": "model-run_experiment",
+            "recipient": "runtime",
+            "tool": "run_experiment",
+            "arguments": {
+              "pipeline_ref": "model-configure_pipeline"
+            },
+            "depends_on": [],
+            "evidence": [],
+            "summary": "Request bounded numerical evidence."
+          },
+          "status": "completed",
+          "result": {
+            "experiment_ref": "model-run_experiment",
+            "status": "completed",
+            "score": 18535.265927973345,
+            "std": 4804.021713185507,
+            "fold_scores": [
+              12655.018835116558,
+              24422.414673878102,
+              18528.36427492537
+            ],
+            "train_score": 17839.62498654882,
+            "model": "linear",
+            "lineage": "d4a1f687aeb561d778b4",
+            "validation_role": "primary",
+            "effective_pipeline": {
+              "pipeline_config": {
+                "numeric_imputation": "mean",
+                "scaling": "standard",
+                "missing_indicators": true,
+                "max_categories": 64,
+                "min_frequency": 2,
+                "features": [
+                  "missing_count",
+                  "numeric_signed_log"
+                ]
+              },
+              "effective_params": {
+                "alpha": 2.0
+              },
+              "validation": {
+                "method": "kfold",
+                "folds": 3,
+                "seed": 42
+              },
+              "metric": "rmse",
+              "preprocessing": "scaled_one_hot_with_missing_indicators"
+            },
+            "artifact_ref": "model-run_experiment",
+            "error": null
+          }
+        },
+        {
+          "action_id": "model-finish",
+          "task": "model",
+          "action": {
+            "kind": "finish",
+            "action_id": "model-finish",
+            "recipient": "runtime",
+            "depends_on": [],
+            "evidence": [
+              "model-configure_pipeline",
+              "model-run_experiment"
+            ],
+            "summary": "Requested work recorded.",
+            "outcome": "complete"
+          },
+          "status": "completed",
+          "result": {
+            "outcome": "complete"
+          }
+        },
+        {
+          "action_id": "audit",
+          "task": "coordinator",
+          "action": {
+            "kind": "delegate",
+            "action_id": "audit",
+            "recipient": "evaluation",
+            "task": "Execute scoped work.",
+            "depends_on": [],
+            "evidence": [
+              "data-configure_validation",
+              "model-run_experiment"
+            ],
+            "summary": "Delegate based on current observations."
+          },
+          "status": "completed",
+          "result": {
+            "task_id": "audit",
+            "summary": "Requested work recorded.",
+            "evidence": [
+              "audit-evaluate"
+            ]
+          }
+        },
+        {
+          "action_id": "audit-evaluate",
+          "task": "audit",
+          "action": {
+            "kind": "tool",
+            "action_id": "audit-evaluate",
+            "recipient": "runtime",
+            "tool": "evaluate",
+            "arguments": {},
+            "depends_on": [],
+            "evidence": [],
+            "summary": "Request bounded numerical evidence."
+          },
+          "status": "completed",
+          "result": {
+            "best_ref": "model-run_experiment",
+            "metric": "rmse",
+            "direction": "minimize",
+            "ranking": [
+              {
+                "ref": "model-run_experiment",
+                "score": 18535.265927973345,
+                "std": 4804.021713185507,
+                "train_score": 17839.62498654882,
+                "fold_scores": [
+                  12655.018835116558,
+                  24422.414673878102,
+                  18528.36427492537
+                ]
+              }
+            ],
+            "gap": 695.6409414245245,
+            "diagnostics": {
+              "overall_error": 13378.393778344094,
+              "measure": "mean_absolute_error_original_units",
+              "slice_count": 18,
+              "slices": [
+                {
+                  "ref": "slice-0",
+                  "feature_ref": "feature-0",
+                  "rows": 20,
+                  "error": 21446.16094715192
+                },
+                {
+                  "ref": "slice-1",
+                  "feature_ref": "feature-2",
+                  "rows": 22,
+                  "error": 18006.908520322297
+                },
+                {
+                  "ref": "slice-2",
+                  "feature_ref": "feature-1",
+                  "rows": 23,
+                  "error": 17065.564011303697
+                },
+                {
+                  "ref": "slice-3",
+                  "feature_ref": "feature-1",
+                  "rows": 22,
+                  "error": 16529.150755676437
+                },
+                {
+                  "ref": "slice-4",
+                  "feature_ref": "feature-4",
+                  "rows": 24,
+                  "error": 15961.602044875997
+                },
+                {
+                  "ref": "slice-5",
+                  "feature_ref": "feature-4",
+                  "rows": 21,
+                  "error": 15387.489987768497
+                },
+                {
+                  "ref": "slice-6",
+                  "feature_ref": "feature-3",
+                  "rows": 18,
+                  "error": 15107.249711639939
+                },
+                {
+                  "ref": "slice-7",
+                  "feature_ref": "feature-3",
+                  "rows": 49,
+                  "error": 14191.415576625439
+                }
+              ]
+            }
+          }
+        },
+        {
+          "action_id": "audit-finish",
+          "task": "audit",
+          "action": {
+            "kind": "finish",
+            "action_id": "audit-finish",
+            "recipient": "runtime",
+            "depends_on": [],
+            "evidence": [
+              "audit-evaluate"
+            ],
+            "summary": "Requested work recorded.",
+            "outcome": "complete"
+          },
+          "status": "completed",
+          "result": {
+            "outcome": "complete"
+          }
+        },
+        {
+          "action_id": "refine",
+          "task": "coordinator",
+          "action": {
+            "kind": "delegate",
+            "action_id": "refine",
+            "recipient": "pipeline_modeling",
+            "task": "Refine measured winner.",
+            "depends_on": [],
+            "evidence": [
+              "data-configure_validation",
+              "audit-evaluate",
+              "model-run_experiment"
+            ],
+            "summary": "Delegate based on current observations."
+          },
+          "status": "completed",
+          "result": {
+            "task_id": "refine",
+            "summary": "Requested work recorded.",
+            "evidence": [
+              "refine-tune_experiment"
+            ]
+          }
+        },
+        {
+          "action_id": "refine-tune_experiment",
+          "task": "refine",
+          "action": {
+            "kind": "tool",
+            "action_id": "refine-tune_experiment",
+            "recipient": "runtime",
+            "tool": "tune_experiment",
+            "arguments": {
+              "parent_ref": "model-run_experiment",
+              "params": {
+                "alpha": 0.25
+              }
+            },
+            "depends_on": [],
+            "evidence": [],
+            "summary": "Request bounded numerical evidence."
+          },
+          "status": "completed",
+          "result": {
+            "experiment_ref": "refine-tune_experiment",
+            "status": "completed",
+            "score": 18124.971680608378,
+            "std": 3967.4623218028596,
+            "fold_scores": [
+              13390.384992433146,
+              23099.735557895445,
+              17884.794491496552
+            ],
+            "train_score": 16682.0090065379,
+            "model": "linear",
+            "lineage": "d4a1f687aeb561d778b4",
+            "validation_role": "primary",
+            "effective_pipeline": {
+              "pipeline_config": {
+                "numeric_imputation": "mean",
+                "scaling": "standard",
+                "missing_indicators": true,
+                "max_categories": 64,
+                "min_frequency": 2,
+                "features": [
+                  "missing_count",
+                  "numeric_signed_log"
+                ]
+              },
+              "effective_params": {
+                "alpha": 0.25
+              },
+              "validation": {
+                "method": "kfold",
+                "folds": 3,
+                "seed": 42
+              },
+              "metric": "rmse",
+              "preprocessing": "scaled_one_hot_with_missing_indicators"
+            },
+            "artifact_ref": "refine-tune_experiment",
+            "error": null
+          }
+        },
+        {
+          "action_id": "refine-finish",
+          "task": "refine",
+          "action": {
+            "kind": "finish",
+            "action_id": "refine-finish",
+            "recipient": "runtime",
+            "depends_on": [],
+            "evidence": [
+              "refine-tune_experiment"
+            ],
+            "summary": "Requested work recorded.",
+            "outcome": "complete"
+          },
+          "status": "completed",
+          "result": {
+            "outcome": "complete"
+          }
+        },
+        {
+          "action_id": "reaudit",
+          "task": "coordinator",
+          "action": {
+            "kind": "delegate",
+            "action_id": "reaudit",
+            "recipient": "evaluation",
+            "task": "Execute scoped work.",
+            "depends_on": [],
+            "evidence": [
+              "refine-tune_experiment",
+              "audit-evaluate",
+              "model-run_experiment"
+            ],
+            "summary": "Delegate based on current observations."
+          },
+          "status": "completed",
+          "result": {
+            "task_id": "reaudit",
+            "summary": "Requested work recorded.",
+            "evidence": [
+              "reaudit-evaluate"
+            ]
+          }
+        },
+        {
+          "action_id": "reaudit-evaluate",
+          "task": "reaudit",
+          "action": {
+            "kind": "tool",
+            "action_id": "reaudit-evaluate",
+            "recipient": "runtime",
+            "tool": "evaluate",
+            "arguments": {},
+            "depends_on": [],
+            "evidence": [],
+            "summary": "Request bounded numerical evidence."
+          },
+          "status": "completed",
+          "result": {
+            "best_ref": "refine-tune_experiment",
+            "metric": "rmse",
+            "direction": "minimize",
+            "ranking": [
+              {
+                "ref": "refine-tune_experiment",
+                "score": 18124.971680608378,
+                "std": 3967.4623218028596,
+                "train_score": 16682.0090065379,
+                "fold_scores": [
+                  13390.384992433146,
+                  23099.735557895445,
+                  17884.794491496552
+                ]
+              },
+              {
+                "ref": "model-run_experiment",
+                "score": 18535.265927973345,
+                "std": 4804.021713185507,
+                "train_score": 17839.62498654882,
+                "fold_scores": [
+                  12655.018835116558,
+                  24422.414673878102,
+                  18528.36427492537
+                ]
+              }
+            ],
+            "gap": 1442.962674070477,
+            "diagnostics": {
+              "overall_error": 13352.482931716282,
+              "measure": "mean_absolute_error_original_units",
+              "slice_count": 18,
+              "slices": [
+                {
+                  "ref": "slice-0",
+                  "feature_ref": "feature-0",
+                  "rows": 20,
+                  "error": 22295.64610027294
+                },
+                {
+                  "ref": "slice-1",
+                  "feature_ref": "feature-1",
+                  "rows": 23,
+                  "error": 18851.567211779566
+                },
+                {
+                  "ref": "slice-2",
+                  "feature_ref": "feature-4",
+                  "rows": 24,
+                  "error": 16581.392426647795
+                },
+                {
+                  "ref": "slice-3",
+                  "feature_ref": "feature-2",
+                  "rows": 22,
+                  "error": 16560.34787671953
+                },
+                {
+                  "ref": "slice-4",
+                  "feature_ref": "feature-1",
+                  "rows": 22,
+                  "error": 14857.01170503148
+                },
+                {
+                  "ref": "slice-5",
+                  "feature_ref": "feature-3",
+                  "rows": 18,
+                  "error": 14620.720238070386
+                },
+                {
+                  "ref": "slice-6",
+                  "feature_ref": "feature-4",
+                  "rows": 21,
+                  "error": 14572.444491482214
+                },
+                {
+                  "ref": "slice-7",
+                  "feature_ref": "feature-3",
+                  "rows": 49,
+                  "error": 13788.349870134112
+                }
+              ]
+            }
+          }
+        },
+        {
+          "action_id": "reaudit-finish",
+          "task": "reaudit",
+          "action": {
+            "kind": "finish",
+            "action_id": "reaudit-finish",
+            "recipient": "runtime",
+            "depends_on": [],
+            "evidence": [
+              "reaudit-evaluate"
+            ],
+            "summary": "Requested work recorded.",
+            "outcome": "complete"
+          },
+          "status": "completed",
+          "result": {
+            "outcome": "complete"
+          }
+        },
+        {
+          "action_id": "results",
+          "task": "coordinator",
+          "action": {
+            "kind": "delegate",
+            "action_id": "results",
+            "recipient": "submission",
+            "task": "Execute scoped work.",
+            "depends_on": [],
+            "evidence": [
+              "refine-tune_experiment",
+              "audit-evaluate",
+              "reaudit-evaluate",
+              "model-run_experiment"
+            ],
+            "summary": "Delegate based on current observations."
+          },
+          "status": "completed",
+          "result": {
+            "task_id": "results",
+            "summary": "Requested work recorded.",
+            "evidence": [
+              "results-generate_predictions",
+              "results-validate_predictions"
+            ]
+          }
+        },
+        {
+          "action_id": "results-generate_predictions",
+          "task": "results",
+          "action": {
+            "kind": "tool",
+            "action_id": "results-generate_predictions",
+            "recipient": "runtime",
+            "tool": "generate_predictions",
+            "arguments": {},
+            "depends_on": [],
+            "evidence": [],
+            "summary": "Request bounded numerical evidence."
+          },
+          "status": "completed",
+          "result": {
+            "prediction_ref": "results-generate_predictions",
+            "best_ref": "refine-tune_experiment",
+            "sha256": "a6938c6c08d7fe8964961acd80996581d5d8815b63bf360e72697696a52ef582",
+            "rows": 30
+          }
+        },
+        {
+          "action_id": "results-validate_predictions",
+          "task": "results",
+          "action": {
+            "kind": "tool",
+            "action_id": "results-validate_predictions",
+            "recipient": "runtime",
+            "tool": "validate_predictions",
+            "arguments": {},
+            "depends_on": [],
+            "evidence": [],
+            "summary": "Request bounded numerical evidence."
+          },
+          "status": "completed",
+          "result": {
+            "valid": true,
+            "rows": 30,
+            "sha256": "a6938c6c08d7fe8964961acd80996581d5d8815b63bf360e72697696a52ef582"
+          }
+        },
+        {
+          "action_id": "results-finish",
+          "task": "results",
+          "action": {
+            "kind": "finish",
+            "action_id": "results-finish",
+            "recipient": "runtime",
+            "depends_on": [],
+            "evidence": [
+              "results-generate_predictions",
+              "results-validate_predictions"
+            ],
+            "summary": "Requested work recorded.",
+            "outcome": "complete"
+          },
+          "status": "completed",
+          "result": {
+            "outcome": "complete"
+          }
+        },
+        {
+          "action_id": "coordinator-finish",
+          "task": "coordinator",
+          "action": {
+            "kind": "finish",
+            "action_id": "coordinator-finish",
+            "recipient": "runtime",
+            "depends_on": [],
+            "evidence": [
+              "results-validate_predictions"
+            ],
+            "summary": "Measured artifacts and validated predictions recorded.",
+            "outcome": "complete"
+          },
+          "status": "completed",
+          "result": {
+            "outcome": "complete"
+          }
+        }
+      ],
+      "artifacts": {
+        "model-run_experiment": {
+          "files": [
+            {
+              "path": "artifacts/swarm-regression/runs/offline-swarm-c064381d06b1/experiments/model-run_experiment/model.joblib",
+              "sha256": "1e6c675b85a497e005dafc95ea05dd2d9a67160e672bdc401072ca4396c3017c"
+            },
+            {
+              "path": "artifacts/swarm-regression/runs/offline-swarm-c064381d06b1/experiments/model-run_experiment/oof.npz",
+              "sha256": "d5d547547ec62c1f2db3a45cf6bf7a91068f8cf7df67a224deecfb568bbecf6f"
+            },
+            {
+              "path": "artifacts/swarm-regression/runs/offline-swarm-c064381d06b1/experiments/model-run_experiment/error_analysis.json",
+              "sha256": "3b0ee5671cf282b663d4cabdf319baba946c55110dfbe3151194cb3486f71781"
+            }
+          ]
+        },
+        "refine-tune_experiment": {
+          "files": [
+            {
+              "path": "artifacts/swarm-regression/runs/offline-swarm-c064381d06b1/experiments/refine-tune_experiment/model.joblib",
+              "sha256": "f198793f6a64f893455c2f526c17dd08a6d8aa8c8120fc38801fb911fcc612ea"
+            },
+            {
+              "path": "artifacts/swarm-regression/runs/offline-swarm-c064381d06b1/experiments/refine-tune_experiment/oof.npz",
+              "sha256": "60b07e4cf8d7807fa37201abc4465907c1dd03f379628c64863e79dda45a5cdf"
+            },
+            {
+              "path": "artifacts/swarm-regression/runs/offline-swarm-c064381d06b1/experiments/refine-tune_experiment/error_analysis.json",
+              "sha256": "32b716be61d388f9600e8f521057c052e0ec1691e312f2acc4dd2b930e2c498e"
+            }
+          ]
+        },
+        "results-generate_predictions": {
+          "files": [
+            {
+              "path": "artifacts/swarm-regression/runs/offline-swarm-c064381d06b1/submissions/submission.csv",
+              "sha256": "a6938c6c08d7fe8964961acd80996581d5d8815b63bf360e72697696a52ef582"
+            }
+          ]
+        }
+      },
+      "submission_sha256": "a6938c6c08d7fe8964961acd80996581d5d8815b63bf360e72697696a52ef582",
+      "submission_validated": true
+    }
+  ]
+}

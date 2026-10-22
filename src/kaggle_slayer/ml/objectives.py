@@ -21,17 +21,24 @@ def objective_params(name, competition):
     return {}
 
 
-def training_contract(name, competition, params):
+def training_contract(name, competition, params, options=None):
+    options = options or {}
     if name == "ensemble":
         return {
             "model": name,
             "preprocessing": "independent_member_pipelines",
             "aggregation": "equal_weight_probabilities_or_original_target_values",
             "members": [
-                training_contract(m["model"], competition, m["params"]) for m in params["members"]
+                training_contract(m["model"], competition, m["params"], m.get("pipeline"))
+                | {"pipeline_config": m.get("pipeline", {})}
+                for m in params["members"]
             ],
         }
     objective = objective_params(name, competition) | params
+    scaled = options.get("scaling", "auto") == "standard" or (
+        options.get("scaling", "auto") == "auto" and name == "linear"
+    )
+    indicators = options.get("missing_indicators", name != "linear")
     exact = (
         competition.task == "regression"
         and competition.target_transform == "none"
@@ -42,7 +49,11 @@ def training_contract(name, competition, params):
         "model": name,
         "preprocessing": "native_categories"
         if name == "catboost"
-        else ("scaled_one_hot" if name == "linear" else "unscaled_one_hot_with_missing_indicators"),
+        else (
+            ("scaled_one_hot" if scaled else "unscaled_one_hot")
+            + ("_with_missing_indicators" if indicators else "")
+        ),
+        "feature_profile": competition.feature_profile,
         "metric": competition.metric,
         "target_transform": competition.target_transform,
         "objective_params": {

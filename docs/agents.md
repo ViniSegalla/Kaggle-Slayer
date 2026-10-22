@@ -1,5 +1,16 @@
 # Agents and communication
 
+Agentic mode makes actual LLM calls for distinct coordinator, data/validation,
+pipeline/modeling, evaluation and submission sessions. Each session has a persisted
+task ID, scoped context and role tool allowlist. The coordinator can delegate only the
+work needed, request independent concurrent work, revisit a specialist after new results,
+and finish. Specialists return typed proposals/actions and evidence-backed summaries.
+The scheduler alone writes shared state and reserves budgets; numerical workers return
+measured artifacts. See [agentic contracts and usage](agentic-usage.md) and the versioned
+prompts in `agents/swarm.py` / `docs/contracts/swarm-v1`.
+
+The following table documents the retained **deterministic compatibility mode**.
+
 | Agent | Inputs | Tools and output | Decision responsibility |
 |---|---|---|---|
 | Competition Planner | Profile, quality report, evaluator feedback, budgets | Model registry, optional structured LLM advice, Optuna ask/tell; emits `Plan` and `Candidate` queue | Baseline priorities and evidence-based tuning family |

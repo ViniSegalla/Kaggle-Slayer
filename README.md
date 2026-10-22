@@ -4,7 +4,20 @@
 
 KaggleSlayer turns tabular competition CSVs into measured experiments, trained checkpoints and a validated submission file. Five specialized agents collaborate through typed state, use cross-validation to guide improvements, and record decisions in SQLite and JSONL. A Streamlit console exposes the actual activity and results.
 
-The goal is competitive performance with minimal competition-specific code. **Top 20% is an aspiration, never a promised result.** The default mode runs without an LLM subscription. Optional LLM planning uses an OpenAI-compatible endpoint and cannot execute code or authorize uploads.
+The goal is competitive performance with minimal competition-specific code. **Top 20% is an aspiration, never a promised result.** The default deterministic mode runs offline. Explicit agentic mode uses an LLM coordinator and specialist sessions to choose executable actions, observe measured results, and revise the pipeline. Upload permission belongs to trusted runtime policy.
+
+## LLM-directed agentic mode
+
+```bash
+# Configure the existing KS_LLM_PROVIDER, KS_LLM_MODEL and KS_LLM_API_KEY first.
+uv run python -m kaggle_slayer run --competition titanic --config configs/agentic.yaml --no-submit
+# Offline demonstration: fake LLM responses, real model training and validated predictions.
+uv run python -m examples.scripted_swarm --output artifacts/swarm-example
+```
+
+The coordinator delegates to data/validation, pipeline/modeling, evaluation, and submission specialists as needed. Agents select supported preprocessing, feature operations, model parameters, trials, ensembles and stopping through validated action/tool contracts. Independent LLM tasks and experiments can run concurrently; a single scheduler reserves resources and commits evidence. Provider failures checkpoint an explicit incomplete outcome. Old runs retain deterministic execution.
+
+See [agentic usage and recovery](docs/agentic-usage.md), [versioned schemas/prompts](docs/contracts/swarm-v1), and [offline execution evidence](evidence/swarm-offline.md). The deterministic workflow below remains available as a separate mode; its optional initial model-ordering advice is a legacy feature.
 
 ## Features
 
@@ -74,7 +87,7 @@ CLI runs show the active agent, experiment/model, budget position, validation ro
 
 Each line has a UTC timestamp and is saved under `artifacts/runs/<run-id>/progress.log`. Structured worker events are saved in each experiment's `progress.jsonl`, while detailed library output stays in `worker.log`. Agent decisions remain in SQLite and `decisions.jsonl`. Raw LLM responses, credentials and raw worker stdout are not streamed to the console. `resume` and `submit` use the same live reporting; `refresh` reports reviewer activity.
 
-## Free mode and optional LLM planning
+## Deterministic mode and legacy initial advice
 
 `KS_LLM_PROVIDER=deterministic` is the default and needs no key or network for local CSV workflows. Every agent still performs specialized work, including feedback-driven tuning.
 
@@ -86,7 +99,9 @@ KS_LLM_API_KEY=your-own-key
 KS_LLM_MODEL=your-selected-model-id
 ```
 
-Providers: `openrouter`, `groq`, `openai-compatible`, `local`, or `deterministic`. For a local compatible server, use `KS_LLM_PROVIDER=local`, `KS_LLM_BASE_URL=http://localhost:11434/v1` and a model installed on that server. No local model download is automatic. Invalid/unavailable structured responses fall back to deterministic planning with a warning. Only schema/quality summaries are sent, though column names may still be sensitive. Suggestions cannot change metrics, budgets or submission authorization.
+Providers: `openrouter`, `groq`, `openai-compatible`, `local`, or `deterministic`. For a local compatible server, use `KS_LLM_PROVIDER=local`, `KS_LLM_BASE_URL=http://localhost:11434/v1` and a model installed on that server. No local model download is automatic. In deterministic mode, invalid/unavailable initial advice falls back to deterministic planning with a warning. Agentic mode never falls back. The legacy initial request sends bounded schema/quality and target aggregates, validation settings, budgets and model capabilities. Column names and target statistics may still be sensitive in that legacy request; agentic context uses opaque feature IDs. Raw rows, category values, class label names, credentials and local paths are excluded. Suggestions cannot change metrics, budgets or submission authorization.
+
+The compact, versioned [initial planner prompt](src/kaggle_slayer/llm/prompts.py) explicitly describes **pre-training** planning: scores are not available yet, and their absence is expected. It requests a brief evidence-based rationale (up to 60 words), allowed-model priorities and at most two actionable dataset risks. Generic missing-CV notices and already-enforced pipeline reminders are discouraged. Context includes aggregate risks and at most eight feature examples spanning missingness/cardinality, compact model contracts and the fixed validation/budget. Truncation is explicit and unknown metadata remains unknown. Python retains the model allowlist, linear-first baseline and experiment policies. There is still one planning request, no new post-baseline LLM reviewer, and no change to output-token limits or reasoning settings. Runs record the prompt version in metadata. Shorter inputs reduce context overhead but cannot guarantee a reasoning model will finish within its output allowance.
 
 To test LLM planning without downloading data or training models:
 

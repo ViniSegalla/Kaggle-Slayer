@@ -106,7 +106,7 @@ def estimator(name, task, seed, jobs, params):
     raise ValueError(f"Model not in registry: {name}")
 
 
-def pipeline(name, competition, config, params):
+def pipeline(name, competition, config, params, options=None):
     if name == "hist_gradient" and competition.validation in {"group", "time"}:
         params = params | {"early_stopping": False}
     if name == "ensemble":
@@ -115,7 +115,10 @@ def pipeline(name, competition, config, params):
         if len(members) != 2 or any(m["model"] not in allowed for m in members):
             raise ValueError("Ensemble requires exactly two approved model families")
         estimators = [
-            (f"member_{i}", pipeline(m["model"], competition, config, m["params"]))
+            (
+                f"member_{i}",
+                pipeline(m["model"], competition, config, m["params"], m.get("pipeline")),
+            )
             for i, m in enumerate(members)
         ]
         return (
@@ -125,7 +128,7 @@ def pipeline(name, competition, config, params):
         )
     model = Pipeline(
         [
-            ("preprocess", preprocessor(competition.feature_profile, name)),
+            ("preprocess", preprocessor(competition.feature_profile, name, options)),
             (
                 "model",
                 estimator(

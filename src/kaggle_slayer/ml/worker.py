@@ -26,6 +26,7 @@ def main():
             validation_role=candidate.get("validation_role", "primary"),
             validation_seed=request["config"]["seed"],
             parent_id=candidate.get("parent_id"),
+            lineage=candidate.get("lineage"),
         ).model_dump()
     write_json(Path(sys.argv[2]), result)
 

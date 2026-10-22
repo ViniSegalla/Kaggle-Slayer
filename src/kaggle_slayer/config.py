@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     llm_model: str = ""
     llm_timeout: int = 30
     llm_max_tokens: int = Field(default=700, ge=128, le=8192)
+    llm_native_tools: bool = False
 
 
 def read_yaml(path: Path) -> dict:

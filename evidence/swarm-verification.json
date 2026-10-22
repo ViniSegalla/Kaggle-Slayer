@@ -1,0 +1,29 @@
+{
+  "execution": "offline verification; scripted providers and HTTP mocks; real numerical workers",
+  "live_provider_execution": false,
+  "kaggle_upload_execution": false,
+  "test_command": "uv --cache-dir .uv-cache run --locked --no-sync --python .venv/Scripts/python.exe pytest -q --timeout=300 --basetemp .test-tmp-swarm-final-all --junitxml=artifacts/swarm-full-tests.xml",
+  "tests": 175,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "seconds": 242.706,
+  "lint": {
+    "command": "uv run --locked ruff check src tests dashboard scripts examples",
+    "exit_code": 0
+  },
+  "format": {
+    "command": "uv run --locked ruff format --check src tests dashboard scripts examples",
+    "exit_code": 0
+  },
+  "dependency_sync": {
+    "command": "uv --cache-dir .uv-cache sync --locked --extra dev --offline --python .venv/Scripts/python.exe",
+    "exit_code": 0
+  },
+  "notes": [
+    "Streamlit tests required local loopback access outside the filesystem sandbox.",
+    "300-second per-test ceiling accommodates the existing 12-experiment integration test.",
+    "Six existing LightGBM eval_set deprecation warnings; no test failures."
+  ],
+  "trace": "swarm-offline-trace.json"
+}

@@ -1,0 +1,18 @@
+{
+  "tests": 183,
+  "failures": 0,
+  "errors": 0,
+  "seconds": 275.964,
+  "lint": "passed",
+  "format": "passed",
+  "live_provider_calls": false,
+  "command": "uv run --locked pytest -q --timeout=300 --junitxml=artifacts/swarm-repair-full-tests.xml",
+  "coverage": [
+    "same-task schema repair through real training",
+    "safe JSON/native field diagnostics",
+    "repair budget exhaustion",
+    "pending repair resume",
+    "specific provider termination reasons",
+    "clean CLI exit code 2"
+  ]
+}

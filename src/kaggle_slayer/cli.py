@@ -18,6 +18,13 @@ def emit(value):
     typer.echo(json.dumps(value, indent=2, default=str))
 
 
+def llm_failure(result):
+    if result.status == "completed":
+        return None
+    usage = (getattr(result, "swarm", None) or {}).get("usage", [])
+    return next((item for item in reversed(usage) if item.get("status") == "failed"), None)
+
+
 @app.command()
 def doctor(competition: str = "titanic", require_kaggle: bool = False):
     """Check local environment and, when configured, read Kaggle competition metadata."""
@@ -58,22 +65,29 @@ def doctor(competition: str = "titanic", require_kaggle: bool = False):
 @app.command("llm-check")
 def llm_check():
     """Test one LLM planning request with synthetic context; may use provider credits."""
+    from kaggle_slayer.llm.prompts import build_initial_context
     from kaggle_slayer.llm.provider import PlannerLLM
+    from kaggle_slayer.schemas import Competition, RunConfig
 
     llm = PlannerLLM()
     llm.advise(
-        {
-            "task": "classification",
-            "metric": "accuracy",
-            "quality": {
+        build_initial_context(
+            Competition(competition="synthetic-probe", task="classification", metric="accuracy"),
+            RunConfig(models=["linear", "random_forest", "lightgbm"]),
+            {
                 "train_rows": 100,
                 "test_rows": 20,
+                "features": ["feature"],
                 "dtypes": {"feature": "float64"},
+                "numeric_features": ["feature"],
+                "categorical_features": [],
+                "categorical_cardinality": {},
+                "duplicate_rows": 0,
+                "target_distribution": {"synthetic_a": 60, "synthetic_b": 40},
                 "missing_fraction": {"feature": 0},
                 "warnings": [],
             },
-            "allowed_models": ["linear", "random_forest", "lightgbm"],
-        }
+        )
     )
     diagnostic = llm.last_diagnostic
     emit(diagnostic.model_dump(mode="json"))
@@ -88,6 +102,7 @@ def run(
     config_file: Annotated[
         Path | None, typer.Option("--config", help="YAML run budgets and model roster")
     ] = None,
+    execution_mode: Annotated[str | None, typer.Option(help="deterministic or agentic")] = None,
     data_dir: Annotated[
         Path | None, typer.Option(help="Local CSV directory; skips download")
     ] = None,
@@ -108,6 +123,7 @@ def run(
             competition,
             profile,
             run_profile=config_file,
+            execution_mode=execution_mode,
             data_dir=str(data_dir) if data_dir else None,
             max_experiments=max_experiments,
             max_iterations=max_iterations,
@@ -127,12 +143,21 @@ def run(
             {
                 "run_id": result.run_id,
                 "status": result.status,
+                "execution_mode": config.execution_mode,
+                "termination_reason": (getattr(result, "swarm", None) or {}).get(
+                    "termination_reason"
+                ),
                 "best_model": result.best_id,
                 "feedback": result.feedback,
                 "submission": result.submission_path,
                 "warnings": result.warnings,
+                "llm_diagnostic": llm_failure(result),
             }
         )
+        if result.status != "completed":
+            raise typer.Exit(2)
+    except typer.Exit:
+        raise
     except (ValueError, RuntimeError, OSError) as exc:
         typer.echo(f"Error: {exc}", err=True)
         raise typer.Exit(1) from exc
@@ -147,8 +172,19 @@ def resume(run_id: str, artifact_root: Path | None = None, submit: bool = False)
         state.config.submit = submit
         result = Engine(store, progress=typer.echo).execute(state)
         emit(
-            {"run_id": result.run_id, "status": result.status, "submission": result.submission_path}
+            {
+                "run_id": result.run_id,
+                "status": result.status,
+                "submission": result.submission_path,
+                "execution_mode": result.config.execution_mode,
+                "termination_reason": (result.swarm or {}).get("termination_reason"),
+                "llm_diagnostic": llm_failure(result),
+            }
         )
+        if result.status != "completed":
+            raise typer.Exit(2)
+    except typer.Exit:
+        raise
     except (ValueError, RuntimeError, OSError) as exc:
         typer.echo(f"Error: {exc}", err=True)
         raise typer.Exit(1) from exc
@@ -211,7 +247,8 @@ def refresh(run_id: str, artifact_root: Path | None = None):
                 live.emit(run_id, agent, message)
 
             LeaderboardAgent(store, progress=progress).review(state, KaggleClient(), refresh=True)
-            CompetitionPlanner(store, progress=progress).leaderboard_followup(state)
+            if state.config.execution_mode == "deterministic":
+                CompetitionPlanner(store, progress=progress).leaderboard_followup(state)
             store.save(state)
             emit(state.feedback)
     except (ValueError, RuntimeError, OSError) as exc:

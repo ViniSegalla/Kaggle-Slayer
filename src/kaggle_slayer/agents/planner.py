@@ -2,6 +2,7 @@ import optuna
 from optuna.trial import TrialState
 
 from kaggle_slayer.agents.base import Agent
+from kaggle_slayer.llm.prompts import PROMPT_VERSION, build_initial_context
 from kaggle_slayer.llm.provider import PlannerLLM
 from kaggle_slayer.schemas import Plan
 from kaggle_slayer.schemas.models import Candidate
@@ -25,16 +26,9 @@ class CompetitionPlanner(Agent):
     def plan(self, state):
         self.activity(state, "Preparing strategy and requesting LLM advice when configured")
         llm = PlannerLLM()
+        state.metadata["planning_prompt_version"] = PROMPT_VERSION
         advice, warning = llm.advise(
-            {
-                "task": state.competition.task,
-                "metric": state.competition.metric,
-                "quality": {
-                    key: state.report[key]
-                    for key in ("train_rows", "test_rows", "dtypes", "missing_fraction", "warnings")
-                },
-                "allowed_models": state.config.models,
-            }
+            build_initial_context(state.competition, state.config, state.report)
         )
         if warning:
             state.warnings.append(warning)

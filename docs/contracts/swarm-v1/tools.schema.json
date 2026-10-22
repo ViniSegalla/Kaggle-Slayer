@@ -1,0 +1,465 @@
+{
+  "version": "swarm-v1",
+  "tools": {
+    "inspect_dataset": {
+      "roles": [
+        "data_validation"
+      ],
+      "experiment": false,
+      "description": "Bounded aggregate dataset report",
+      "arguments": {
+        "additionalProperties": false,
+        "properties": {},
+        "title": "EmptyArgs",
+        "type": "object"
+      }
+    },
+    "configure_validation": {
+      "roles": [
+        "data_validation"
+      ],
+      "experiment": false,
+      "description": "Propose/freeze CV lineage",
+      "arguments": {
+        "additionalProperties": false,
+        "properties": {
+          "method": {
+            "enum": [
+              "stratified",
+              "kfold",
+              "group",
+              "time"
+            ],
+            "title": "Method",
+            "type": "string"
+          }
+        },
+        "required": [
+          "method"
+        ],
+        "title": "ValidationArgs",
+        "type": "object"
+      }
+    },
+    "configure_pipeline": {
+      "roles": [
+        "pipeline_modeling"
+      ],
+      "experiment": false,
+      "description": "Create supported fold-fit pipeline",
+      "arguments": {
+        "$defs": {
+          "PipelineConfig": {
+            "additionalProperties": false,
+            "properties": {
+              "numeric_imputation": {
+                "default": "median",
+                "enum": [
+                  "median",
+                  "mean",
+                  "most_frequent"
+                ],
+                "title": "Numeric Imputation",
+                "type": "string"
+              },
+              "scaling": {
+                "default": "auto",
+                "enum": [
+                  "auto",
+                  "standard",
+                  "none"
+                ],
+                "title": "Scaling",
+                "type": "string"
+              },
+              "missing_indicators": {
+                "default": true,
+                "title": "Missing Indicators",
+                "type": "boolean"
+              },
+              "max_categories": {
+                "default": 64,
+                "maximum": 64,
+                "minimum": 2,
+                "title": "Max Categories",
+                "type": "integer"
+              },
+              "min_frequency": {
+                "default": 2,
+                "maximum": 100,
+                "minimum": 1,
+                "title": "Min Frequency",
+                "type": "integer"
+              },
+              "features": {
+                "items": {
+                  "enum": [
+                    "missing_count",
+                    "numeric_square",
+                    "numeric_signed_log"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 3,
+                "title": "Features",
+                "type": "array"
+              }
+            },
+            "title": "PipelineConfig",
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "model": {
+            "enum": [
+              "linear",
+              "random_forest",
+              "hist_gradient",
+              "lightgbm",
+              "xgboost",
+              "catboost"
+            ],
+            "title": "Model",
+            "type": "string"
+          },
+          "params": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "title": "Params",
+            "type": "object"
+          },
+          "pipeline": {
+            "$ref": "#/$defs/PipelineConfig"
+          }
+        },
+        "required": [
+          "model"
+        ],
+        "title": "ConfigureArgs",
+        "type": "object"
+      }
+    },
+    "run_experiment": {
+      "roles": [
+        "pipeline_modeling"
+      ],
+      "experiment": true,
+      "description": "Train CV/OOF and full-data refit",
+      "arguments": {
+        "additionalProperties": false,
+        "properties": {
+          "pipeline_ref": {
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "title": "Pipeline Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pipeline_ref"
+        ],
+        "title": "ExperimentArgs",
+        "type": "object"
+      }
+    },
+    "tune_experiment": {
+      "roles": [
+        "pipeline_modeling"
+      ],
+      "experiment": true,
+      "description": "One bounded explicit-parameter trial",
+      "arguments": {
+        "additionalProperties": false,
+        "properties": {
+          "parent_ref": {
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "title": "Parent Ref",
+            "type": "string"
+          },
+          "params": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "title": "Params",
+            "type": "object"
+          }
+        },
+        "required": [
+          "parent_ref",
+          "params"
+        ],
+        "title": "TuneArgs",
+        "type": "object"
+      }
+    },
+    "ensemble": {
+      "roles": [
+        "pipeline_modeling"
+      ],
+      "experiment": true,
+      "description": "Measure equal-weight two-member ensemble",
+      "arguments": {
+        "additionalProperties": false,
+        "properties": {
+          "members": {
+            "items": {
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "type": "string"
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Members",
+            "type": "array"
+          }
+        },
+        "required": [
+          "members"
+        ],
+        "title": "EnsembleArgs",
+        "type": "object"
+      }
+    },
+    "confirm": {
+      "roles": [
+        "pipeline_modeling",
+        "evaluation"
+      ],
+      "experiment": true,
+      "description": "Terminal diagnostic second-seed CV",
+      "arguments": {
+        "additionalProperties": false,
+        "properties": {
+          "parent_ref": {
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "title": "Parent Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "parent_ref"
+        ],
+        "title": "ConfirmationArgs",
+        "type": "object"
+      }
+    },
+    "evaluate": {
+      "roles": [
+        "evaluation"
+      ],
+      "experiment": false,
+      "description": "Trusted primary eligibility, ranking and OOF diagnostics",
+      "arguments": {
+        "additionalProperties": false,
+        "properties": {},
+        "title": "EmptyArgs",
+        "type": "object"
+      }
+    },
+    "generate_predictions": {
+      "roles": [
+        "submission"
+      ],
+      "experiment": false,
+      "description": "Predict using trusted measured winner",
+      "arguments": {
+        "additionalProperties": false,
+        "properties": {},
+        "title": "EmptyArgs",
+        "type": "object"
+      }
+    },
+    "validate_predictions": {
+      "roles": [
+        "submission"
+      ],
+      "experiment": false,
+      "description": "Verify serialized predictions and artifact hash",
+      "arguments": {
+        "additionalProperties": false,
+        "properties": {},
+        "title": "EmptyArgs",
+        "type": "object"
+      }
+    },
+    "retrieve_feedback": {
+      "roles": [
+        "submission"
+      ],
+      "experiment": false,
+      "description": "Read feedback after finalization; never upload",
+      "arguments": {
+        "additionalProperties": false,
+        "properties": {},
+        "title": "EmptyArgs",
+        "type": "object"
+      }
+    }
+  },
+  "parameter_bounds": {
+    "linear": {
+      "C": [
+        0.0001,
+        1000.0
+      ],
+      "alpha": [
+        0.0001,
+        1000.0
+      ],
+      "class_weight": [
+        null,
+        "balanced"
+      ]
+    },
+    "random_forest": {
+      "n_estimators": [
+        10,
+        500
+      ],
+      "max_depth": [
+        2,
+        32
+      ],
+      "min_samples_leaf": [
+        1,
+        32
+      ],
+      "max_features": [
+        0.1,
+        1.0
+      ]
+    },
+    "hist_gradient": {
+      "max_iter": [
+        10,
+        500
+      ],
+      "max_leaf_nodes": [
+        2,
+        128
+      ],
+      "learning_rate": [
+        0.001,
+        0.5
+      ],
+      "l2_regularization": [
+        0.0,
+        100.0
+      ],
+      "min_samples_leaf": [
+        2,
+        100
+      ]
+    },
+    "lightgbm": {
+      "n_estimators": [
+        10,
+        500
+      ],
+      "num_leaves": [
+        2,
+        128
+      ],
+      "learning_rate": [
+        0.001,
+        0.5
+      ],
+      "max_depth": [
+        2,
+        16
+      ],
+      "reg_alpha": [
+        0.0,
+        100.0
+      ],
+      "reg_lambda": [
+        0.0,
+        100.0
+      ],
+      "min_child_samples": [
+        2,
+        100
+      ]
+    },
+    "xgboost": {
+      "n_estimators": [
+        10,
+        500
+      ],
+      "max_depth": [
+        2,
+        12
+      ],
+      "learning_rate": [
+        0.001,
+        0.5
+      ],
+      "subsample": [
+        0.5,
+        1.0
+      ],
+      "colsample_bytree": [
+        0.5,
+        1.0
+      ],
+      "reg_alpha": [
+        0.0,
+        100.0
+      ],
+      "reg_lambda": [
+        0.0,
+        100.0
+      ]
+    },
+    "catboost": {
+      "iterations": [
+        10,
+        500
+      ],
+      "depth": [
+        2,
+        10
+      ],
+      "learning_rate": [
+        0.001,
+        0.5
+      ],
+      "l2_leaf_reg": [
+        0.0,
+        100.0
+      ]
+    }
+  }
+}

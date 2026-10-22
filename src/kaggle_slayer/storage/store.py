@@ -1,6 +1,7 @@
 import json
 import os
 import sqlite3
+import time
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -14,7 +15,16 @@ def write_json(path: Path, value) -> None:
     temporary.write_text(
         json.dumps(value, indent=2, default=str, allow_nan=False), encoding="utf-8"
     )
-    os.replace(temporary, path)
+    # Windows scanners/readers can briefly deny replacement even after our writer
+    # closes. Keep the previous atomic snapshot intact and bound local retries.
+    for attempt in range(5):
+        try:
+            os.replace(temporary, path)
+            break
+        except PermissionError:
+            if attempt == 4:
+                raise
+            time.sleep(0.02 * (attempt + 1))
 
 
 class Store:

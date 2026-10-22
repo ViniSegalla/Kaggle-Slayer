@@ -48,9 +48,18 @@ class Competition(Schema):
 
 
 class RunConfig(Schema):
+    execution_mode: Literal["deterministic", "agentic"] = "deterministic"
+    max_llm_requests: int = Field(default=80, ge=1, le=1000)
+    max_llm_tokens: int = Field(default=1000000, ge=1000, le=10000000)
+    max_llm_context_bytes: int = Field(default=65536, ge=4096, le=262144)
+    max_agent_turns: int = Field(default=80, ge=1, le=1000)
+    max_delegation_depth: int = Field(default=2, ge=1, le=4)
+    agent_concurrency: int = Field(default=2, ge=1, le=8)
+    max_action_repeats: int = Field(default=2, ge=1, le=5)
+    max_invalid_actions: int = Field(default=4, ge=1, le=20)
     seed: int = 42
     folds: int = Field(default=5, ge=2, le=20)
-    max_experiments: int = Field(default=12, ge=3, le=100)
+    max_experiments: int = Field(default=12, ge=1, le=100)
     max_iterations: int = Field(default=3, ge=1, le=20)
     max_seconds: int = Field(default=1800, ge=5, le=86400)
     experiment_timeout: int = Field(default=300, ge=2, le=14400)
@@ -77,8 +86,12 @@ class RunConfig(Schema):
 
     @model_validator(mode="after")
     def unique_models(self):
-        if len(set(self.models)) < 3:
+        if not self.models or len(set(self.models)) != len(self.models):
+            raise ValueError("Configure unique model families")
+        if self.execution_mode == "deterministic" and len(self.models) < 3:
             raise ValueError("Configure at least three distinct baseline model families")
+        if self.execution_mode == "deterministic" and self.max_experiments < 3:
+            raise ValueError("Deterministic mode requires at least three experiments")
         return self
 
 
@@ -92,6 +105,8 @@ class Candidate(Schema):
     validation_role: Literal["primary", "confirmation"] = "primary"
     validation_seed: int | None = None
     study_family: str | None = None
+    pipeline: dict[str, Any] = Field(default_factory=dict)
+    lineage: str | None = None
 
 
 class Plan(Schema):
@@ -122,6 +137,7 @@ class Experiment(Schema):
     parent_id: str | None = None
     diagnostics_path: str | None = None
     training_contract: dict[str, Any] = Field(default_factory=dict)
+    lineage: str | None = None
 
 
 class Decision(Schema):
@@ -143,7 +159,7 @@ class RunState(Schema):
     config: RunConfig
     created_at: str = Field(default_factory=now)
     updated_at: str = Field(default_factory=now)
-    status: Literal["running", "completed", "failed", "interrupted"] = "running"
+    status: Literal["running", "completed", "failed", "interrupted", "incomplete"] = "running"
     phase: str = "initialized"
     iteration: int = 0
     elapsed_seconds: float = 0
@@ -157,3 +173,5 @@ class RunState(Schema):
     submissions: list[dict[str, Any]] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
     error: str | None = None
+    # Missing on old snapshots: always retain the deterministic engine on load.
+    swarm: dict[str, Any] | None = None

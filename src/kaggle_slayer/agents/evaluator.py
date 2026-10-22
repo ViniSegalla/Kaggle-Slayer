@@ -1,4 +1,3 @@
-import hashlib
 import json
 from pathlib import Path
 
@@ -7,8 +6,7 @@ import plotly.express as px
 
 from kaggle_slayer.agents.base import Agent
 from kaggle_slayer.storage.store import write_json
-from kaggle_slayer.tools.evaluation_tools import direction, rank_experiments, validate_submission
-from kaggle_slayer.tools.training_tools import load_predictions
+from kaggle_slayer.tools.evaluation_tools import direction, rank_experiments
 
 
 class EvaluationAgent(Agent):
@@ -17,7 +15,10 @@ class EvaluationAgent(Agent):
     def evaluate(self, state):
         self.activity(state, "Comparing primary CV results and auditing train/validation gaps")
         metric = state.competition.metric
-        ranking = rank_experiments(state.experiments, metric)
+        lineage = (state.swarm or {}).get("validation", {}).get("lineage") if state.swarm else None
+        ranking = rank_experiments(
+            [e for e in state.experiments if not lineage or e.lineage == lineage], metric
+        )
         if not ranking:
             raise ValueError("All experiments failed; inspect worker logs and dataset report")
         singles = [e for e in ranking if e.model != "ensemble"]
@@ -47,6 +48,7 @@ class EvaluationAgent(Agent):
             e.id for e in ranking[1:] if sign * (best.score - e.score) > max(best.std or 0, 0.001)
         ]
         state.feedback = {
+            "eligible_ids": [e.id for e in ranking],
             "best_id": best.id,
             "local_score": best.score,
             "metric": metric,
@@ -149,48 +151,13 @@ class EvaluationAgent(Agent):
     def create_submission(self, state, data):
         self.activity(state, "Generating predictions and validating the submission template")
         best = next(e for e in state.experiments if e.id == state.best_id)
-        values = load_predictions(best.checkpoint, data, state.competition)
-        c = state.competition
-        submission = (
-            data.sample.copy()
-            if data.sample is not None
-            else pd.DataFrame(
-                {c.id_column: data.test[c.id_column]} if c.id_column else {}, index=data.test.index
-            )
-        )
-        columns = [column for column in submission if column != c.id_column]
-        columns = columns or [c.target]
-        if c.prediction_kind == "probability":
-            if len(columns) == 1 and len(data.report["classes"]) == 2:
-                submission[columns[0]] = values[:, -1]
-            elif len(columns) == len(data.report["classes"]) and set(columns) == set(
-                map(str, data.report["classes"])
-            ):
-                for index, label in enumerate(data.report["classes"]):
-                    submission[str(label)] = values[:, index]
-            else:
-                raise ValueError(
-                    "Probability submission columns must identify every class, or have one column for binary positive-class probability"
-                )
-        else:
-            if len(columns) != 1:
-                raise ValueError("Label/value submission requires one prediction column")
-            submission[columns[0]] = values
+        from kaggle_slayer.tools.prediction_tools import generate_predictions
+
         output = self.store.run_dir(state.run_id) / "submissions"
-        output.mkdir(exist_ok=True)
-        path = output / "submission.csv"
-        # Validate both in memory and after CSV serialization.
-        report = validate_submission(submission, data.test, data.sample, c, data.report["classes"])
-        submission.to_csv(path, index=False)
-        reloaded = pd.read_csv(
-            path, dtype={c.id_column: data.test[c.id_column].dtype} if c.id_column else None
-        )
-        if c.prediction_kind == "label" and isinstance(data.report["classes"][0], str):
-            reloaded[columns[0]] = reloaded[columns[0]].astype(str)
-        validate_submission(reloaded, data.test, data.sample, c, data.report["classes"])
-        write_json(output / "validation.json", report)
-        state.submission_path = str(path)
-        state.metadata["submission_sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+        result = generate_predictions(best.checkpoint, data, state.competition, output)
+        path, report = result["path"], result["report"]
+        state.submission_path = path
+        state.metadata["submission_sha256"] = result["sha256"]
         self.log(
             state,
             "validate_submission",

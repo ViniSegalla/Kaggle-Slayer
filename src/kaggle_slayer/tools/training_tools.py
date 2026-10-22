@@ -24,7 +24,7 @@ from kaggle_slayer.tools.data_tools import inspect_dataset
 from kaggle_slayer.tools.evaluation_tools import score
 
 
-def early_stopping_params(name, params, X, y, competition, config, event=None):
+def early_stopping_params(name, params, X, y, competition, config, event=None, options=None):
     """Use only an inner portion of the outer training fold for stopping decisions."""
     if name == "ensemble":
         return params | {
@@ -32,8 +32,16 @@ def early_stopping_params(name, params, X, y, competition, config, event=None):
                 {
                     "model": m["model"],
                     "params": early_stopping_params(
-                        m["model"], m["params"], X, y, competition, config, event=event
+                        m["model"],
+                        m["params"],
+                        X,
+                        y,
+                        competition,
+                        config,
+                        event=event,
+                        options=m.get("pipeline"),
                     ),
+                    "pipeline": m.get("pipeline", {}),
                 }
                 for m in params["members"]
             ]
@@ -56,7 +64,7 @@ def early_stopping_params(name, params, X, y, competition, config, event=None):
         random_state=config.seed,
         stratify=y if competition.task == "classification" else None,
     )
-    prep = preprocessor(competition.feature_profile, name)
+    prep = preprocessor(competition.feature_profile, name, options)
     fit_X, stop_X = prep.fit_transform(X.iloc[a]), prep.transform(X.iloc[b])
     work_y = np.log1p(np.asarray(y)) if competition.target_transform == "log1p" else np.asarray(y)
     model = estimator(
@@ -106,6 +114,25 @@ def train_candidate(request: dict) -> dict:
     output = Path(request["output"])
     worker_event(output, "inspect")
     data = inspect_dataset(Path(config.data_dir), c, config)
+    options = candidate.get("pipeline", {})
+    # Bound width before allocating derived or dense encoded matrices.
+    contracts = (
+        [m.get("pipeline", {}) for m in candidate["params"]["members"]]
+        if candidate["model"] == "ensemble"
+        else [options]
+    )
+    for contract in contracts:
+        extra = len(data.X.select_dtypes(include="number").columns) * sum(
+            op in {"numeric_square", "numeric_signed_log"} for op in contract.get("features", [])
+        ) + int("missing_count" in contract.get("features", []))
+        width = sum(2 if pd.api.types.is_numeric_dtype(data.X[col]) else 64 for col in data.X)
+        if (
+            len(data.X.columns) + extra > config.max_features
+            or (width + 2 * extra + (6 if c.feature_profile == "titanic" else 0))
+            * max(len(data.X), len(data.test_X))
+            > config.max_dense_cells
+        ):
+            raise ValueError("Effective pipeline exceeds feature/dense-cell limits")
     classes = data.report["classes"]
     # Use contiguous integer labels inside every classifier, including XGBoost.
     encoder = LabelEncoder().fit(data.y) if c.task == "classification" else None
@@ -129,9 +156,10 @@ def train_candidate(request: dict) -> dict:
                 c,
                 config,
                 event=lambda: worker_event(output, "early_stopping", fold=fold),
+                options=options,
             )
             fold_params.append(params)
-            model = pipeline(candidate["model"], c, config, params)
+            model = pipeline(candidate["model"], c, config, params, options)
             worker_event(output, "fit_fold", fold=fold)
             model.fit(data.X.iloc[fit_indices], y.iloc[fit_indices])
             prediction = predictions(model, data.X.iloc[valid_indices], c, for_metric=True)
@@ -145,7 +173,7 @@ def train_candidate(request: dict) -> dict:
             oof[valid_indices] = prediction
             valid_mask[valid_indices] = True
         final_params = aggregate_params(candidate["model"], candidate["params"], fold_params)
-        final = pipeline(candidate["model"], c, config, final_params)
+        final = pipeline(candidate["model"], c, config, final_params, options)
         worker_event(output, "refit")
         final.fit(data.X, y)
     output.mkdir(parents=True, exist_ok=True)
@@ -210,7 +238,14 @@ def train_candidate(request: dict) -> dict:
         oof_path=str(oof_path),
         importance_path=importance_path,
         diagnostics_path=str(diagnostics_path),
-        training_contract=training_contract(candidate["model"], c, final_params),
+        training_contract=training_contract(candidate["model"], c, final_params, options)
+        | {
+            "pipeline_config": options,
+            "dataset_fingerprints": data.report["fingerprints"],
+            "validation": {"method": c.validation, "folds": config.folds, "seed": config.seed},
+            "effective_params": final_params,
+        },
+        lineage=candidate.get("lineage"),
         validation_role=candidate.get("validation_role", "primary"),
         validation_seed=config.seed,
         parent_id=candidate.get("parent_id"),
@@ -228,6 +263,7 @@ def aggregate_params(name, base, folds):
                         member["params"],
                         [p["members"][i]["params"] for p in folds],
                     ),
+                    "pipeline": member.get("pipeline", {}),
                 }
                 for i, member in enumerate(base["members"])
             ]
@@ -238,7 +274,7 @@ def aggregate_params(name, base, folds):
 
 
 def run_isolated(
-    candidate, competition, config, output: Path, timeout: float, progress=None
+    candidate, competition, config, output: Path, timeout: float, progress=None, cancelled=None
 ) -> Experiment:
     output.mkdir(parents=True, exist_ok=True)
     request_path, result_path = output / "request.json", output / "result.json"
@@ -272,7 +308,7 @@ def run_isolated(
                 str(request_path),
                 str(result_path),
             ]
-            if progress is None:
+            if progress is None and cancelled is None:
                 returncode = subprocess.run(
                     command,
                     stdout=log,
@@ -291,7 +327,8 @@ def run_isolated(
                     candidate,
                     competition,
                     config,
-                    progress,
+                    progress or (lambda message: None),
+                    cancelled,
                 )
             if returncode or not result_path.exists():
                 raise RuntimeError(
@@ -312,11 +349,21 @@ def run_isolated(
         validation_role=candidate.validation_role,
         validation_seed=config.seed,
         parent_id=candidate.parent_id,
+        lineage=candidate.lineage,
     )
 
 
 def monitor_worker(
-    command, log, environment, timeout, output, candidate, competition, config, progress
+    command,
+    log,
+    environment,
+    timeout,
+    output,
+    candidate,
+    competition,
+    config,
+    progress,
+    cancelled=None,
 ):
     events = WorkerEvents(output / "progress.jsonl", config.folds, competition.metric, candidate.id)
     started = last_heartbeat = time.monotonic()
@@ -326,6 +373,8 @@ def monitor_worker(
     ) as process:
         try:
             while True:
+                if cancelled and cancelled():
+                    raise subprocess.TimeoutExpired(command, timeout)
                 for message in events.read():
                     progress(message)
                 elapsed = time.monotonic() - started
