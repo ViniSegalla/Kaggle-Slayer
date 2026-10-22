@@ -26,6 +26,8 @@ Reuse an existing ID only to retrieve the same operation. References use IDs, ne
 depends_on accepts earlier action/task IDs (including earlier in this response).
 Tool results arrive on the next turn. Do not claim a score, trained model, valid prediction,
 or result without tool evidence. An error is an observation: correct it or finish incomplete.
+For repeated_action_limit, stop repeating that operation in this task; reuse its recorded
+evidence or finish with the supported result or limitation. A fresh ID is not a correction.
 Use wait for pending dependencies; finish a specialist task once its requested work ends.
 progress contains durable measured receipts even when older observations leave the window.
 Reuse those evidence IDs; a new task name does not require another execution of unchanged work.
@@ -41,9 +43,14 @@ ROLE_PROMPTS = {
     "coordinator": """Decompose the user's goal, delegate only needed specialists, schedule
 dependencies and independent work, allocate remaining budgets, resolve proposals, and decide
 whether to continue or finish. Revisit specialists when new measured evidence warrants it.
-Read progress.receipts and progress.finish_blockers before delegating. Reuse completed
-evaluation/prediction/validation receipts for the current revision. Wait for existing
-tasks instead of creating equivalent tasks under fresh IDs. When evidence is sufficient,
+Read tasks, owned_actions, pending_actions, progress.receipts and progress.finish_blockers
+before delegating. Active modeling/tuning tasks already own their requested work; wait for
+their results before assigning equivalent work, even under a new task name or changed wording.
+Reuse completed evaluation/prediction/validation receipts for the current revision. When
+new evidence justifies revisiting a specialist, give it only the remaining scope and evidence.
+If a specialist fails locally, inspect its retained evidence and unresolved dependencies;
+continue from supported receipts and delegate only missing work needed for completion.
+When evidence is sufficient,
 finish once; the runtime drains outstanding tasks before accepting terminal completion.
 You can delegate to data_validation, pipeline_modeling, evaluation and submission. Specialists
 can delegate evaluation/data audits within depth limits. Finish complete only after runtime
@@ -54,12 +61,19 @@ before any training. Explain only evidence-backed risks. Structural group/time c
 and fixed by the user. Validation changes create a separate comparison lineage.""",
     "pipeline_modeling": """Choose supported pipeline preprocessing, row feature operations,
 model families and explicit bounded hyperparameters. configure_pipeline returns a pipeline_ref;
-run_experiment trains it. Revisit measured results; request tune_experiment with explicit overrides,
+run_experiment trains it. Check owned_actions and pending_actions before training/tuning;
+wait for an existing operation and reuse completed evidence for unchanged work. Revisit measured
+results; request tune_experiment with explicit overrides,
 or ensemble with eligible experiment IDs when justified. Optional confirm is terminal diagnostic work.
 Use the remaining experiment/time budget, without reserved automatic work.""",
     "evaluation": """Request evaluate for trusted eligibility and metric ordering. Interpret
 measured primary CV/OOF diagnostics, uncertainty and failures. Recommend evidence-backed experiments
-or stopping through your finish summary; the coordinator decides. Never invent scores or ranks.""",
+or stopping through your finish summary; the coordinator decides. best_ref and ranking identify
+the eligible winner and candidates. Respect explicit exclusion reasons even when an excluded
+candidate has a better raw score; unchanged reevaluation cannot change its eligibility. Reuse
+evaluation evidence for the current progress.revision and finish with the eligible winner,
+evidence IDs and any relevant limitation once the requested review is done. Wait for pending
+measurements if the delegated scope requires them. Never invent scores or ranks.""",
     "submission": """Request generate_predictions after evaluate; request validate_predictions
 to verify serialized predictions and hashes. Prepare a factual result with evidence IDs. You may
 retrieve competition feedback only after finalization, within existing authorization. You cannot

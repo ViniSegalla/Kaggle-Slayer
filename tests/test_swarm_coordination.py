@@ -13,6 +13,7 @@ from kaggle_slayer.schemas.actions import (
     DelegateAction,
     FinishAction,
     Task,
+    ToolAction,
     WaitAction,
 )
 from kaggle_slayer.tools.swarm_tools import ToolError
@@ -297,3 +298,95 @@ def test_legacy_specialist_finish_cycle_returns_error_and_can_finish_incomplete(
     assert result.swarm["termination_reason"] == "coordinator_incomplete"
     assert result.swarm["requests"] == 2
     assert result.swarm["tasks"]["audit"]["status"] == "failed"
+
+
+@pytest.mark.parametrize("fresh_ids,broken_finish", [(False, False), (True, False), (True, True)])
+def test_repeated_evaluator_returns_evidence_and_run_finishes(tmp_path, fresh_ids, broken_finish):
+    class LoopingEvaluator(ScriptedTeam):
+        def decide(self, role, context, **limits):
+            if role != "evaluation":
+                return super().decide(role, context, **limits)
+            with self.lock:
+                self.calls.append((role, context))
+            ref = "evaluate_" + str(len(self.calls)) if fresh_ids else "evaluate_again"
+            actions = [
+                {
+                    "kind": "tool",
+                    "action_id": ref,
+                    "tool": "evaluate",
+                    "summary": "Rank the unchanged measurements again.",
+                }
+            ]
+            if broken_finish and sum(role == "evaluation" for role, _ in self.calls) >= 3:
+                actions.append(
+                    {
+                        "kind": "finish",
+                        "action_id": "audit_done",
+                        "depends_on": [ref],
+                        "summary": "Finish after rejected evaluation.",
+                    }
+                )
+            return {"version": "swarm-v1", "actions": actions}, {
+                "provider": "fake",
+                "status": "success",
+                "code": "ok",
+            }
+
+    provider = LoopingEvaluator(refine=False)
+    engine, state = setup(tmp_path, provider=provider)
+    result = engine.execute(state)
+    assert result.status == "completed", result.swarm
+    assert result.swarm["termination_reason"] == "coordinator_finished"
+    assert result.swarm["tasks"]["audit"]["status"] == "failed"
+    audit = result.swarm["actions"]["audit"]
+    assert audit["result"]["error"] == "repeated_action_limit"
+    evidence = [result.swarm["actions"][ref] for ref in audit["result"]["evidence"]]
+    assert evidence and all(record["status"] == "completed" for record in evidence)
+    assert evidence[0]["result"]["best_ref"] == result.best_id
+    assert result.swarm["invalid_actions"] == 0
+    assert result.metadata["swarm_submission_validated"] == result.metadata["submission_sha256"]
+    assert len(result.experiments) == 1
+    assert not engine.client.submit.called
+    requests = len(provider.calls)
+    assert engine.execute(engine.store.load(result.run_id)).status == "completed"
+    assert len(provider.calls) == requests
+
+
+@pytest.mark.parametrize("finish_first", [False, True])
+def test_specialist_repeat_does_not_discard_queued_finish(tmp_path, finish_first):
+    engine, state = setup(tmp_path)
+    runtime = SwarmRuntime(engine, state, ScriptedTeam())
+    try:
+        coordinator = runtime.session.tasks["coordinator"]
+        runtime.accept(
+            coordinator,
+            DelegateAction(
+                kind="delegate",
+                action_id="audit",
+                recipient="evaluation",
+                task="Audit existing results.",
+                summary="Audit",
+            ),
+        )
+        runtime.drain_ready()
+        task = runtime.session.tasks["audit"]
+        action = ToolAction(kind="tool", action_id="old_evaluation", tool="evaluate", summary="Old")
+        runtime.session.actions[action.action_id] = ActionRecord(
+            task_id=task.id, action=action, status="completed", result={"best_ref": "recorded"}
+        )
+        for _ in range(state.config.max_action_repeats - 1):
+            runtime.accept(task, action)
+        finish = FinishAction(kind="finish", action_id="audit_done", summary="Done")
+        actions = [finish, action] if finish_first else [action, finish]
+        runtime.commit_response(
+            (task, 0),
+            (AgentResponse(version="swarm-v1", actions=actions), {"status": "success"}),
+        )
+        assert task.status == "ready"
+        runtime.drain_ready()
+        assert task.status == "completed"
+        assert runtime.session.actions["audit"].status == "completed"
+        assert runtime.session.actions[action.action_id].result == {"best_ref": "recorded"}
+        assert runtime.session.termination_reason is None
+    finally:
+        runtime.pool.shutdown()

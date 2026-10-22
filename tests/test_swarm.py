@@ -278,7 +278,25 @@ def test_cancel_and_repeated_actions(tmp_path):
 
 
 def test_concurrent_workers_reservations_owner_and_resume(tmp_path, monkeypatch):
-    provider = ScriptedTeam(refine=False, parallel=True)
+    class DistinctParallelTeam(ScriptedTeam):
+        def decide(self, role, context, **limits):
+            response, diagnostic = super().decide(role, context, **limits)
+            if role == "pipeline_modeling":
+                first = response.actions[0]
+                if first.kind == "tool" and first.tool == "configure_pipeline":
+                    response.actions.append(
+                        first.model_copy(
+                            update={
+                                "action_id": first.action_id + "-second",
+                                "arguments": first.arguments | {"params": {"C": 0.25}},
+                            }
+                        )
+                    )
+                elif first.kind == "tool" and first.tool == "run_experiment":
+                    response.actions[1].arguments["pipeline_ref"] += "-second"
+            return response, diagnostic
+
+    provider = DistinctParallelTeam(refine=False, parallel=True)
     engine, state = setup(tmp_path, provider=provider, n_jobs=2, max_experiments=2)
     from kaggle_slayer.tools.training_tools import run_isolated as real_run
 
@@ -312,6 +330,7 @@ def test_concurrent_workers_reservations_owner_and_resume(tmp_path, monkeypatch)
     result = engine.execute(state)
     assert result.status == "completed", result.swarm
     assert max_active == 2 and len(result.experiments) == 2
+    assert {experiment.params["C"] for experiment in result.experiments} == {2.0, 0.25}
     assert result.swarm["experiment_attempts"] == 2
     assert all(
         r["reservation"]["config"]["n_jobs"] == 1

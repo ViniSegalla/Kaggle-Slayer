@@ -18,7 +18,7 @@ from kaggle_slayer.schemas.actions import (
     TuneArgs,
     ValidationArgs,
 )
-from kaggle_slayer.schemas.models import Candidate
+from kaggle_slayer.schemas.models import Candidate, RunConfig
 from kaggle_slayer.tools.data_tools import fingerprint, inspect_dataset
 from kaggle_slayer.tools.evaluation_tools import direction, validate_submission
 
@@ -234,6 +234,86 @@ class Dispatcher:
             raise ToolError("role_permission")
         return cap.arguments.model_validate(action.arguments)
 
+    def verify_dataset(self):
+        s = self.state
+        paths = [
+            Path(s.config.data_dir) / s.competition.train_file,
+            Path(s.config.data_dir) / s.competition.test_file,
+        ]
+        if s.competition.sample_file:
+            paths.append(Path(s.config.data_dir) / s.competition.sample_file)
+        if fingerprint(paths) != s.report["fingerprints"]:
+            raise ToolError("dataset_fingerprint_changed")
+
+    def training_key(self, candidate, worker_config):
+        """Identify the resolved training request independently of its owner or IDs."""
+        s, session = self.state, self.session
+        if not s.report or not session.validation:
+            return None
+        if candidate.lineage != session.validation["lineage"]:
+            return None
+        self.verify_dataset()
+        contract = candidate.model_dump(
+            include={"model", "params", "pipeline", "lineage", "validation_role"}
+        )
+        # Equal-weight member order does not change the measured pipeline.
+        if candidate.model == "ensemble":
+            contract["params"]["members"] = sorted(
+                contract["params"]["members"], key=lambda member: json.dumps(member, sort_keys=True)
+            )
+        snapshot = {
+            "operation": "training",
+            "candidate": contract,
+            "config": worker_config.model_dump(
+                include={
+                    "execution_mode",
+                    "seed",
+                    "folds",
+                    "n_jobs",
+                    "max_rows",
+                    "max_features",
+                    "max_dense_cells",
+                }
+            ),
+            "dataset": s.report["fingerprints"],
+            "requirements": s.competition.model_dump(),
+            "validation": session.validation,
+        }
+        return hashlib.sha256(json.dumps(snapshot, sort_keys=True).encode()).hexdigest()
+
+    def reuse_training(self, key):
+        """Return canonical measured evidence only after verifying its recorded inputs."""
+        if key is None:
+            return None
+        for ref, record in self.session.actions.items():
+            if (
+                record.status != "completed"
+                or record.action.kind != "tool"
+                or not CAPABILITIES[record.action.tool].experiment
+                or record.tool_snapshot not in {None, key}
+                or not record.reservation.get("candidate")
+                or not record.reservation.get("config")
+                or record.reservation.get("competition") != self.state.competition.model_dump()
+            ):
+                continue
+            source_candidate = Candidate.model_validate(record.reservation["candidate"])
+            source_config = RunConfig.model_validate(record.reservation["config"])
+            if self.training_key(source_candidate, source_config) != key:
+                continue
+            experiment = self.experiment(record.result.get("experiment_ref"))
+            if (
+                experiment.training_contract.get("dataset_fingerprints")
+                != self.state.report["fingerprints"]
+            ):
+                raise ToolError("dataset_fingerprint_changed")
+            record.tool_snapshot = key
+            return ref, deepcopy(record.result) | {
+                "experiment_ref": experiment.id,
+                "artifact_ref": experiment.id,
+                "reused_from": ref,
+            }
+        return None
+
     def reuse_key(self, action, args):
         """Identify repeatable local work by measured inputs, never by task prose."""
         if action.tool not in {"evaluate", "generate_predictions", "validate_predictions"}:
@@ -248,14 +328,7 @@ class Dispatcher:
             for record in session.actions.values()
         ):
             return None
-        paths = [
-            Path(s.config.data_dir) / s.competition.train_file,
-            Path(s.config.data_dir) / s.competition.test_file,
-        ]
-        if s.competition.sample_file:
-            paths.append(Path(s.config.data_dir) / s.competition.sample_file)
-        if fingerprint(paths) != s.report["fingerprints"]:
-            raise ToolError("dataset_fingerprint_changed")
+        self.verify_dataset()
         experiments = []
         for experiment in s.experiments:
             if experiment.lineage != session.validation["lineage"]:
@@ -325,7 +398,9 @@ class Dispatcher:
                 continue
             result = record.result
             if action.tool == "evaluate":
-                if result.get("best_ref") != s.best_id:
+                if result.get("best_ref") != s.best_id or not result.get("eligibility", {}).get(
+                    "complete"
+                ):
                     continue
             elif action.tool == "generate_predictions":
                 if (
@@ -350,7 +425,7 @@ class Dispatcher:
             return ref, deepcopy(result) | {"reused_from": ref}
         return None
 
-    def candidate(self, action, args):
+    def candidate(self, action, args, *, for_reuse=False):
         s, session = self.state, self.session
         if not session.validation:
             raise ToolError("validation_required")
@@ -376,7 +451,10 @@ class Dispatcher:
                 rationale=action.summary,
             )
             if action.tool == "tune_experiment":
-                if session.tuning_attempts >= s.config.max_iterations * s.config.optuna_trials:
+                if (
+                    not for_reuse
+                    and session.tuning_attempts >= s.config.max_iterations * s.config.optuna_trials
+                ):
                     raise ToolError("tuning_budget")
                 validate_parameters(parent.model, s.competition.task, args.params)
                 candidate.params = parent.params | args.params
@@ -387,15 +465,16 @@ class Dispatcher:
                     r.reservation.get("candidate", {}).get("validation_role") == "confirmation"
                     for r in session.actions.values()
                 )
-                if count >= s.config.confirmation_top_k:
+                if not for_reuse and count >= s.config.confirmation_top_k:
                     raise ToolError("confirmation_budget")
-                session.confirmation_started = True
                 candidate.validation_role = "confirmation"
                 candidate.validation_seed = s.config.seed + 1009
         elif action.tool == "ensemble":
             if not s.config.ensemble or len(set(args.members)) != 2:
                 raise ToolError("ensemble_not_available")
             members = [self.experiment(ref) for ref in args.members]
+            if len({member.id for member in members}) != 2:
+                raise ToolError("ensemble_not_available")
             if any(m.model == "ensemble" or m.validation_role != "primary" for m in members):
                 raise ToolError("ineligible_member")
             candidate = Candidate(
@@ -416,17 +495,24 @@ class Dispatcher:
         if session.confirmation_started and candidate.validation_role == "primary":
             raise ToolError("confirmation_is_terminal")
         candidate.lineage = lineage
+        if candidate.validation_role == "confirmation" and not for_reuse:
+            session.confirmation_started = True
         return candidate
 
     def experiment(self, ref):
         found = next((e for e in self.state.experiments if e.id == ref), None)
+        if not found:
+            record = self.session.actions.get(ref)
+            if record and record.status == "completed" and record.action.kind == "tool":
+                canonical = record.result.get("experiment_ref")
+                found = next((e for e in self.state.experiments if e.id == canonical), None)
         if (
             not found
             or found.status != "completed"
             or found.lineage != self.session.validation["lineage"]
         ):
             raise ToolError("invalid_experiment_ref")
-        self.runtime.verify_artifact(ref)
+        self.runtime.verify_artifact(found.id)
         return found
 
     def execute(self, action, args):
@@ -525,6 +611,34 @@ class Dispatcher:
             ranked = {e.id: e for e in s.experiments}
             analysis = s.feedback.get("error_analysis", {})
             features = {name: f"feature-{i}" for i, name in enumerate(s.report["features"])}
+            eligible = set(s.feedback["eligible_ids"])
+            singles = [
+                ranked[ref] for ref in s.feedback["eligible_ids"] if ranked[ref].model != "ensemble"
+            ]
+            baseline = singles[0] if singles else None
+            required = (
+                max(abs(baseline.score), 1e-9) * s.config.min_relative_improvement
+                if baseline
+                else None
+            )
+            excluded = []
+            for experiment in s.experiments:
+                if experiment.id in eligible:
+                    continue
+                reason = "invalid_primary_score"
+                if experiment.lineage != session.validation["lineage"]:
+                    reason = "validation_lineage_mismatch"
+                elif experiment.status != "completed":
+                    reason = "experiment_not_completed"
+                elif experiment.validation_role != "primary":
+                    reason = "diagnostic_confirmation"
+                elif experiment.id in s.feedback.get("ensemble_below_improvement_threshold", []):
+                    reason = "ensemble_below_improvement_threshold"
+                item = {"ref": experiment.id, "reason": reason, "score": experiment.score}
+                if reason == "ensemble_below_improvement_threshold" and baseline:
+                    sign = 1 if direction(s.competition.metric) == "maximize" else -1
+                    item["signed_improvement"] = sign * (experiment.score - baseline.score)
+                excluded.append(item)
             return {
                 "best_ref": best.id,
                 "metric": s.competition.metric,
@@ -539,6 +653,20 @@ class Dispatcher:
                     }
                     for e in [ranked[ref] for ref in s.feedback["eligible_ids"]]
                 ],
+                "eligibility": {
+                    "complete": True,
+                    "lineage": session.validation["lineage"],
+                    "eligible_count": len(eligible),
+                    "excluded_count": len(excluded),
+                    "excluded": excluded[:16],
+                    "excluded_truncated": len(excluded) > 16,
+                    "min_relative_improvement": s.config.min_relative_improvement,
+                    "ensemble_baseline_ref": baseline.id if baseline else None,
+                    "ensemble_baseline_score": baseline.score if baseline else None,
+                    "required_ensemble_improvement": required,
+                    "ensemble_comparison": "strictly_greater_than",
+                    "rejected_for_final": s.feedback.get("rejected_for_final", [])[:16],
+                },
                 "gap": s.feedback["train_validation_gap"],
                 "diagnostics": {
                     "overall_error": analysis.get("overall_error"),

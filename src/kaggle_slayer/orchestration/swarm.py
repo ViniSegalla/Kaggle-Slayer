@@ -528,13 +528,16 @@ class SwarmRuntime:
             )
             return
         task.repair_pending, task.repair_attempts, task.repair_issues = False, 0, []
+        repeated = False
         for action in actions:
             try:
-                self.accept(task, action)
+                repeated = self.accept(task, action, defer_repeat=True) or repeated
             except ToolError as exc:
                 self.invalid(task.id, str(exc), action.action_id)
             except ValidationError:
                 self.invalid(task.id, "invalid_action_contract", action.action_id)
+        if repeated:
+            self.fail_repeating_task(task)
         self.checkpoint()
 
     def request_repair(self, task, issues):
@@ -640,7 +643,51 @@ class SwarmRuntime:
             return self.session.tasks[ref].status
         return None
 
-    def accept(self, task, action):
+    def repeated_action(self, task, action, *, defer_failure=False):
+        """Contain a specialist loop while preserving its measured evidence."""
+        if task.role == "coordinator":
+            raise StopRun("repeated_action_limit")
+        result = {
+            "error": "repeated_action_limit",
+            "instruction": "Use the recorded evidence. Repeating unchanged work with a fresh ID does not add evidence; the coordinator can continue from completed results.",
+        }
+        if action.action_id not in self.session.actions:
+            self.session.actions[action.action_id] = ActionRecord(task_id=task.id, action=action)
+            self.complete(action.action_id, result, "failed")
+        else:
+            self.observe(task.id, "repeated_action_limit", action_id=action.action_id, **result)
+            self.log(task.id, action, {"status": "rejected", **result}, "warning")
+        if not defer_failure:
+            self.fail_repeating_task(task)
+        return True
+
+    def fail_repeating_task(self, task):
+        # Accept the whole response before checking for distinct work or a finish.
+        if any(
+            record.task_id == task.id and record.status in {"pending", "reserved"}
+            for record in self.session.actions.values()
+        ):
+            return
+        task.status, task.repair_pending = "failed", False
+        evidence = [
+            ref
+            for ref, record in self.session.actions.items()
+            if record.task_id == task.id and record.status == "completed"
+        ][-16:]
+        if task.parent and task.id in self.session.actions:
+            self.complete(
+                task.id,
+                {
+                    "task_id": task.id,
+                    "summary": "Specialist stopped after repeated unchanged actions; completed evidence remains available.",
+                    "evidence": evidence,
+                    "error": "repeated_action_limit",
+                    "instruction": "Continue from completed evidence or repair the failed task dependencies.",
+                },
+                "failed",
+            )
+
+    def accept(self, task, action, *, defer_repeat=False):
         session = self.session
         old = session.actions.get(action.action_id)
         if old:
@@ -654,7 +701,7 @@ class SwarmRuntime:
                 signature = "duplicate-" + action.action_id
                 session.signatures[signature] = session.signatures.get(signature, 0) + 1
                 if session.signatures[signature] >= self.state.config.max_action_repeats:
-                    raise StopRun("repeated_action_limit")
+                    return self.repeated_action(task, action, defer_failure=defer_repeat)
                 return
             raise ToolError("action_id_collision")
         if action.action_id in session.tasks:
@@ -704,7 +751,7 @@ class SwarmRuntime:
             count = session.signatures.get(signature, 0) + 1
             session.signatures[signature] = count
             if count > self.state.config.max_action_repeats:
-                raise StopRun("repeated_action_limit")
+                return self.repeated_action(task, action, defer_failure=defer_repeat)
         record = ActionRecord(task_id=task.id, action=action)
         if action.kind == "delegate":
             record.task_scope = digest(
@@ -767,9 +814,23 @@ class SwarmRuntime:
             if record.reused_from:
                 source = self.session.actions[record.reused_from]
                 if source.status in {"completed", "failed"}:
-                    self.complete(
-                        ref, {**source.result, "reused_from": record.reused_from}, source.status
-                    )
+                    if (
+                        source.status == "completed"
+                        and action.kind == "tool"
+                        and CAPABILITIES[action.tool].experiment
+                    ):
+                        try:
+                            reused = self.dispatcher.reuse_training(record.tool_snapshot)
+                            if not reused:
+                                raise ToolError("training_reuse_unavailable")
+                            source_ref, result = reused
+                            self.complete(ref, {**result, "reused_from": source_ref})
+                        except ToolError as exc:
+                            self.complete(ref, {"error": str(exc)}, "failed")
+                    else:
+                        self.complete(
+                            ref, {**source.result, "reused_from": record.reused_from}, source.status
+                        )
                     progressed = True
                 continue
             statuses = [self.dependency_status(dep) for dep in action.depends_on]
@@ -848,23 +909,7 @@ class SwarmRuntime:
                 else:
                     args = self.dispatcher.validate(task.role, action)
                     if CAPABILITIES[action.tool].experiment:
-                        if action.tool == "confirm" and training:
-                            continue
-                        if training and any(
-                            self.session.actions[pending].action.tool == "confirm"
-                            for pending in training.values()
-                        ):
-                            continue
-                        if len(training) >= min(
-                            self.state.config.agent_concurrency, self.state.config.n_jobs
-                        ):
-                            continue
-                        candidate = self.dispatcher.candidate(action, args)
-                        if self.session.experiment_attempts >= self.state.config.max_experiments:
-                            raise ToolError("experiment_budget_exhausted")
-                        self.session.experiment_attempts += 1
-                        if action.tool == "tune_experiment":
-                            self.session.tuning_attempts += 1
+                        candidate = self.dispatcher.candidate(action, args, for_reuse=True)
                         worker_config = self.state.config.model_copy(
                             update={
                                 "n_jobs": max(
@@ -880,6 +925,47 @@ class SwarmRuntime:
                                 else self.state.config.seed,
                             }
                         )
+                        record.tool_snapshot = self.dispatcher.training_key(
+                            candidate, worker_config
+                        )
+                        reused = self.dispatcher.reuse_training(record.tool_snapshot)
+                        if reused:
+                            source_ref, result = reused
+                            record.reused_from = source_ref
+                            self.complete(ref, {**result, "reused_from": source_ref})
+                            continue
+                        source_ref = next(
+                            (
+                                key
+                                for key, other in self.session.actions.items()
+                                if key != ref
+                                and other.status == "reserved"
+                                and other.reservation.get("candidate")
+                                and other.tool_snapshot == record.tool_snapshot
+                            ),
+                            None,
+                        )
+                        if source_ref:
+                            record.reused_from = source_ref
+                            self.checkpoint()
+                            continue
+                        if action.tool == "confirm" and training:
+                            continue
+                        if training and any(
+                            self.session.actions[pending].action.tool == "confirm"
+                            for pending in training.values()
+                        ):
+                            continue
+                        if len(training) >= min(
+                            self.state.config.agent_concurrency, self.state.config.n_jobs
+                        ):
+                            continue
+                        if self.session.experiment_attempts >= self.state.config.max_experiments:
+                            raise ToolError("experiment_budget_exhausted")
+                        candidate = self.dispatcher.candidate(action, args)
+                        self.session.experiment_attempts += 1
+                        if action.tool == "tune_experiment":
+                            self.session.tuning_attempts += 1
                         output = self.directory / "experiments" / candidate.id
                         record.status = "reserved"
                         record.reservation = {
@@ -942,6 +1028,18 @@ class SwarmRuntime:
                     "failed",
                 )
         self.collect(training, self.commit_experiment)
+        for task in self.session.tasks.values():
+            if (
+                task.role != "coordinator"
+                and task.status == "ready"
+                and any(
+                    record.task_id == task.id
+                    and record.result.get("error") == "repeated_action_limit"
+                    for record in self.session.actions.values()
+                )
+            ):
+                # A finish may itself fail because it depended on the rejected repeat.
+                self.fail_repeating_task(task)
         return progressed
 
     def commit_experiment(self, ref, result):
